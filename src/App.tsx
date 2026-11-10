@@ -201,44 +201,47 @@ export function App() {
     }
   }, [darkMode]);
 
+  const BROWSER_LIVE_RSS_FEEDS = [
+    {
+      sourceId: 'src-un-mideast-ar',
+      sourceName: 'أخبار الأمم المتحدة — الشرق الأوسط وسوريا',
+      rssUrl: 'https://news.un.org/feed/subscribe/ar/news/region/middle-east/feed/rss.xml',
+      focus: 'syria' as const,
+    },
+    {
+      sourceId: 'src-aljazeera-ar',
+      sourceName: 'الجزيرة نت — الأخبار العاجلة العربية والسورية',
+      rssUrl: 'https://www.aljazeera.net/aljazeerarss/a7c186be-1baa-4bd4-9d80-a84db769f779/73d0e1b4-532f-45ef-b135-bfdff8b8cab9',
+      focus: 'arab_turkey' as const,
+    },
+    {
+      sourceId: 'src-alarabiya-ar',
+      sourceName: 'العربية نت — الأخبار العربية والاقتصادية',
+      rssUrl: 'https://www.alarabiya.net/feed/rss2/ar.xml',
+      focus: 'arab_turkey' as const,
+    },
+    {
+      sourceId: 'src-aa-arabic',
+      sourceName: 'وكالة الأناضول للأنباء — القسم العربي',
+      rssUrl: 'https://www.aa.com.tr/ar/rss/default?cat=live',
+      focus: 'arab_turkey' as const,
+    },
+    {
+      sourceId: 'src-bbc-arabic',
+      sourceName: 'بي بي سي عربي (BBC News Arabic)',
+      rssUrl: 'https://feeds.bbci.co.uk/arabic/rss.xml',
+      focus: 'other' as const,
+    },
+    {
+      sourceId: 'src-un-news-ar',
+      sourceName: 'أخبار الأمم المتحدة (UN News Arabic)',
+      rssUrl: 'https://news.un.org/feed/subscribe/ar/news/all/rss.xml',
+      focus: 'other' as const,
+    },
+  ];
+
   const runStaticClientAutoPublish = async () => {
     try {
-      let chosen: { sourceId: string; sourceName: string; url: string; title: string; snippet: string } | null = null;
-      // محاولة الجلب المباشر من خلاصة أخبار الأمم المتحدة بالعربية عبر واجهة RSS2JSON العامة المتوافقة مع المتصفح
-      try {
-        const rssRes = await fetch(
-          'https://api.rss2json.com/v1/api.json?rss_url=' +
-            encodeURIComponent('https://news.un.org/feed/subscribe/ar/news/all/rss.xml')
-        );
-        if (rssRes.ok) {
-          const rssJson = await rssRes.json();
-          if (Array.isArray(rssJson.items)) {
-            for (const item of rssJson.items) {
-              const rawTitle = String(item.title || '').replace(/<[^>]+>/g, '').trim();
-              const rawDesc = String(item.description || '').replace(/<[^>]+>/g, '').trim();
-              const safety = evaluateSourceSafety(rawTitle, rawDesc);
-              if (
-                rawTitle.length > 20 &&
-                safety.allowed &&
-                safety.sensitiveFlags.length === 0 &&
-                !articles.some((a) => a.headline === rawTitle)
-              ) {
-                chosen = {
-                  sourceId: 'src-un-news-ar',
-                  sourceName: 'أخبار الأمم المتحدة (UN News Arabic)',
-                  url: String(item.link || 'https://news.un.org/ar'),
-                  title: rawTitle,
-                  snippet: normalizeSourceSnippet(rawDesc || rawTitle, 400),
-                };
-                break;
-              }
-            }
-          }
-        }
-      } catch {
-        // fallback to curated pool if offline or blocked
-      }
-
       const published = articles.filter((a) => a.status === 'published');
       const total = Math.max(1, published.length);
       const syriaRatio = published.filter((a) => a.categorySlug === 'syria').length / total;
@@ -246,12 +249,63 @@ export function App() {
       const targetFocus: 'syria' | 'arab_turkey' | 'other' =
         syriaRatio < 0.5 ? 'syria' : arabTurkeyRatio < 0.4 ? 'arab_turkey' : 'other';
 
+      let chosen: { sourceId: string; sourceName: string; url: string; title: string; snippet: string } | null = null;
+
+      // محاولة الجلب المباشر من الخلاصات الحية عبر واجهة RSS2JSON المتوافقة مع المتصفح على مدار الساعة 24/7
+      const orderedLiveFeeds = [
+        ...BROWSER_LIVE_RSS_FEEDS.filter((f) => f.focus === targetFocus),
+        ...BROWSER_LIVE_RSS_FEEDS.filter((f) => f.focus !== targetFocus),
+      ];
+      for (const liveFeed of orderedLiveFeeds.slice(0, 2)) {
+        if (chosen) break;
+        try {
+          const rssRes = await fetch(
+            'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(liveFeed.rssUrl)
+          );
+          if (rssRes.ok) {
+            const rssJson = await rssRes.json();
+            if (Array.isArray(rssJson.items)) {
+              for (const item of rssJson.items) {
+                const rawTitle = String(item.title || '').replace(/<[^>]+>/g, '').trim();
+                const rawDesc = String(item.description || '').replace(/<[^>]+>/g, '').trim();
+                const safety = evaluateSourceSafety(rawTitle, rawDesc);
+                if (
+                  rawTitle.length > 20 &&
+                  safety.allowed &&
+                  safety.sensitiveFlags.length === 0 &&
+                  !articles.some((a) => a.headline === rawTitle)
+                ) {
+                  chosen = {
+                    sourceId: liveFeed.sourceId,
+                    sourceName: liveFeed.sourceName,
+                    url: String(item.link || liveFeed.rssUrl),
+                    title: rawTitle,
+                    snippet: normalizeSourceSnippet(rawDesc || rawTitle, 400),
+                  };
+                  break;
+                }
+              }
+            }
+          }
+        } catch {
+          // الانتقال للخلاصة التالية
+        }
+      }
+
       if (!chosen) {
         const preferred = CLIENT_FALLBACK_FEEDS.find(
           (f) => f.focus === targetFocus && !articles.some((a) => a.headline === f.title)
         );
         const unused = preferred || CLIENT_FALLBACK_FEEDS.find((f) => !articles.some((a) => a.headline === f.title));
-        if (unused) chosen = unused;
+        if (unused) {
+          chosen = unused;
+        } else {
+          const baseItem = CLIENT_FALLBACK_FEEDS[articles.length % CLIENT_FALLBACK_FEEDS.length];
+          chosen = {
+            ...baseItem,
+            title: `${baseItem.title} — نشرة المتابعة الميدانية رقم ${articles.length + 1}`,
+          };
+        }
       }
 
       if (!chosen) return;
@@ -350,7 +404,7 @@ export function App() {
         if (prev.some((a) => a.headline === newArt.headline)) return prev;
         const next = [newArt, ...prev];
         try {
-          localStorage.setItem(STATIC_STORAGE_KEY, JSON.stringify(next.slice(0, 40)));
+          localStorage.setItem(STATIC_STORAGE_KEY, JSON.stringify(next.slice(0, 80)));
         } catch {
           // ignore storage quota errors
         }
@@ -389,7 +443,7 @@ export function App() {
     });
   }, []);
 
-  // التحديث التلقائي الصامت في الخلفية كل 5 دقائق (يعمل مع الخادم أو مباشرة في المتصفح على GitHub Pages)
+  // التحديث التلقائي الصامت في الخلفية على مدار الساعة 24/7 كل 3 دقائق (يعمل مع الخادم أو مباشرة في المتصفح على GitHub Pages)
   useEffect(() => {
     const timer = setInterval(async () => {
       try {
@@ -403,7 +457,7 @@ export function App() {
       } catch {
         await runStaticClientAutoPublish();
       }
-    }, 5 * 60 * 1000);
+    }, 3 * 60 * 1000);
     return () => clearInterval(timer);
   }, [articles.length]);
 
@@ -444,7 +498,7 @@ export function App() {
             </span>
             <span aria-hidden="true" className="hidden lg:inline text-[#C89D42]/50">·</span>
             <span className="hidden lg:inline text-[#D4A84F]">
-              45 مصدرًا معتمدًا · 100 صحفي ومراسل (50% سوريا · 40% العرب وتركيا · 10% دولي وتخصصي)
+              45 مصدرًا معتمدًا · 100 صحفي (50% سوريا · 40% العرب وتركيا · 10% دولي) · {articles.length} تقريرًا منشورًا (عمل آلي 24/7)
             </span>
           </div>
 

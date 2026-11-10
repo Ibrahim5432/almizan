@@ -17,7 +17,7 @@
     <link rel="canonical" href="https://mizanalkhabar.com/" />
     <link rel="alternate" type="application/rss+xml" title="ميزان الخبر - الخلاصة العامة" href="/rss.xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="icon" type="image/svg+xml" href="./icon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/almizan/icon.svg" />
     <!-- Google Fonts: Noto Kufi Arabic (Display), Noto Naskh Arabic (Editorial Body), IBM Plex Sans Arabic (UI) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -40,9 +40,9 @@
       name="twitter:description"
       content="منصة ميزان الخبر الإخبارية العربية تقدم تقارير أصلية موثقة بالمصادر، وتغطيات سياسية واقتصادية وتقنية وعلمية وفق أعلى معايير التدقيق والشفافية التحريرية."
     />
-    <script type="module" crossorigin src="./assets/index-DelMXSh-.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-CieiLKlO.css">
-  <link rel="manifest" href="./manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
+    <script type="module" crossorigin src="/almizan/assets/index-CJP11lUN.js"></script>
+    <link rel="stylesheet" crossorigin href="/almizan/assets/index-BSVzFDWb.css">
+  <link rel="manifest" href="/almizan/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/almizan/registerSW.js"></script></head>
   <body class="bg-[#FAF7F2] text-[#0B1220] dark:bg-[#0B1220] dark:text-[#F3EFE6] antialiased selection:bg-[#B8892B]/20">
     <a
       href="#main-content"
@@ -51,5 +51,44 @@
       تخطي إلى المحتوى الرئيسي
     </a>
     <div id="root"></div>
+    <script>
+      (function () {
+        if (
+          typeof window !== 'undefined' &&
+          window.location.hostname.indexOf('github.io') !== -1 &&
+          document.querySelector('script[src="/src/main.tsx"]')
+        ) {
+          var cdnBase = 'https://cdn.jsdelivr.net/gh/Ibrahim5432/almizan@gh-pages';
+          fetch('https://raw.githubusercontent.com/Ibrahim5432/almizan/gh-pages/index.html')
+            .then(function (r) { return r.text(); })
+            .then(function (html) {
+              var cssMatch = html.match(/href="[^"]*\/(assets\/[^"]+\.css)"/);
+              var jsMatch = html.match(/src="[^"]*\/(assets\/[^"]+\.js)"/);
+              var cssPath = cssMatch ? cssMatch[1] : 'assets/index-Bb6u8mgz.css';
+              var jsPath = jsMatch ? jsMatch[1] : 'assets/index-BIaYSLN6.js';
+              var link = document.createElement('link');
+              link.rel = 'stylesheet';
+              link.href = cdnBase + '/' + cssPath;
+              document.head.appendChild(link);
+              var s = document.createElement('script');
+              s.type = 'module';
+              s.crossOrigin = 'anonymous';
+              s.src = cdnBase + '/' + jsPath;
+              document.body.appendChild(s);
+            })
+            .catch(function () {
+              var link = document.createElement('link');
+              link.rel = 'stylesheet';
+              link.href = cdnBase + '/assets/index-Bb6u8mgz.css';
+              document.head.appendChild(link);
+              var s = document.createElement('script');
+              s.type = 'module';
+              s.crossOrigin = 'anonymous';
+              s.src = cdnBase + '/assets/index-BIaYSLN6.js';
+              document.body.appendChild(s);
+            });
+        }
+      })();
+    </script>
   </body>
 </html>

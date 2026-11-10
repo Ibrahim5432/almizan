@@ -78,21 +78,24 @@ define(['./workbox-7e5eb42b'], (function (workbox) { 'use strict';
    */
   workbox.precacheAndRoute([{
     "url": "registerSW.js",
-    "revision": "402b66900e731ca748771b6fc5e7a068"
+    "revision": "a78ff9825085bb52cde9a8dac382ec84"
   }, {
     "url": "index.html",
-    "revision": "d1e8bfa5c6a5cc373ff684cfcca9865a"
+    "revision": "d62c2f059a7fb5614a7ee9df65609f3f"
   }, {
     "url": "icon.svg",
     "revision": "bdc95f5cf2f0ac9b446f131607204ae1"
   }, {
-    "url": "assets/index-DelMXSh-.js",
+    "url": "assets/index-CJP11lUN.js",
     "revision": null
   }, {
-    "url": "assets/index-CieiLKlO.css",
+    "url": "assets/index-BSVzFDWb.css",
     "revision": null
   }, {
     "url": "assets/aistudio/image_efe878ac.png",
+    "revision": null
+  }, {
+    "url": "assets/aistudio/image_450e8fc5.png",
     "revision": null
   }, {
     "url": "icon.svg",

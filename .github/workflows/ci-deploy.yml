@@ -5,6 +5,8 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
+  schedule:
+    - cron: '0 */3 * * *'
   workflow_dispatch:
 
 permissions:
@@ -72,12 +74,15 @@ jobs:
           npm run build
           cp dist/index.html dist/404.html
           touch dist/.nojekyll
+          rm -rf docs
+          cp -r dist docs
 
       - name: Publish to gh-pages branch automatically
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         uses: peaceiris/actions-gh-pages@v4
         continue-on-error: true
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
           force_orphan: true
+
