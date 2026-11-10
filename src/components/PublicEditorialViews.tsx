@@ -665,7 +665,7 @@ export const HomeView: React.FC<{
               <span className="text-xs text-[#E5DEC9] font-bold">خلاصة العدد</span>
             </div>
             <p className="text-xs text-[#E5DEC9]/85 leading-relaxed mb-3.5">
-              أهم الأخبار والتقارير المرصودة اليوم من 28 شبكة إخبارية عربية ووكالة رسمية:
+              أهم الأخبار العاجلة والتقارير المرصودة اليوم من 45 شبكة إخبارية ووكالة رسمية عبر 100 صحفي ومراسل (50% سوريا · 40% العرب وتركيا · 10% دولي وتخصصي):
             </p>
             <ol className="space-y-3 text-xs leading-relaxed">
               {published.slice(0, 5).map((item, idx) => (
@@ -1619,23 +1619,48 @@ export const EditorialTeamView: React.FC<{
   siteConfig: SiteConfig;
   onOpenAdminReadiness?: () => void;
 }> = ({ authors, siteConfig }) => {
+  const [unitFilter, setUnitFilter] = useState<'all' | 'syria' | 'arab_turkey' | 'other'>('all');
+
+  const chiefEditor = authors.find((a) => a.id === 'editor-ibrahim');
+  const syriaAuthors = authors.filter((a) => a.id.startsWith('jour-syria-'));
+  const arabTurkeyAuthors = authors.filter((a) => a.id.startsWith('jour-arab-tr-'));
+  const otherAuthors = authors.filter((a) => a.id.startsWith('jour-other-'));
+
+  const displayedJournalists =
+    unitFilter === 'syria'
+      ? syriaAuthors
+      : unitFilter === 'arab_turkey'
+        ? arabTurkeyAuthors
+        : unitFilter === 'other'
+          ? otherAuthors
+          : [...syriaAuthors, ...arabTurkeyAuthors, ...otherAuthors];
+
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      <header className="border-b border-[#E2DACB] dark:border-[#1E293B] pb-6">
-        <span className="text-xs font-bold text-[#B8892B]">المسؤولية التحريرية والشفافية</span>
-        <h1 className="text-3xl font-extrabold font-display text-[#0B1220] dark:text-[#F3EFE6] mt-1">
-          هيئة التحرير والوحدات الصحفية المتخصصة
+    <div className="max-w-6xl mx-auto space-y-8">
+      <header className="border-b-4 border-double border-[#09241D] dark:border-[#C89D42]/60 pb-6">
+        <span className="text-xs font-bold text-[#B8892B]">
+          المسؤولية التحريرية والشفافية · 100 صحفي ومراسل متخصص · 45 مصدرًا معتمدًا
+        </span>
+        <h1 className="text-3xl font-extrabold font-royal text-[#0B1220] dark:text-[#F3EFE6] mt-1">
+          هيئة التحرير والكادر الصحفي المتخصص (100 كاتب ومراسل)
         </h1>
         <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
-          تلتزم منصة «{siteConfig.siteName}» بالمسؤولية التحريرية المباشرة والتدقيق المصدري الصارم تحت إشراف رئيس التحرير وفريق التحرير المتخصص.
+          تعمل غرفة أخبار «{siteConfig.siteName}» تحت الإشراف المباشر لرئيس التحرير المسؤول ({siteConfig.editorInChiefName}) وبكادر يضم 100 صحفي ومراسل موزعين وفق الأولوية التحريرية: 50 صحفيًا للشأن السوري (50%)، و40 صحفيًا للعالم العربي وتركيا (40%)، و10 محررين للأقسام التخصصية والدولية (10%).
         </p>
       </header>
 
       {/* بطاقة الهوية الرسمية لرئيس التحرير والمؤسسة */}
-      <section className="border border-[#E2DACB] dark:border-[#1E293B] bg-[#F3EFE6]/70 dark:bg-[#111C33] p-6 space-y-4">
-        <h2 className="text-lg font-bold font-display text-[#0B1220] dark:text-[#F3EFE6]">
-          البطاقة التعريفية للمؤسسة ورئاسة التحرير
-        </h2>
+      <section className="border-2 border-[#09241D] dark:border-[#C89D42]/60 bg-[#F3EFE6]/80 dark:bg-[#111C33] p-6 space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-lg font-bold font-royal text-[#0B1220] dark:text-[#F3EFE6]">
+            البطاقة التعريفية للمؤسسة ورئاسة التحرير
+          </h2>
+          {chiefEditor && (
+            <span className="px-3 py-1 bg-[#09241D] text-[#D4A84F] text-xs font-bold">
+              المدير العام ورئيس التحرير المسؤول: {siteConfig.editorInChiefName}
+            </span>
+          )}
+        </div>
 
         <dl className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
           <div className="p-3.5 border border-[#E2DACB] dark:border-slate-800 bg-[#FAF7F2] dark:bg-[#0B1220]">
@@ -1659,25 +1684,120 @@ export const EditorialTeamView: React.FC<{
             </dd>
           </div>
           <div className="p-3.5 border border-[#E2DACB] dark:border-slate-800 bg-[#FAF7F2] dark:bg-[#0B1220] sm:col-span-3">
-            <dt className="text-slate-500 mb-1">الإشراف التحريري:</dt>
+            <dt className="text-slate-500 mb-1">التوزيع التحريري المعتمد للكادر (100 صحفي) والمصادر (45 مصدرًا):</dt>
             <dd className="text-slate-700 dark:text-slate-300 leading-relaxed">
-              {siteConfig.editorBio}
+              {siteConfig.editorBio} — يشرف على تنسيق العمل بين وحدات الرصد والتدقيق الواردة من 45 وكالة أنباء وشبكة إخبارية معتمدة، مع التركيز على الأخبار العاجلة والمهمة.
             </dd>
           </div>
         </dl>
       </section>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {authors.map((author) => (
+      {/* لوحة التوزيع الهيكلي للصحفيين (50% سوريا | 40% العرب وتركيا | 10% باقي الأقسام) */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="border-2 border-[#09241D] dark:border-[#C89D42]/60 bg-[#09241D] text-[#F9F6F0] p-5 space-y-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-[#D4A84F]">الوحدة الأولى · الأولوية القصوى</span>
+            <span className="text-2xl font-extrabold font-royal text-[#D4A84F]">50%</span>
+          </div>
+          <h3 className="text-lg font-bold font-royal">فريق الشأن السوري (50 صحفيًا)</h3>
+          <p className="text-xs text-[#E5DEC9]/85 leading-relaxed">
+            تغطية شاملة ومعمّقة لجميع المحافظات السورية الـ 14، والاقتصاد والمعيشة، وإعادة الإعمار، والطاقة والمياه، والمعابر الحدودية، والمرافئ، والجامعات.
+          </p>
+        </div>
+
+        <div className="border-2 border-[#09241D] dark:border-[#C89D42]/60 bg-white dark:bg-[#111C33] p-5 space-y-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-[#B8892B]">الوحدة الثانية · التغطية الإقليمية</span>
+            <span className="text-2xl font-extrabold font-royal text-[#09241D] dark:text-[#D4A84F]">40%</span>
+          </div>
+          <h3 className="text-lg font-bold font-royal text-[#0B1220] dark:text-[#F3EFE6]">
+            فريق العالم العربي وتركيا (40 صحفيًا)
+          </h3>
+          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+            مراسلون ومحررون متخصصون في الشأن التركي (أنقرة وإسطنبول وغازي عنتاب ومرسين) وجميع العواصم العربية في الخليج والمشرق ووادي النيل والمغرب العربي.
+          </p>
+        </div>
+
+        <div className="border border-[#E2DACB] dark:border-[#1E293B] bg-[#FAF7F2] dark:bg-[#0F1915] p-5 space-y-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-[#B8892B]">الوحدة الثالثة · التغطية التخصصية</span>
+            <span className="text-2xl font-extrabold font-royal text-[#09241D] dark:text-[#D4A84F]">10%</span>
+          </div>
+          <h3 className="text-lg font-bold font-royal text-[#0B1220] dark:text-[#F3EFE6]">
+            فريق الأقسام التخصصية والدولية (10 محررين)
+          </h3>
+          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+            نخبة من المحررين المتخصصين في التكنولوجيا والذكاء الاصطناعي، والعلوم والصحة، والثقافة والتراث، والرياضة، والتحليلات الاستراتيجية، والاقتصاد الدولي.
+          </p>
+        </div>
+      </section>
+
+      {/* أزرار تصفية السجل الكامل للصحفيين הـ 100 */}
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#E2DACB] dark:border-[#1E293B] pb-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setUnitFilter('all')}
+            className={`px-3.5 py-2 text-xs font-bold transition-colors ${
+              unitFilter === 'all'
+                ? 'bg-[#09241D] text-[#F9F6F0] dark:bg-[#D4A84F] dark:text-[#080E0C]'
+                : 'bg-[#F1ECE1] dark:bg-[#111C33] text-slate-700 dark:text-slate-300 hover:text-[#B8892B]'
+            }`}
+          >
+            جميع الصحفيين ({syriaAuthors.length + arabTurkeyAuthors.length + otherAuthors.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setUnitFilter('syria')}
+            className={`px-3.5 py-2 text-xs font-bold transition-colors ${
+              unitFilter === 'syria'
+                ? 'bg-[#09241D] text-[#F9F6F0] dark:bg-[#D4A84F] dark:text-[#080E0C]'
+                : 'bg-[#F1ECE1] dark:bg-[#111C33] text-slate-700 dark:text-slate-300 hover:text-[#B8892B]'
+            }`}
+          >
+            صحفيو الشأن السوري ({syriaAuthors.length} — 50%)
+          </button>
+          <button
+            type="button"
+            onClick={() => setUnitFilter('arab_turkey')}
+            className={`px-3.5 py-2 text-xs font-bold transition-colors ${
+              unitFilter === 'arab_turkey'
+                ? 'bg-[#09241D] text-[#F9F6F0] dark:bg-[#D4A84F] dark:text-[#080E0C]'
+                : 'bg-[#F1ECE1] dark:bg-[#111C33] text-slate-700 dark:text-slate-300 hover:text-[#B8892B]'
+            }`}
+          >
+            صحفيو العرب وتركيا ({arabTurkeyAuthors.length} — 40%)
+          </button>
+          <button
+            type="button"
+            onClick={() => setUnitFilter('other')}
+            className={`px-3.5 py-2 text-xs font-bold transition-colors ${
+              unitFilter === 'other'
+                ? 'bg-[#09241D] text-[#F9F6F0] dark:bg-[#D4A84F] dark:text-[#080E0C]'
+                : 'bg-[#F1ECE1] dark:bg-[#111C33] text-slate-700 dark:text-slate-300 hover:text-[#B8892B]'
+            }`}
+          >
+            محررو الأقسام التخصصية ({otherAuthors.length} — 10%)
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {displayedJournalists.map((author, index) => (
           <div
             key={author.id}
-            className="border border-[#E2DACB] dark:border-[#1E293B] bg-[#FAF7F2] dark:bg-[#111C33] p-6 space-y-2"
+            className="border border-[#E2DACB] dark:border-[#1E293B] bg-[#FAF7F2] dark:bg-[#111C33] p-5 space-y-2 flex flex-col justify-between hover:border-[#B8892B] transition-colors"
           >
-            <span className="text-xs font-bold text-[#B8892B]">{author.roleTitle}</span>
-            <h3 className="text-xl font-bold font-display text-[#0B1220] dark:text-[#F3EFE6]">
-              {author.name}
-            </h3>
-            <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">{author.bio}</p>
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[11px] font-bold text-[#B8892B]">{author.roleTitle}</span>
+                <span className="text-[10px] font-mono text-slate-400">#{index + 1}</span>
+              </div>
+              <h3 className="text-lg font-bold font-display text-[#0B1220] dark:text-[#F3EFE6]">
+                {author.name}
+              </h3>
+              <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">{author.bio}</p>
+            </div>
             <p className="pt-2 text-[11px] text-slate-500 border-t border-[#E2DACB]/60 dark:border-slate-800">
               {author.credentials}
             </p>

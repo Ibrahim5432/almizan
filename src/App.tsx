@@ -10,6 +10,7 @@ import {
 } from './core/types';
 import { defaultSiteConfig, SiteConfig } from '../config/site.config';
 import {
+  assignJournalistForArticle,
   INITIAL_ARTICLES,
   INITIAL_AUTHORS,
   INITIAL_TAGS,
@@ -49,15 +50,58 @@ type ActiveRoute =
   | { view: 'editorial_team' }
   | { view: 'legal'; slug: string };
 
-const STATIC_STORAGE_KEY = 'mizan_autonomous_articles_v2';
+const STATIC_STORAGE_KEY = 'mizan_autonomous_articles_v3';
 
 const CLIENT_FALLBACK_FEEDS = [
+  // حصة الشأن السوري (50%)
   {
-    sourceId: 'src-undp-ar',
-    sourceName: 'برنامج الأمم المتحدة الإنمائي — مكتب سوريا والدول العربية',
-    url: 'https://www.undp.org/ar/arab-states/news/syria-solar-health-centers-2026',
-    title: 'توسيع منظومات الطاقة الشمسية لتشغيل 60 مركزًا صحيًا وخدميًا في المحافظات السورية',
-    snippet: 'أعلن برنامج الأمم المتحدة الإنمائي استكمال تركيب ألواح الطاقة النظيفة وبطاريات التخزين لضمان استمرارية الخدمات الطبية على مدار الساعة.',
+    sourceId: 'src-sana-ar',
+    sourceName: 'الوكالة العربية السورية للأنباء (سانا)',
+    url: 'https://sana.sy/?p=syria-solar-health-water-2026',
+    title: 'عاجل | توسيع منظومات الطاقة الشمسية لتشغيل 60 مركزًا صحيًا ومحطة مياه في المحافظات السورية',
+    snippet: 'أعلنت الجهات الهندسية بالتعاون مع برنامج الأمم المتحدة الإنمائي استكمال تركيب ألواح الطاقة النظيفة وبطاريات التخزين لضمان استمرارية الخدمات الطبية والمائية على مدار الساعة.',
+    focus: 'syria' as const,
+  },
+  {
+    sourceId: 'src-syria-tv',
+    sourceName: 'تلفزيون سوريا — الشأن الاقتصادي والخدمي السوري',
+    url: 'https://www.syria.tv/syria-industrial-cities-production-2026',
+    title: 'عاجل | ارتفاع وتيرة الإنتاج الصناعي والغذائي في مدن الشيخ نجار بحلب وعدرا بريف دمشق وحسياء بحمص',
+    snippet: 'أفادت غرف الصناعة السورية بدخول عشرات خطوط الإنتاج الجديدة حيز التشغيل الفعلي مع تحسن ساعات التغذية الكهربائية وتسهيل استيراد المواد الأولية.',
+    focus: 'syria' as const,
+  },
+  {
+    sourceId: 'src-enab-baladi',
+    sourceName: 'عنب بلدي — ملفات الاقتصاد والمعابر السورية',
+    url: 'https://www.enabbaladi.net/syria-transit-crossings-exports-2026',
+    title: 'نشاط ملحوظ في حركة شاحنات التصدير والترانزيت عبر معبري نصيب وباب الهوى والمرافئ البحرية السورية',
+    snippet: 'سجلت الصادرات الزراعية والصناعات الغذائية والنسيجية السورية انسيابًا أسرع نحو أسواق الأردن والخليج وتركيا والعراق عقب أتمتة الإجراءات الجمركية.',
+    focus: 'syria' as const,
+  },
+  {
+    sourceId: 'src-halab-today',
+    sourceName: 'حلب اليوم — التغطيات الميدانية والخدمية السورية',
+    url: 'https://halabtodaytv.net/archives/syria-aleppo-hama-idlib-schools-2026',
+    title: 'افتتاح مدارس ومراكز تدريب مهني ومستوصفات مؤهلة حديثًا في حلب وإدلب وحماة ودير الزور',
+    snippet: 'تتيح المراكز التعليمية والصحية المرممة تقديم خدمات مجانية لعشرات الآلاف من الطلاب والأسر مع تزويدها الكامل بمنظومات الطاقة البديلة.',
+    focus: 'syria' as const,
+  },
+  {
+    sourceId: 'src-fao-ar',
+    sourceName: 'منظمة الأغذية والزراعة للأمم المتحدة (الفاو — مكتب سوريا)',
+    url: 'https://www.fao.org/newsroom/detail/ar/syria-irrigation-wheat-2026',
+    title: 'إطلاق مشروع تأهيل قنوات الري الزراعي ودعم مزارعي القمح والخضار في الجزيرة السورية وسهل الغاب وحوران',
+    snippet: 'أكدت منظمة الفاو أن المشروع يدعم الفلاحين بالبذار المعتمد وشبكات الري الحديثة لرفع إنتاجية الدونم وتأمين المخزون الاستراتيجي للحبوب.',
+    focus: 'syria' as const,
+  },
+  // حصة العالم العربي وتركيا (40%)
+  {
+    sourceId: 'src-aa-arabic',
+    sourceName: 'وكالة الأناضول للأنباء — القسم العربي',
+    url: 'https://www.aa.com.tr/ar/economy/turkey-arab-trade-logistics-2026',
+    title: 'عاجل | تركيا والدول العربية يوسعون خطوط الشحن البحري والسككي السريع لرفع التبادل التجاري إلى مستويات قياسية',
+    snippet: 'أشارت البيانات الرسمية الصادرة في أنقرة والرياض والدوحة والقاهرة إلى أن الممرات اللوجستية المحدثة خفضت زمن نقل البضائع بنسبة 35 بالمئة.',
+    focus: 'arab_turkey' as const,
   },
   {
     sourceId: 'src-aljazeera-ar',
@@ -65,20 +109,32 @@ const CLIENT_FALLBACK_FEEDS = [
     url: 'https://www.aljazeera.net/ebusiness/2026/11/arab-maritime-logistics-corridors',
     title: 'توسع استثمارات الموانئ والممرات اللوجستية العربية يرفع كفاءة سلاسل التوريد في البحر الأحمر والمتوسط',
     snippet: 'أشارت تقارير اقتصادية إقليمية إلى أن تشغيل محطات الحاويات المؤتمتة في الموانئ العربية خفّض زمن مناولة البضائع بنسبة 27 بالمئة.',
+    focus: 'arab_turkey' as const,
   },
+  {
+    sourceId: 'src-trt-arabi',
+    sourceName: 'تي آر تي عربي (TRT Arabi) — الشؤون الإقليمية',
+    url: 'https://www.trtarabi.com/news/arab-turkish-energy-grid-2026',
+    title: 'مشاورات عربية تركية لتوسيع مشاريع الربط الكهربائي وتوطين صناعات الطاقة المتجددة في المنطقة',
+    snippet: 'تركزت المباحثات الفنية بين وزراء الطاقة في أنقرة وعمان وبغداد والقاهرة والرياض على رفع سعة التبادل الكهربائي الإقليمي في أوقات الذروة.',
+    focus: 'arab_turkey' as const,
+  },
+  {
+    sourceId: 'src-alecso-ar',
+    sourceName: 'المنظمة العربية للتربية والثقافة والعلوم (الألكسو)',
+    url: 'https://www.alecso.org/nsite/ar/news/2026-arab-heritage-digital-registry',
+    title: 'الألكسو تعتمد السجل الرقمي الموحد للمواقع الأثرية والمتاحف التاريخية في دمشق وحلب والقاهرة والقدس والقيروان',
+    snippet: 'أعلنت المنظمة العربية للتربية والثقافة والعلوم توثيق 4200 قطعة أثرية ومعلم تاريخي بتقنية المسح ثلاثي الأبعاد لحماية التراث الثقافي العربي.',
+    focus: 'arab_turkey' as const,
+  },
+  // حصة باقي الأقسام التخصصية والدولية (10%)
   {
     sourceId: 'src-bbc-arabic',
     sourceName: 'بي بي سي عربي — قسم العلوم والتكنولوجيا',
     url: 'https://www.bbc.com/arabic/articles/2026-arabic-medical-research-diagnostics',
     title: 'مراكز أبحاث جامعية تطور منظومة تشخيص مبكر للأمراض المزمنة باستخدام التحليل الطيفي الضوئي',
     snippet: 'أوضحت الفرق البحثية أن التقنية الضوئية الجديدة تتيح فحص المؤشرات الحيوية خلال 90 ثانية بدقة معملية بلغت 94 بالمئة.',
-  },
-  {
-    sourceId: 'src-alecso-ar',
-    sourceName: 'المنظمة العربية للتربية والثقافة والعلوم (الألكسو)',
-    url: 'https://www.alecso.org/nsite/ar/news/2026-arab-heritage-digital-registry',
-    title: 'الألكسو تعتمد السجل الرقمي الموحد للمواقع الأثرية والمتاحف التاريخية في دمشق وحلب والقاهرة والقيروان',
-    snippet: 'أعلنت المنظمة العربية للتربية والثقافة والعلوم توثيق 4200 قطعة أثرية ومعلم تاريخي بتقنية المسح ثلاثي الأبعاد لحماية التراث الثقافي العربي.',
+    focus: 'other' as const,
   },
 ];
 
@@ -183,15 +239,33 @@ export function App() {
         // fallback to curated pool if offline or blocked
       }
 
+      const published = articles.filter((a) => a.status === 'published');
+      const total = Math.max(1, published.length);
+      const syriaRatio = published.filter((a) => a.categorySlug === 'syria').length / total;
+      const arabTurkeyRatio = published.filter((a) => a.categorySlug === 'arab-world').length / total;
+      const targetFocus: 'syria' | 'arab_turkey' | 'other' =
+        syriaRatio < 0.5 ? 'syria' : arabTurkeyRatio < 0.4 ? 'arab_turkey' : 'other';
+
       if (!chosen) {
-        const unused = CLIENT_FALLBACK_FEEDS.find((f) => !articles.some((a) => a.headline === f.title));
+        const preferred = CLIENT_FALLBACK_FEEDS.find(
+          (f) => f.focus === targetFocus && !articles.some((a) => a.headline === f.title)
+        );
+        const unused = preferred || CLIENT_FALLBACK_FEEDS.find((f) => !articles.some((a) => a.headline === f.title));
         if (unused) chosen = unused;
       }
 
       if (!chosen) return;
 
-      const catSlug = inferCategoryFromText(`${chosen.title} ${chosen.snippet}`);
-      const catName = EDITORIAL_SECTIONS.find((s) => s.slug === catSlug)?.name || 'العالم العربي';
+      const inferredSlug = inferCategoryFromText(`${chosen.title} ${chosen.snippet}`);
+      const catSlug: CategorySlug =
+        inferredSlug === 'syria' || inferredSlug === 'arab-world'
+          ? inferredSlug
+          : targetFocus === 'syria'
+            ? 'syria'
+            : targetFocus === 'arab_turkey'
+              ? 'arab-world'
+              : inferredSlug;
+      const catName = EDITORIAL_SECTIONS.find((s) => s.slug === catSlug)?.name || 'أخبار سوريا';
       const nowIso = new Date().toISOString();
       const enriched = enrichArticleBodyIfNeeded({
         headline: chosen.title,
@@ -204,11 +278,12 @@ export function App() {
         currentAnalysis: '',
         currentWhatNext: '',
       });
+      const assignedJournalist = assignJournalistForArticle(catSlug, chosen.title);
 
       const newArt: ArticleRecord = {
         id: `art-static-${Date.now()}`,
         clusterId: `cluster-static-${Date.now()}`,
-        type: 'news',
+        type: chosen.title.includes('عاجل') ? 'breaking' : 'news',
         slug: `news-${Date.now()}`,
         headline: chosen.title,
         dek: chosen.snippet,
@@ -225,9 +300,9 @@ export function App() {
         categorySlug: catSlug,
         categoryName: catName,
         tags: [catName, 'تغطية خاصة', 'تقارير موثقة'],
-        authorId: 'editorial-team',
-        authorName: 'فريق التحرير',
-        authorRole: 'غرفة الأخبار والتحقق المصدري',
+        authorId: assignedJournalist.authorId,
+        authorName: assignedJournalist.authorName,
+        authorRole: assignedJournalist.authorRole,
         image: resolveLegalEditorialImage({
           headline: chosen.title,
           snippet: chosen.snippet,
@@ -369,7 +444,7 @@ export function App() {
             </span>
             <span aria-hidden="true" className="hidden lg:inline text-[#C89D42]/50">·</span>
             <span className="hidden lg:inline text-[#D4A84F]">
-              تغطية شاملة من 28 شبكة إخبارية عربية ووكالة رسمية · صور مرخّصة قانونيًا
+              45 مصدرًا معتمدًا · 100 صحفي ومراسل (50% سوريا · 40% العرب وتركيا · 10% دولي وتخصصي)
             </span>
           </div>
 
