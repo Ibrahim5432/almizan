@@ -1,0 +1,123 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --bg-canvas: #F9F6F0;
+    --bg-surface: #F1ECE1;
+    --text-ink: #0C1713;
+    --text-muted: #4A5550;
+    --accent-gold: #B6862C;
+    --accent-emerald: #0B2E25;
+    --urgent-red: #9E2A2B;
+    --border-hairline: #DED6C6;
+    --font-royal: 'Amiri', 'Noto Naskh Arabic', Georgia, serif;
+    --font-display: 'Noto Kufi Arabic', 'IBM Plex Sans Arabic', sans-serif;
+    --font-editorial: 'Noto Naskh Arabic', Georgia, serif;
+    --font-ui: 'IBM Plex Sans Arabic', system-ui, sans-serif;
+    --font-mono: 'IBM Plex Sans Arabic', 'JetBrains Mono', monospace;
+  }
+
+  .dark {
+    --bg-canvas: #080E0C;
+    --bg-surface: #0F1915;
+    --text-ink: #F3EFE6;
+    --text-muted: #94A39E;
+    --accent-gold: #D4A84F;
+    --accent-emerald: #133E32;
+    --urgent-red: #E05252;
+    --border-hairline: #1C2E27;
+  }
+
+  html {
+    font-family: var(--font-ui);
+    direction: rtl;
+    scroll-behavior: smooth;
+  }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: var(--font-display);
+    text-wrap: balance;
+  }
+
+  .font-royal {
+    font-family: var(--font-royal);
+  }
+
+  .font-editorial {
+    font-family: var(--font-editorial);
+    font-size: 1.21rem; /* ~19.5px */
+    line-height: 1.9;
+  }
+
+  .dark .font-editorial {
+    letter-spacing: 0.01em;
+  }
+
+  .font-mono {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* احترام تفضيل تقليل الحركة (prefers-reduced-motion) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* تنسيق متن المقال المولد من Markdown المُطهَّر */
+.article-prose p {
+  margin-bottom: 1.45rem;
+}
+
+.article-prose h2 {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 700;
+  margin-top: 2.25rem;
+  margin-bottom: 0.9rem;
+  line-height: 1.45;
+}
+
+.article-prose h3 {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.article-prose ul {
+  list-style-type: disc;
+  padding-inline-start: 1.5rem;
+  margin-bottom: 1.45rem;
+}
+
+.article-prose li {
+  margin-bottom: 0.5rem;
+}
+
+.article-prose a {
+  color: var(--accent-gold);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.article-prose blockquote {
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+  border: 1px solid var(--border-hairline);
+  background-color: var(--bg-surface);
+  font-style: italic;
+}

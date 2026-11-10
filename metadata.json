@@ -1,0 +1,6 @@
+{
+  "name": "الميزان الإخباري | Al-Mizan News",
+  "description": "منصة صحفية عربية مستقلة تقدم تقارير إخبارية موثقة بالمصادر وتحليلات معمقة مع التزام صارم بالتحقق التحريري والشفافية.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

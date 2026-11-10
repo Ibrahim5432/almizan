@@ -1,11 +1,49 @@
-<div align="center">
+# صحيفة ميزان الخبر | Mizan Al-Khabar
+**منصة صحفية عربية مستقلة تعمل بالتحرير الآلي الموثق (100% ذاتية التشغيل ومجانية بالكامل)**
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+- **اسم المؤسسة:** ميزان الخبر (`Mizan Al-Khabar`)
+- **رئيس التحرير المسؤول:** إبراهيم (`ibo19944991@gmail.com`)
+- **نظام النشر:** تلقائي بالكامل (يرصد 20 مصدراً رسمياً ودولياً مجانياً، يطابق الأخبار، ينشر الموثوق فوراً، ويستبعد أي خبر مشكوك فيه تلقائياً دون أي تدخل بشري).
 
-  <h1>Built with AI Studio</h2>
+---
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+## 🌐 1. رابط الموقع المباشر الحالي (يعمل الآن مجاناً على السحابة)
+موقعك منشور ويعمل الآن بالفعل على خوادم Google Cloud Run عبر الرابط العام التالي:
+- **الرابط المباشر للجمهور:** `https://ais-pre-sa52f76ijsybdy5uvzotan-628681365305.europe-west2.run.app`
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+---
 
-</div>
+## 📦 2. كيف ترفع المشروع على حسابك في GitHub بضغطة زر؟
+بما أنني لا أملك كلمة مرور حسابك الشخصي في GitHub (حفاظاً على أمان حسابك)، فقد جهزت لك كافة ملفات المشروع وإعدادات GitHub Actions (`/.github/workflows/ci-deploy.yml`) لتكون جاهزة فوراً:
+1. من أعلى شاشة **Google AI Studio**، اضغط على أيقونة **GitHub** (أو زر **Export to GitHub** / **Save to GitHub**).
+2. وافق على ربط حسابك في GitHub واختر اسماً للمستودع مثل: `mizan-alkhabar`.
+3. سيتم رفع كامل الكود البرمجي مع قاعدة البيانات المدمجة وتصميم القالب الفاخر إلى حسابك في ثوانٍ.
+
+---
+
+## 🔗 3. كيف تربط الدومين المدفوع (بعد شهر أو أكثر) وتقدم لـ Google AdSense؟
+
+### أ) ربط الدومين الخاص بك (مثل `mizanalkhabar.com`):
+عندما تشتري الدومين لاحقاً (من Namecheap أو GoDaddy أو Cloudflare):
+- يمكنك نشر مستودع GitHub مجاناً على **Render.com** أو **Railway.app** أو **Google Cloud Run** أو **Fly.io**، ومن إعدادات المنصة اضغط **Custom Domain** وأضف اسم الدومين الخاص بك.
+- بعد ربط الدومين، افتح ملف `config/site.config.ts` وعدّل السطر التالي فقط ليطابق دومينك الجديد:
+  ```ts
+  siteUrl: 'https://your-domain.com',
+  ```
+
+### ب) التقديم على Google AdSense وتفعيل الإعلانات:
+الموقع مجهز مسبقاً بجميع شروط القبول في **Google AdSense**:
+1. صفحات إلزامية كاملة ومفصلة: **من نحن، السياسة التحريرية، سياسة الخصوصية، الشروط والأحكام، سياسة التصحيحات، اتصل بنا، ملفات تعريف الارتباط، وإخلاء المسؤولية**.
+2. بيانات اتصال واضحة باسم رئيس التحرير (**إبراهيم** - `ibo19944991@gmail.com`).
+3. ملفات أرشفة جاهزة لمحركات البحث: `/robots.txt`، `/sitemap.xml`، `/news-sitemap.xml`، `/rss.xml`، و `/ads.txt`.
+4. عند قبولك في AdSense، افتح ملف `config/site.config.ts` وضع رقم الناشر الخاص بك (`pub-XXXXXXXXXXXXXXXX`) في خانة `adsensePublisherId` وغيّر `enableAds` إلى `true`.
+
+---
+
+## 🛠️ التشغيل المحلي (للمطورين)
+```bash
+npm install
+npm test
+npm run build
+npm start
+```

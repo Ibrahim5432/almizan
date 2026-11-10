@@ -1,0 +1,67 @@
+# ============================================================================
+# config/topics.yaml — تصنيف الأقسام التحريرية، الأوزان، والحصص اليومية
+# ============================================================================
+
+sections:
+  politics:
+    name_ar: "سياسة"
+    slug: "politics"
+    low_risk_auto_allowed: false
+    daily_quota: 3
+    min_word_count: 300
+    priority_weight: 1.0
+    keywords: ["دبلوماسية", "قمة", "معاهدة", "بيان مشترك", "أمم متحدة", "وزير خارجية", "برلمان"]
+
+  economy:
+    name_ar: "اقتصاد"
+    slug: "economy"
+    low_risk_auto_allowed: false
+    daily_quota: 3
+    min_word_count: 300
+    priority_weight: 1.0
+    keywords: ["بنك مركزي", "تضخم", "نمو اقتصادي", "فائدة", "طاقة", "صادرات", "صندوق النقد", "تجارة"]
+
+  technology:
+    name_ar: "تكنولوجيا"
+    slug: "technology"
+    low_risk_auto_allowed: true
+    daily_quota: 2
+    min_word_count: 280
+    priority_weight: 0.9
+    keywords: ["حوسبة", "أمن سيبراني", "اتصالات", "أشباه موصلات", "مراكز بيانات", "برمجيات", "قمر صناعي"]
+
+  sports:
+    name_ar: "رياضة"
+    slug: "sports"
+    low_risk_auto_allowed: true
+    daily_quota: 2
+    min_word_count: 250
+    priority_weight: 0.8
+    keywords: ["بطولة", "منتخب", "تصفيات", "كأس", "مباراة", "اتحاد كرة القدم", "أولمبياد"]
+
+  science-health:
+    name_ar: "علوم وصحة"
+    slug: "science-health"
+    low_risk_auto_allowed: false
+    daily_quota: 1
+    min_word_count: 350
+    priority_weight: 0.9
+    keywords: ["دراسة علمية", "وكالة الفضاء", "المناخ", "منظمة الصحة العالمية", "فيزياء", "بيئة"]
+
+  culture-society:
+    name_ar: "ثقافة ومجتمع"
+    slug: "culture-society"
+    low_risk_auto_allowed: true
+    daily_quota: 1
+    min_word_count: 300
+    priority_weight: 0.75
+    keywords: ["معرض الكتاب", "تراث", "متحف", "يونسكو", "تعليم", "أدب", "ندوة ثقافية"]
+
+  analysis:
+    name_ar: "تحليلات وشروحات"
+    slug: "analysis"
+    low_risk_auto_allowed: false
+    daily_quota: 2
+    min_word_count: 700
+    priority_weight: 1.1
+    keywords: ["ماذا يعني", "خلفية", "قراءة تحليلية", "مسار متوقع", "ملف خاص"]

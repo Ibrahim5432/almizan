@@ -1,0 +1,107 @@
+# ============================================================================
+# config/sources.yaml — قائمة المصادر الرسمية والمرخّصة (TODO للمراجعة قبل الإنتاج)
+# ============================================================================
+# المستويات:
+# Tier 1: مصادر أولية ورسمية (بيانات حكومية، بنوك مركزية، منظمات دولية كالأمم المتحدة ومنظمة الصحة العالمية وصندوق النقد الدولي).
+# Tier 2: وكالات أنباء ومؤسسات إعلامية موثوقة تتيح خلاصات RSS ضمن شروط الاستخدام (تُستخرج الوقائع فقط ولا يُنسخ النص).
+# Tier 3: إشارات رصد واكتشاف أولية فقط — يُمنع منعًا باتًا النشر اعتمادًا على مصدر Tier 3 وحده في أي وضع.
+
+sources:
+  - id: "src-un-news-ar"
+    name: "أخبار الأمم المتحدة (UN News Arabic)"
+    type: "rss"
+    url: "https://news.un.org/feed/subscribe/ar/news/all/rss.xml"
+    tier: 1
+    language: "ar"
+    license_notes: "TODO_VERIFY_LICENSE: مصدر أممي رسمي يتيح الاقتباس الإخباري مع النسب الصريح للأمم المتحدة."
+    robots_ok: true
+    active: true
+    fetch_interval_min: 15
+
+  - id: "src-who-emro-ar"
+    name: "منظمة الصحة العالمية - المكتب الإقليمي لشرق المتوسط"
+    type: "official_site"
+    url: "https://www.emro.who.int/ar/media/news/feed"
+    tier: 1
+    language: "ar"
+    license_notes: "TODO_VERIFY_LICENSE: بيانات صحية رسمية من منظمة دولية حكومية."
+    robots_ok: true
+    active: true
+    fetch_interval_min: 30
+
+  - id: "src-imf-press-ar"
+    name: "صندوق النقد الدولي - البيانات الصحفية"
+    type: "official_site"
+    url: "https://www.imf.org/ar/News/RSS"
+    tier: 1
+    language: "ar"
+    license_notes: "TODO_VERIFY_LICENSE: بيانات اقتصادية أولية ومؤشرات رسمية."
+    robots_ok: true
+    active: true
+    fetch_interval_min: 30
+
+  - id: "src-worldbank-mena"
+    name: "البنك الدولي - الشرق الأوسط وشمال أفريقيا"
+    type: "api"
+    url: "https://search.worldbank.org/api/v2/news?format=json&lang_exact=Arabic"
+    tier: 1
+    language: "ar"
+    license_notes: "واجهة بيانات مفتوحة مرخّصة بـ CC BY 4.0 مع شرط النسب."
+    robots_ok: true
+    active: true
+    fetch_interval_min: 60
+
+  - id: "src-aa-arabic"
+    name: "وكالة الأناضول للأنباء - القسم العربي"
+    type: "rss"
+    url: "https://www.aa.com.tr/ar/rss/default?cat=live"
+    tier: 2
+    language: "ar"
+    license_notes: "TODO_VERIFY_LICENSE: يُستخدم لاستخلاص الوقائع فقط مع نسب المعلومة للوكالة دون نسخ النص."
+    robots_ok: true
+    active: true
+    fetch_interval_min: 15
+
+  - id: "src-qna-official"
+    name: "وكالة الأنباء القطرية الرسمية (قنا)"
+    type: "rss"
+    url: "https://www.qna.org.qa/ar-QA/RSS"
+    tier: 1
+    language: "ar"
+    license_notes: "TODO_VERIFY_LICENSE: بيانات رسمية حكومية وخلاصات عامة."
+    robots_ok: true
+    active: true
+    fetch_interval_min: 20
+
+  - id: "src-spa-official"
+    name: "وكالة الأنباء السعودية الرسمية (واس)"
+    type: "rss"
+    url: "https://www.spa.gov.sa/rss.xml"
+    tier: 1
+    language: "ar"
+    license_notes: "TODO_VERIFY_LICENSE: بيانات رسمية حكومية."
+    robots_ok: true
+    active: true
+    fetch_interval_min: 20
+
+  - id: "src-itu-tech"
+    name: "الاتحاد الدولي للاتصالات (ITU)"
+    type: "official_site"
+    url: "https://www.itu.int/ar/mediacentre/Pages/default.aspx"
+    tier: 1
+    language: "ar"
+    license_notes: "بيانات تقنية وتنظيمية دولية رسمية."
+    robots_ok: true
+    active: true
+    fetch_interval_min: 60
+
+  - id: "src-social-signal-monitor"
+    name: "مرصد الإشارات الأولية (Tier 3 Discovery Only)"
+    type: "api"
+    url: "https://signals.internal.example/stream"
+    tier: 3
+    language: "ar"
+    license_notes: "إشارة اكتشاف فقط؛ يُحظر النشر منها دون تأكيد من مصدر Tier 1 أو مصدرين مستقلين Tier 2."
+    robots_ok: true
+    active: false
+    fetch_interval_min: 60
