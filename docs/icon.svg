@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="64" fill="#0B1220"/>
+  <rect x="36" y="36" width="440" height="440" rx="44" fill="none" stroke="#B8892B" stroke-width="6" opacity="0.65"/>
+  <!-- الميزان الهندسي (رمز التوازن والتحقق الصحفي) -->
+  <path d="M256 108V384" stroke="#B8892B" stroke-width="14" stroke-linecap="round"/>
+  <path d="M168 384H344" stroke="#FAF7F2" stroke-width="14" stroke-linecap="round"/>
+  <path d="M128 168H384" stroke="#B8892B" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="256" cy="168" r="18" fill="#FAF7F2" stroke="#B8892B" stroke-width="8"/>
+  <!-- كفتا الميزان -->
+  <path d="M148 168L116 264H180L148 168Z" fill="none" stroke="#FAF7F2" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M104 264C104 288 124 304 148 304C172 304 192 288 192 264H104Z" fill="#B8892B"/>
+  <path d="M364 168L332 264H396L364 168Z" fill="none" stroke="#FAF7F2" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M320 264C320 288 340 304 364 304C388 304 408 288 408 264H320Z" fill="#B8892B"/>
+</svg>

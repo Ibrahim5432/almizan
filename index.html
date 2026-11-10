@@ -50,5 +50,44 @@
     </a>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      (function () {
+        if (
+          typeof window !== 'undefined' &&
+          window.location.hostname.indexOf('github.io') !== -1 &&
+          document.querySelector('script[src="/src/main.tsx"]')
+        ) {
+          var cdnBase = 'https://cdn.jsdelivr.net/gh/Ibrahim5432/almizan@gh-pages';
+          fetch('https://raw.githubusercontent.com/Ibrahim5432/almizan/gh-pages/index.html')
+            .then(function (r) { return r.text(); })
+            .then(function (html) {
+              var cssMatch = html.match(/href="[^"]*\/(assets\/[^"]+\.css)"/);
+              var jsMatch = html.match(/src="[^"]*\/(assets\/[^"]+\.js)"/);
+              var cssPath = cssMatch ? cssMatch[1] : 'assets/index-Bb6u8mgz.css';
+              var jsPath = jsMatch ? jsMatch[1] : 'assets/index-BIaYSLN6.js';
+              var link = document.createElement('link');
+              link.rel = 'stylesheet';
+              link.href = cdnBase + '/' + cssPath;
+              document.head.appendChild(link);
+              var s = document.createElement('script');
+              s.type = 'module';
+              s.crossOrigin = 'anonymous';
+              s.src = cdnBase + '/' + jsPath;
+              document.body.appendChild(s);
+            })
+            .catch(function () {
+              var link = document.createElement('link');
+              link.rel = 'stylesheet';
+              link.href = cdnBase + '/assets/index-Bb6u8mgz.css';
+              document.head.appendChild(link);
+              var s = document.createElement('script');
+              s.type = 'module';
+              s.crossOrigin = 'anonymous';
+              s.src = cdnBase + '/assets/index-BIaYSLN6.js';
+              document.body.appendChild(s);
+            });
+        }
+      })();
+    </script>
   </body>
 </html>

@@ -81,21 +81,3 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
           force_orphan: true
-
-      - name: Configure GitHub Pages
-        if: github.event_name == 'push'
-        uses: actions/configure-pages@v5
-        continue-on-error: true
-
-      - name: Upload GitHub Pages artifact
-        if: github.event_name == 'push'
-        uses: actions/upload-pages-artifact@v3
-        continue-on-error: true
-        with:
-          path: ./dist
-
-      - name: Deploy to GitHub Pages
-        if: github.event_name == 'push'
-        id: deployment
-        uses: actions/deploy-pages@v4
-        continue-on-error: true

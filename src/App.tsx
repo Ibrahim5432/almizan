@@ -83,12 +83,13 @@ const CLIENT_FALLBACK_FEEDS = [
 ];
 
 function stripBaseUrl(pathname: string): string {
-  const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
-  if (base && pathname.startsWith(base)) {
-    const stripped = pathname.slice(base.length);
+  const withoutRepo = pathname.replace(/^\/almizan(\/|$)/, '/');
+  const base = (import.meta.env.BASE_URL || '/').replace(/^\.$/, '').replace(/\/$/, '');
+  if (base && withoutRepo.startsWith(base)) {
+    const stripped = withoutRepo.slice(base.length);
     return stripped.startsWith('/') ? stripped : `/${stripped}`;
   }
-  return pathname || '/';
+  return withoutRepo || '/';
 }
 
 export function App() {
@@ -336,9 +337,13 @@ export function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     if (urlPath) {
       try {
-        const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
-        const fullPath = urlPath.startsWith('/') ? `${base}${urlPath}` : `${base}/${urlPath}`;
-        window.history.pushState({}, '', fullPath || '/');
+        if (window.location.hostname.includes('github.io')) {
+          window.location.hash = urlPath;
+        } else {
+          const base = (import.meta.env.BASE_URL || '/').replace(/^\.$/, '').replace(/\/$/, '');
+          const fullPath = urlPath.startsWith('/') ? `${base}${urlPath}` : `${base}/${urlPath}`;
+          window.history.pushState({}, '', fullPath || '/');
+        }
       } catch {
         // ignore in sandboxed iframe
       }
