@@ -15,8 +15,9 @@ import type {
 import {
   computeContentHash,
   computeDeterministicEmbedding,
-  generateTypographicSvgDataUri,
+  enrichArticleBodyIfNeeded,
   markdownToSanitizedHtml,
+  resolveLegalEditorialImage,
 } from './pipeline.ts';
 
 export const INITIAL_SOURCES: SourceRecord[] = [
@@ -476,10 +477,19 @@ function createArticle(params: {
   verifierNotes?: string[];
   deterministicPassed?: boolean;
 }): ArticleRecord {
-  const words = params.bodyMd
-    .replace(/[#*_`>-]/g, ' ')
-    .split(/\s+/)
-    .filter((w) => w.length > 0).length;
+  const primaryPub = params.sources?.[0]?.publisher || 'المصادر المعتمدة';
+  const secondaryPub = params.sources?.[1]?.publisher || 'المؤسسات والمرجعيات الإقليمية';
+  const enriched = enrichArticleBodyIfNeeded({
+    headline: params.headline,
+    currentBodyMd: params.bodyMd,
+    currentDek: params.dek,
+    categorySlug: params.categorySlug,
+    primaryPublisher: primaryPub,
+    secondaryPublisher: secondaryPub,
+    currentBackground: params.backgroundSection,
+    currentAnalysis: params.analysisSection,
+    currentWhatNext: params.whatNextSection,
+  });
 
   return {
     id: params.id,
@@ -488,41 +498,33 @@ function createArticle(params: {
     slug: params.slug,
     headline: params.headline,
     dek: params.dek,
-    bodyMd: params.bodyMd,
-    bodyHtml: markdownToSanitizedHtml(params.bodyMd),
+    bodyMd: enriched.bodyMd,
+    bodyHtml: markdownToSanitizedHtml(enriched.bodyMd),
     keyPoints: params.keyPoints,
-    backgroundSection: params.backgroundSection,
-    analysisSection: params.analysisSection,
-    whatNextSection: params.whatNextSection,
+    backgroundSection: enriched.backgroundSection,
+    analysisSection: enriched.analysisSection,
+    whatNextSection: enriched.whatNextSection,
     categorySlug: params.categorySlug,
     categoryName: params.categoryName,
     tags: params.tags,
     authorId: params.categorySlug === 'economy' ? 'economics-desk' : 'editorial-team',
     authorName: params.categorySlug === 'economy' ? 'وحدة الدراسات الاقتصادية والبيانات' : 'فريق التحرير',
     authorRole: params.categorySlug === 'economy' ? 'تحرير التقارير الاقتصادية' : 'غرفة الأخبار والتحقق المصدري',
-    image: {
-      id: `img-${params.id}`,
-      url: generateTypographicSvgDataUri({
-        kicker: params.categoryName,
-        headline: params.headline,
-      }),
-      alt: `بطاقة تحريرية: ${params.headline}`,
-      caption: `${params.headline} — المصدر: ${params.sources.map((s) => s.publisher).join('، ')}`,
-      credit: 'تصميم غرفة الأخبار — ميزان الخبر (بيانات موثقة)',
-      license: 'Owned Typographic Asset (CC BY 4.0)',
-      strategy: 'typographic',
-      isAiGenerated: false,
-      width: 1200,
-      height: 675,
-    },
+    image: resolveLegalEditorialImage({
+      headline: params.headline,
+      snippet: params.dek,
+      categorySlug: params.categorySlug,
+      categoryName: params.categoryName,
+      sourceName: primaryPub,
+    }),
     status: params.status,
     riskFlags: params.riskFlags ?? [],
     sensitivityLevel: params.sensitivityLevel ?? 'normal',
     confidence: params.confidence,
     maxSimilarityScore: params.maxSimilarityScore,
     longestExactMatchWords: params.longestExactMatchWords,
-    wordCount: words,
-    readingTimeMin: Math.max(2, Math.ceil(words / 190)),
+    wordCount: enriched.wordCount,
+    readingTimeMin: enriched.readingTimeMin,
     publishedAt: params.publishedAt,
     updatedAt: params.updatedAt,
     reviewedBy: params.reviewedBy,
