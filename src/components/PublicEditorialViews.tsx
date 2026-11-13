@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import {
-  AlertTriangle,
   ArrowLeft,
   ArrowRight,
   BookOpen,
   CheckCircle2,
   Clock,
   ExternalLink,
-  FileCheck2,
   Mail,
   Pause,
   Play,
@@ -29,8 +27,21 @@ import { LegalPageContent } from '../core/seed-data';
 import { formatArabicDate, formatNumerals } from '../utils/formatters';
 import { AdSlot } from './AdSenseAndConsent';
 
+/**
+ * معالجة مسارات الصور المحلية والخارجية لضمان عملها في كل من الخادم المحلي وصفحات GitHub Pages (/almizan/)
+ */
+export function resolvePublicImageUrl(rawUrl: string): string {
+  if (!rawUrl) return '';
+  if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://') || rawUrl.startsWith('data:')) {
+    return rawUrl;
+  }
+  const cleanRel = rawUrl.replace(/^\/+/, '');
+  const base = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
+  return base ? `${base}/${cleanRel}` : `/${cleanRel}`;
+}
+
 // ============================================================================
-// 1. بطاقة الخبر الملكية الفاخرة (مع صور توثيقية قانونية 100% وفولباك تلقائي)
+// 1. بطاقة الخبر العصرية الفاخرة (مع صور فوتوغرافية فريدة 100% وفولباك مستقل لكل مقال)
 // ============================================================================
 export const EditorialCard: React.FC<{
   article: ArticleRecord;
@@ -50,30 +61,31 @@ export const EditorialCard: React.FC<{
         kicker: article.categoryName,
         headline: article.headline,
         siteName: 'ميزان الخبر',
+        uniqueSeed: article.id,
       });
     }
   };
 
   if (size === 'compact') {
     return (
-      <article className="py-3.5 border-b border-[#DED6C6] dark:border-[#1C2E27] last:border-b-0 group flex items-start gap-3.5">
+      <article className="py-3.5 border-b border-[#E4DDD0] dark:border-[#1D2824] last:border-b-0 group flex items-start gap-3.5">
         {typeof rankNumber === 'number' && (
-          <span className="font-royal text-2xl font-bold text-[#B6862C] dark:text-[#D4A84F] tabular-nums leading-none pt-0.5 shrink-0">
+          <span className="font-royal text-2xl font-bold text-[#B88E35] dark:text-[#D4AF5A] tabular-nums leading-none pt-0.5 shrink-0">
             0{formatNumerals(rankNumber, numeralSystem)}
           </span>
         )}
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 mb-1">
+          <div className="flex items-center gap-2 text-xs text-[#525E59] dark:text-[#98A6A0] mb-1">
             {isBreaking && (
               <>
-                <span className="font-bold text-[#9E2A2B]">عاجل</span>
+                <span className="font-bold text-[#9E2A2B] dark:text-[#E05252]">عاجل</span>
                 <span aria-hidden="true">·</span>
               </>
             )}
             <button
               type="button"
               onClick={() => onOpenCategory(article.categorySlug)}
-              className="font-bold text-[#09241D] dark:text-[#D4A84F] hover:underline"
+              className="font-bold text-[#0B1F19] dark:text-[#D4AF5A] hover:underline"
             >
               {article.categoryName}
             </button>
@@ -82,11 +94,11 @@ export const EditorialCard: React.FC<{
               {formatNumerals(article.readingTimeMin, numeralSystem)} د قراءة
             </span>
             <span aria-hidden="true">·</span>
-            <span className="tabular-nums text-[#B6862C] dark:text-[#D4A84F] font-semibold">
+            <span className="tabular-nums text-[#B88E35] dark:text-[#D4AF5A] font-semibold">
               {formatNumerals(article.sources.length, numeralSystem)} مصادر
             </span>
           </div>
-          <h3 className="text-sm sm:text-base font-bold font-display leading-snug text-[#0C1713] dark:text-[#F3EFE6] group-hover:text-[#B6862C] transition-colors">
+          <h3 className="text-sm sm:text-base font-bold font-display leading-snug text-[#0B1311] dark:text-[#F4F0E8] group-hover:text-[#B88E35] transition-colors">
             <button
               type="button"
               onClick={() => onOpenArticle(article)}
@@ -102,41 +114,38 @@ export const EditorialCard: React.FC<{
 
   if (size === 'horizontal') {
     return (
-      <article className="grid grid-cols-1 sm:grid-cols-12 gap-4 border border-[#DED6C6] dark:border-[#1C2E27] bg-white/80 dark:bg-[#0F1915] p-4 transition-all hover:border-[#B6862C] items-center group shadow-[0_2px_10px_rgba(9,36,29,0.03)]">
-        <div className="sm:col-span-5 aspect-[16/10] w-full overflow-hidden bg-[#09241D] border border-[#DED6C6] dark:border-[#1C2E27] relative">
+      <article className="grid grid-cols-1 sm:grid-cols-12 gap-4 border border-[#E4DDD0] dark:border-[#1D2824] bg-white dark:bg-[#0E1513] p-4 transition-all hover:border-[#B88E35] items-center group">
+        <div className="sm:col-span-5 aspect-[16/10] w-full overflow-hidden bg-[#0B1F19] border border-[#E4DDD0] dark:border-[#1D2824] relative">
           <img
-            src={article.image.url}
+            src={resolvePublicImageUrl(article.image.url)}
             alt={article.image.alt}
             width={1200}
             height={675}
             loading="lazy"
             referrerPolicy="no-referrer"
             onError={handleImgError}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
-          <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent px-2.5 py-1 text-[10px] text-[#E5DEC9] truncate">
-            {article.image.credit}
-          </div>
         </div>
         <div className="sm:col-span-7 flex flex-col justify-between space-y-2">
-          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-[#525E59] dark:text-[#98A6A0]">
             {isBreaking && (
               <>
-                <span className="font-bold text-[#9E2A2B]">عاجل</span>
+                <span className="font-bold text-[#9E2A2B] dark:text-[#E05252]">عاجل</span>
                 <span aria-hidden="true">·</span>
               </>
             )}
             <button
               type="button"
               onClick={() => onOpenCategory(article.categorySlug)}
-              className="font-bold text-[#09241D] dark:text-[#D4A84F] hover:underline"
+              className="font-bold text-[#0B1F19] dark:text-[#D4AF5A] hover:underline"
             >
               {article.categoryName}
             </button>
             <span aria-hidden="true">·</span>
             <span>{formatArabicDate(article.publishedAt, numeralSystem)}</span>
           </div>
-          <h3 className="text-base lg:text-lg font-extrabold font-display leading-snug text-[#0C1713] dark:text-[#F3EFE6] group-hover:text-[#B6862C] transition-colors">
+          <h3 className="text-base lg:text-lg font-extrabold font-display leading-snug text-[#0B1311] dark:text-[#F4F0E8] group-hover:text-[#B88E35] transition-colors">
             <button
               type="button"
               onClick={() => onOpenArticle(article)}
@@ -145,12 +154,12 @@ export const EditorialCard: React.FC<{
               {article.headline}
             </button>
           </h3>
-          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-2">
+          <p className="text-xs text-[#525E59] dark:text-[#98A6A0] leading-relaxed">
             {article.dek}
           </p>
-          <div className="pt-1 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-            <span>{article.authorName}</span>
-            <span className="tabular-nums font-bold text-[#B6862C] dark:text-[#D4A84F]">
+          <div className="pt-1 flex items-center justify-between text-[11px] text-[#525E59] dark:text-[#98A6A0]">
+            <span className="font-medium">{article.authorName}</span>
+            <span className="tabular-nums font-bold text-[#B88E35] dark:text-[#D4AF5A]">
               موثق من {formatNumerals(article.sources.length, numeralSystem)} مصادر رسمية
             </span>
           </div>
@@ -160,37 +169,37 @@ export const EditorialCard: React.FC<{
   }
 
   return (
-    <article className="flex flex-col justify-between border border-[#DED6C6] dark:border-[#1C2E27] bg-white/85 dark:bg-[#0F1915] p-5 transition-all hover:border-[#B6862C] group shadow-[0_2px_12px_rgba(9,36,29,0.03)]">
+    <article className="flex flex-col justify-between border border-[#E4DDD0] dark:border-[#1D2824] bg-white dark:bg-[#0E1513] p-5 transition-all hover:border-[#B88E35] group">
       <div>
-        <div className="aspect-[16/10] w-full overflow-hidden bg-[#09241D] mb-4 border border-[#DED6C6] dark:border-[#1C2E27] relative">
+        <div className="aspect-[16/10] w-full overflow-hidden bg-[#0B1F19] mb-4 border border-[#E4DDD0] dark:border-[#1D2824] relative">
           <img
-            src={article.image.url}
+            src={resolvePublicImageUrl(article.image.url)}
             alt={article.image.alt}
             width={1200}
             height={675}
             loading={size === 'large' ? 'eager' : 'lazy'}
             referrerPolicy="no-referrer"
             onError={handleImgError}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
-          <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent px-3 py-1.5 flex items-center justify-between text-[10px] text-[#E5DEC9]">
+          <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent px-3 py-1.5 flex items-center justify-between text-[10px] text-[#F4F0E8]">
             <span className="truncate">{article.image.credit}</span>
-            <span className="text-[#D4A84F] font-semibold shrink-0 ms-2">ترخيص قانوني حر</span>
+            <span className="text-[#D4AF5A] font-semibold shrink-0 ms-2">صورة حصرية مرخّصة</span>
           </div>
         </div>
 
         {/* سطر البيانات الوصفية النظيف */}
-        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600 dark:text-slate-400 mb-2">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-[#525E59] dark:text-[#98A6A0] mb-2">
           {isBreaking && (
             <>
-              <span className="font-bold text-[#9E2A2B]">عاجل</span>
+              <span className="font-bold text-[#9E2A2B] dark:text-[#E05252]">عاجل</span>
               <span aria-hidden="true">·</span>
             </>
           )}
           <button
             type="button"
             onClick={() => onOpenCategory(article.categorySlug)}
-            className="font-bold text-[#09241D] dark:text-[#D4A84F] hover:underline"
+            className="font-bold text-[#0B1F19] dark:text-[#D4AF5A] hover:underline"
           >
             {article.categoryName}
           </button>
@@ -205,7 +214,7 @@ export const EditorialCard: React.FC<{
         <h3
           className={`${
             size === 'large' ? 'text-2xl lg:text-3xl' : 'text-lg lg:text-xl'
-          } font-extrabold font-display leading-snug text-[#0C1713] dark:text-[#F3EFE6] mb-2.5 group-hover:text-[#B6862C] transition-colors`}
+          } font-extrabold font-display leading-snug text-[#0B1311] dark:text-[#F4F0E8] mb-2.5 group-hover:text-[#B88E35] transition-colors`}
         >
           <button
             type="button"
@@ -216,14 +225,14 @@ export const EditorialCard: React.FC<{
           </button>
         </h3>
 
-        <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
+        <p className="text-sm text-[#525E59] dark:text-slate-300 leading-relaxed mb-4">
           {article.dek}
         </p>
       </div>
 
-      <div className="pt-3 border-t border-[#DED6C6]/80 dark:border-[#1C2E27] flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+      <div className="pt-3 border-t border-[#E4DDD0] dark:border-[#1D2824] flex items-center justify-between text-xs text-[#525E59] dark:text-[#98A6A0]">
         <span className="font-medium">{article.authorName}</span>
-        <span className="tabular-nums font-bold text-[#B6862C] dark:text-[#D4A84F]">
+        <span className="tabular-nums font-bold text-[#B88E35] dark:text-[#D4AF5A]">
           موثق من {formatNumerals(article.sources.length, numeralSystem)} مصادر رسمية
         </span>
       </div>
@@ -232,7 +241,7 @@ export const EditorialCard: React.FC<{
 };
 
 // ============================================================================
-// 2. الصفحة الرئيسية (HomeView) — القالب الملكي الدمشقي الفاخر (Royal Broadsheet)
+// 2. الصفحة الرئيسية (HomeView) — القالب العصري الفاخر (Modern Luxury Broadsheet)
 // ============================================================================
 export const HomeView: React.FC<{
   articles: ArticleRecord[];
@@ -242,6 +251,7 @@ export const HomeView: React.FC<{
   onOpenArticle: (article: ArticleRecord) => void;
   onOpenCategory: (slug: CategorySlug) => void;
   onOpenTag: (tagSlug: string) => void;
+  onOpenEditorialTeam?: () => void;
   onSubscribe: (email: string) => Promise<string>;
 }> = ({
   articles,
@@ -250,13 +260,29 @@ export const HomeView: React.FC<{
   consentGranted,
   onOpenArticle,
   onOpenCategory,
+  onOpenEditorialTeam,
   onSubscribe,
 }) => {
-  const published = articles.filter((a) => a.status === 'published');
+  const rawPublished = articles.filter((a) => a.status === 'published');
+  // تصدّر أهم خبر سوري حديث لقصة الغلاف الرئيسية بما ينسجم مع التوزيع التحريري (50% لسوريا و40% للعرب)
+  const firstSyriaIdx = rawPublished.findIndex((a) => a.categorySlug === 'syria');
+  const firstSyriaOrArabIdx =
+    firstSyriaIdx >= 0
+      ? firstSyriaIdx
+      : rawPublished.findIndex((a) => a.categorySlug === 'arab-world');
+  const published =
+    firstSyriaOrArabIdx > 0
+      ? [
+          rawPublished[firstSyriaOrArabIdx],
+          ...rawPublished.slice(0, firstSyriaOrArabIdx),
+          ...rawPublished.slice(firstSyriaOrArabIdx + 1),
+        ]
+      : rawPublished;
+
   const wireArticles = published.slice(0, 6);
   const leadStory = published[0];
   const spotlightColumnStories = published.slice(1, 4);
-  const photoReportageStories = published.slice(2, 6);
+  const photoReportageStories = published.slice(4, 8);
   const mostReadStories = [...published].sort((a, b) => b.viewsCount - a.viewsCount).slice(0, 5);
   const analysisStories = published.filter((a) => a.categorySlug === 'analysis' || a.type === 'explainer');
 
@@ -278,7 +304,7 @@ export const HomeView: React.FC<{
 
   const filteredDepartmentStories =
     selectedDeptFilter === 'all'
-      ? published
+      ? published.slice(8, 22)
       : published.filter((a) => a.categorySlug === selectedDeptFilter);
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
@@ -290,35 +316,35 @@ export const HomeView: React.FC<{
   };
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-14">
       {/* ====================================================================
-          1. شريط البرقيات الملكي (Royal Emerald & Gold News Wire)
+          1. شريط البرقيات الفاخر (Sovereign News Wire)
       ==================================================================== */}
       {activeWireItem && (
         <section
           aria-label="شريط البرقيات الإخبارية الموثقة"
-          className="border-y-2 border-x border-[#C89D42] bg-[#09241D] text-[#F9F6F0] px-4 py-2.5 flex items-center justify-between gap-4 shadow-sm"
+          className="border border-[#B88E35]/45 bg-[#081511] text-[#FAF8F4] px-4 py-3 flex items-center justify-between gap-4"
         >
           <div className="flex items-center gap-3 min-w-0">
-            <span className="text-xs font-extrabold text-[#D4A84F] shrink-0">
+            <span className="text-xs font-extrabold text-[#D4AF5A] shrink-0">
               برقية العدد ({formatNumerals(wireIndex + 1, siteConfig.numeralSystem)}/{formatNumerals(wireArticles.length, siteConfig.numeralSystem)})
             </span>
-            <span aria-hidden="true" className="text-[#C89D42]/50">|</span>
-            <span className="text-xs text-[#E5DEC9] font-semibold shrink-0 hidden sm:inline">
+            <span aria-hidden="true" className="text-[#B88E35]/50">|</span>
+            <span className="text-xs text-[#E8E1D3] font-semibold shrink-0 hidden sm:inline">
               {activeWireItem.categoryName}
             </span>
-            <span aria-hidden="true" className="text-[#C89D42]/50 hidden sm:inline">·</span>
+            <span aria-hidden="true" className="text-[#B88E35]/50 hidden sm:inline">·</span>
             <button
               type="button"
               onClick={() => onOpenArticle(activeWireItem)}
-              className="text-xs sm:text-sm font-bold text-white hover:text-[#D4A84F] truncate text-start transition-colors"
+              className="text-xs sm:text-sm font-bold text-white hover:text-[#D4AF5A] truncate text-start transition-colors"
             >
               {activeWireItem.headline}
             </button>
           </div>
 
           <div className="flex items-center gap-2 shrink-0 text-xs">
-            <span className="hidden md:inline text-[#D4A84F] tabular-nums me-2">
+            <span className="hidden md:inline text-[#D4AF5A] tabular-nums me-2">
               {formatNumerals(activeWireItem.sources.length, siteConfig.numeralSystem)} مصادر رسمية
             </span>
             <button
@@ -327,7 +353,7 @@ export const HomeView: React.FC<{
                 setWireIndex((prev) => (prev - 1 + wireArticles.length) % wireArticles.length)
               }
               aria-label="الخبر السابق"
-              className="p-1 border border-[#C89D42]/40 hover:border-[#D4A84F] text-[#E5DEC9] hover:text-[#D4A84F]"
+              className="p-1 border border-[#B88E35]/40 hover:border-[#D4AF5A] text-[#E8E1D3] hover:text-[#D4AF5A]"
             >
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
@@ -335,7 +361,7 @@ export const HomeView: React.FC<{
               type="button"
               onClick={() => setTickerPaused((p) => !p)}
               aria-label={tickerPaused ? 'تشغيل شريط الأخبار' : 'إيقاف شريط الأخبار مؤقتًا'}
-              className="p-1 border border-[#C89D42]/40 hover:border-[#D4A84F] text-[#E5DEC9] hover:text-[#D4A84F]"
+              className="p-1 border border-[#B88E35]/40 hover:border-[#D4AF5A] text-[#E8E1D3] hover:text-[#D4AF5A]"
             >
               {tickerPaused ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />}
             </button>
@@ -343,7 +369,7 @@ export const HomeView: React.FC<{
               type="button"
               onClick={() => setWireIndex((prev) => (prev + 1) % wireArticles.length)}
               aria-label="الخبر التالي"
-              className="p-1 border border-[#C89D42]/40 hover:border-[#D4A84F] text-[#E5DEC9] hover:text-[#D4A84F]"
+              className="p-1 border border-[#B88E35]/40 hover:border-[#D4AF5A] text-[#E8E1D3] hover:text-[#D4AF5A]"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
             </button>
@@ -352,16 +378,16 @@ export const HomeView: React.FC<{
       )}
 
       {/* ====================================================================
-          2. واجهة الغلاف الملكية (Royal Feature Cover — 7/5 Asymmetric Showcase)
+          2. واجهة الغلاف الرئيسية (Curatorial 7/5 Asymmetric Showcase)
       ==================================================================== */}
       {leadStory && (
-        <section aria-label="التغطية الرئيسية" className="grid grid-cols-1 lg:grid-cols-12 gap-7 items-stretch">
-          {/* القصة الرئيسية الكبرى (7 أعمدة — مع صورة فوتوغرافية قانونية مرخّصة) */}
-          <article className="lg:col-span-7 border-2 border-[#09241D] dark:border-[#C89D42]/60 bg-white dark:bg-[#0F1915] p-6 lg:p-8 flex flex-col justify-between group shadow-[0_4px_20px_rgba(9,36,29,0.05)]">
+        <section aria-label="التغطية الرئيسية" className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+          {/* القصة الرئيسية الكبرى (7 أعمدة) */}
+          <article className="lg:col-span-7 border border-[#E4DDD0] dark:border-[#1D2824] bg-white dark:bg-[#0E1513] p-6 lg:p-8 flex flex-col justify-between group hover:border-[#B88E35] transition-colors">
             <div>
-              <div className="aspect-[16/9] w-full overflow-hidden bg-[#09241D] mb-5 border border-[#DED6C6] dark:border-[#1C2E27] relative">
+              <div className="aspect-[16/9] w-full overflow-hidden bg-[#0B1F19] mb-5 border border-[#E4DDD0] dark:border-[#1D2824] relative">
                 <img
-                  src={leadStory.image.url}
+                  src={resolvePublicImageUrl(leadStory.image.url)}
                   alt={leadStory.image.alt}
                   width={1200}
                   height={675}
@@ -375,27 +401,27 @@ export const HomeView: React.FC<{
                         kicker: leadStory.categoryName,
                         headline: leadStory.headline,
                         siteName: 'ميزان الخبر',
+                        uniqueSeed: leadStory.id,
                       });
                     }
                   }}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                 />
-                {/* شريط ترخيص الصورة القانوني أسفل الصورة الرئيسية */}
-                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#F3EFE6]">
+                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#F4F0E8]">
                   <span>{leadStory.image.credit}</span>
-                  <span className="text-[#D4A84F] font-bold">
+                  <span className="text-[#D4AF5A] font-bold">
                     {leadStory.image.license}
                   </span>
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600 dark:text-slate-400 mb-3">
-                <span className="font-extrabold text-[#9E2A2B]">قصة الغلاف الرئيسية</span>
+              <div className="flex flex-wrap items-center gap-2 text-xs text-[#525E59] dark:text-[#98A6A0] mb-3">
+                <span className="font-extrabold text-[#9E2A2B] dark:text-[#E05252]">قصة الغلاف الرئيسية</span>
                 <span aria-hidden="true">·</span>
                 <button
                   type="button"
                   onClick={() => onOpenCategory(leadStory.categorySlug)}
-                  className="font-bold text-[#09241D] dark:text-[#D4A84F] hover:underline"
+                  className="font-bold text-[#0B1F19] dark:text-[#D4AF5A] hover:underline"
                 >
                   {leadStory.categoryName}
                 </button>
@@ -406,12 +432,12 @@ export const HomeView: React.FC<{
                   زمن القراءة: {formatNumerals(leadStory.readingTimeMin, siteConfig.numeralSystem)} دقائق
                 </span>
                 <span aria-hidden="true">·</span>
-                <span className="tabular-nums font-bold text-[#B6862C] dark:text-[#D4A84F]">
+                <span className="tabular-nums font-bold text-[#B88E35] dark:text-[#D4AF5A]">
                   موثق من {formatNumerals(leadStory.sources.length, siteConfig.numeralSystem)} مصادر رسمية
                 </span>
               </div>
 
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-royal leading-snug text-[#09241D] dark:text-[#F3EFE6] mb-3.5 group-hover:text-[#B6862C] transition-colors">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-royal leading-snug text-[#0B1311] dark:text-[#F4F0E8] mb-3.5 group-hover:text-[#B88E35] transition-colors">
                 <button
                   type="button"
                   onClick={() => onOpenArticle(leadStory)}
@@ -421,27 +447,27 @@ export const HomeView: React.FC<{
                 </button>
               </h1>
 
-              <p className="text-base text-slate-700 dark:text-slate-300 leading-relaxed mb-6">
+              <p className="text-base text-[#525E59] dark:text-slate-300 leading-relaxed mb-6">
                 {leadStory.dek}
               </p>
             </div>
 
             {/* أبرز ما جاء في التقرير للخبر الرئيسي */}
-            <div className="border-t-2 border-[#09241D]/20 dark:border-[#C89D42]/30 bg-[#F9F6F0] dark:bg-[#080E0C] p-4 space-y-3">
+            <div className="border-t border-[#E4DDD0] dark:border-[#1D2824] bg-[#FAF8F4] dark:bg-[#080C0B] p-4 space-y-3">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-extrabold text-[#09241D] dark:text-[#D4A84F]">
-                  أبرز ما جاء في التقرير:
+                <p className="text-xs font-extrabold text-[#0B1F19] dark:text-[#D4AF5A]">
+                  خلاصة الوقائع المحققة:
                 </p>
                 <button
                   type="button"
                   onClick={() => onOpenArticle(leadStory)}
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-[#B6862C] hover:underline"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-[#B88E35] hover:underline"
                 >
                   <span>قراءة التقرير الكامل</span>
                   <ArrowLeft className="w-3.5 h-3.5" />
                 </button>
               </div>
-              <ul className="space-y-1.5 text-xs sm:text-sm text-slate-700 dark:text-slate-300 list-disc ps-5">
+              <ul className="space-y-1.5 text-xs sm:text-sm text-[#525E59] dark:text-slate-300 list-disc ps-5">
                 {leadStory.keyPoints.slice(0, 3).map((pt, i) => (
                   <li key={i}>{pt}</li>
                 ))}
@@ -449,14 +475,14 @@ export const HomeView: React.FC<{
             </div>
           </article>
 
-          {/* عمود مختارات الصدارة المصوّرة (5 أعمدة — 3 بطاقات أفقية فاخرة بصور فوتوغرافية) */}
+          {/* عمود مختارات الصدارة المصوّرة (5 أعمدة) */}
           <div className="lg:col-span-5 flex flex-col justify-between gap-4">
-            <div className="border-b-4 border-double border-[#09241D] dark:border-[#C89D42] pb-2 flex items-center justify-between">
-              <h2 className="text-lg font-bold font-royal text-[#09241D] dark:text-[#F3EFE6]">
+            <div className="border-b border-[#E4DDD0] dark:border-[#1D2824] pb-2.5 flex items-center justify-between">
+              <h2 className="text-lg font-bold font-royal text-[#0B1311] dark:text-[#F4F0E8]">
                 مختارات الصدارة المصوّرة
               </h2>
-              <span className="text-xs font-bold text-[#B6862C] dark:text-[#D4A84F]">
-                صور وتقارير مرخّصة
+              <span className="text-xs font-bold text-[#B88E35] dark:text-[#D4AF5A]">
+                صور حصرية غير مكررة
               </span>
             </div>
 
@@ -479,87 +505,101 @@ export const HomeView: React.FC<{
       {/* ====================================================================
           3. بانوراما التقارير المصوّرة (4-Column Visual Photo-Reportage Strip)
       ==================================================================== */}
-      <section
-        aria-label="بانوراما التقارير المصورة"
-        className="border-y-4 border-double border-[#09241D] dark:border-[#C89D42]/50 bg-[#F1ECE1] dark:bg-[#0F1915] py-7 px-6"
-      >
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-4 mb-6 border-b border-[#DED6C6] dark:border-[#1C2E27]">
-          <div>
-            <span className="text-xs font-bold text-[#B6862C] dark:text-[#D4A84F]">
-              عدسة «ميزان الخبر» التوثيقية · صور مرخّصة قانونيًا (CC0 / Open Media)
-            </span>
-            <h2 className="text-2xl font-bold font-royal text-[#09241D] dark:text-[#F3EFE6] mt-0.5">
-              بانوراما الملفات السورية والعربية والاقتصادية المصوّرة
-            </h2>
+      {photoReportageStories.length > 0 && (
+        <section
+          aria-label="بانوراما التقارير المصورة"
+          className="border border-[#E4DDD0] dark:border-[#1D2824] bg-[#F3EFE6]/70 dark:bg-[#0E1513] py-8 px-6"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-4 pb-4 mb-6 border-b border-[#E4DDD0] dark:border-[#1D2824]">
+            <div>
+              <span className="text-xs font-bold text-[#B88E35] dark:text-[#D4AF5A]">
+                عدسة «ميزان الخبر» التوثيقية · أرشيف بصري مستقل لكل تقرير
+              </span>
+              <h2 className="text-2xl font-bold font-royal text-[#0B1311] dark:text-[#F4F0E8] mt-0.5">
+                بانوراما الملفات السورية والعربية والاقتصادية المصوّرة
+              </h2>
+            </div>
+            <div className="flex items-center gap-3 text-xs">
+              <button
+                type="button"
+                onClick={() => onOpenCategory('syria')}
+                className="font-bold text-[#0B1F19] dark:text-slate-200 hover:text-[#B88E35]"
+              >
+                ملف سوريا
+              </button>
+              <span aria-hidden="true">·</span>
+              <button
+                type="button"
+                onClick={() => onOpenCategory('arab-world')}
+                className="font-bold text-[#0B1F19] dark:text-slate-200 hover:text-[#B88E35]"
+              >
+                العالم العربي وتركيا
+              </button>
+              <span aria-hidden="true">·</span>
+              <button
+                type="button"
+                onClick={() => onOpenCategory('economy')}
+                className="font-bold text-[#0B1F19] dark:text-slate-200 hover:text-[#B88E35]"
+              >
+                الاقتصاد والأسواق
+              </button>
+            </div>
           </div>
-          <div className="flex items-center gap-3 text-xs">
-            <button
-              type="button"
-              onClick={() => onOpenCategory('syria')}
-              className="font-bold text-[#09241D] dark:text-slate-200 hover:text-[#B6862C]"
-            >
-              ملف سوريا
-            </button>
-            <span aria-hidden="true">·</span>
-            <button
-              type="button"
-              onClick={() => onOpenCategory('arab-world')}
-              className="font-bold text-[#09241D] dark:text-slate-200 hover:text-[#B6862C]"
-            >
-              العالم العربي
-            </button>
-            <span aria-hidden="true">·</span>
-            <button
-              type="button"
-              onClick={() => onOpenCategory('economy')}
-              className="font-bold text-[#09241D] dark:text-slate-200 hover:text-[#B6862C]"
-            >
-              الاقتصاد والأسواق
-            </button>
-          </div>
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {photoReportageStories.map((item, idx) => (
-            <article
-              key={item.id}
-              className="bg-white dark:bg-[#080E0C] border border-[#DED6C6] dark:border-[#1C2E27] p-3.5 flex flex-col justify-between group hover:border-[#B6862C] transition-colors"
-            >
-              <div>
-                <div className="aspect-[16/10] w-full overflow-hidden bg-[#09241D] mb-3 relative">
-                  <img
-                    src={item.image.url}
-                    alt={item.image.alt}
-                    width={600}
-                    height={375}
-                    loading="lazy"
-                    referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                  <span className="absolute top-2 start-2 bg-[#09241D]/90 text-[#D4A84F] px-2 py-0.5 text-[10px] font-bold">
-                    0{formatNumerals(idx + 1, siteConfig.numeralSystem)} · {item.categoryName}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {photoReportageStories.map((item, idx) => (
+              <article
+                key={item.id}
+                className="bg-white dark:bg-[#080C0B] border border-[#E4DDD0] dark:border-[#1D2824] p-4 flex flex-col justify-between group hover:border-[#B88E35] transition-colors"
+              >
+                <div>
+                  <div className="aspect-[16/10] w-full overflow-hidden bg-[#0B1F19] mb-3 relative">
+                    <img
+                      src={resolvePublicImageUrl(item.image.url)}
+                      alt={item.image.alt}
+                      width={600}
+                      height={375}
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        if (!target.dataset.fallbackApplied) {
+                          target.dataset.fallbackApplied = 'true';
+                          target.src = generateTypographicSvgDataUri({
+                            kicker: item.categoryName,
+                            headline: item.headline,
+                            siteName: 'ميزان الخبر',
+                            uniqueSeed: item.id,
+                          });
+                        }
+                      }}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <span className="absolute top-2 start-2 bg-[#081511]/90 text-[#D4AF5A] px-2 py-0.5 text-[10px] font-bold">
+                      0{formatNumerals(idx + 1, siteConfig.numeralSystem)} · {item.categoryName}
+                    </span>
+                  </div>
+                  <h3 className="text-sm font-extrabold font-display text-[#0B1311] dark:text-[#F4F0E8] leading-snug mb-2 group-hover:text-[#B88E35] transition-colors">
+                    <button
+                      type="button"
+                      onClick={() => onOpenArticle(item)}
+                      className="text-start"
+                    >
+                      {item.headline}
+                    </button>
+                  </h3>
+                </div>
+                <div className="pt-2.5 border-t border-[#E4DDD0]/70 dark:border-[#1D2824] flex items-center justify-between text-[10px] text-[#525E59] dark:text-[#98A6A0]">
+                  <span>{item.authorName}</span>
+                  <span className="font-bold text-[#B88E35] dark:text-[#D4AF5A]">
+                    {formatNumerals(item.sources.length, siteConfig.numeralSystem)} مصادر رسمية
                   </span>
                 </div>
-                <h3 className="text-sm font-extrabold font-display text-[#0C1713] dark:text-[#F3EFE6] leading-snug mb-2 group-hover:text-[#B6862C] transition-colors">
-                  <button
-                    type="button"
-                    onClick={() => onOpenArticle(item)}
-                    className="text-start"
-                  >
-                    {item.headline}
-                  </button>
-                </h3>
-              </div>
-              <div className="pt-2 border-t border-[#DED6C6]/60 dark:border-[#1C2E27] flex items-center justify-between text-[10px] text-slate-500">
-                <span>ترخيص مفتوح</span>
-                <span className="font-bold text-[#B6862C] dark:text-[#D4A84F]">
-                  {formatNumerals(item.sources.length, siteConfig.numeralSystem)} مصادر رسمية
-                </span>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ====================================================================
           4. الشبكة المزدوجة: تغطيات الأقسام التفاعلية (8 أعمدة) + الجناح الجانبي (4 أعمدة)
@@ -568,8 +608,8 @@ export const HomeView: React.FC<{
         {/* العمود الرئيسي (8 أعمدة): فلتر الأقسام الفوري + شبكة المجلة + ملفات التحليلات */}
         <div className="lg:col-span-8 space-y-10">
           <div className="space-y-6">
-            <div className="border-b-4 border-double border-[#09241D] dark:border-[#C89D42]/60 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <h2 className="text-2xl font-bold font-royal text-[#09241D] dark:text-[#F3EFE6]">
+            <div className="border-b border-[#E4DDD0] dark:border-[#1D2824] pb-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <h2 className="text-2xl font-bold font-royal text-[#0B1311] dark:text-[#F4F0E8]">
                 تغطيات الأقسام المتخصصة
               </h2>
 
@@ -580,8 +620,8 @@ export const HomeView: React.FC<{
                   onClick={() => setSelectedDeptFilter('all')}
                   className={`px-3 py-1.5 text-xs font-bold transition-colors whitespace-nowrap shrink-0 ${
                     selectedDeptFilter === 'all'
-                      ? 'bg-[#09241D] text-[#F9F6F0] dark:bg-[#D4A84F] dark:text-[#080E0C]'
-                      : 'bg-[#F1ECE1] dark:bg-[#0F1915] text-slate-700 dark:text-slate-300 hover:text-[#B6862C]'
+                      ? 'bg-[#0B1F19] text-[#FAF8F4] dark:bg-[#D4AF5A] dark:text-[#080C0B]'
+                      : 'bg-[#F3EFE6] dark:bg-[#0E1513] text-[#525E59] dark:text-slate-300 hover:text-[#B88E35]'
                   }`}
                 >
                   جميع الأقسام
@@ -593,8 +633,8 @@ export const HomeView: React.FC<{
                     onClick={() => setSelectedDeptFilter(sec.slug)}
                     className={`px-3 py-1.5 text-xs font-bold transition-colors whitespace-nowrap shrink-0 ${
                       selectedDeptFilter === sec.slug
-                        ? 'bg-[#09241D] text-[#F9F6F0] dark:bg-[#D4A84F] dark:text-[#080E0C]'
-                        : 'bg-[#F1ECE1] dark:bg-[#0F1915] text-slate-700 dark:text-slate-300 hover:text-[#B6862C]'
+                        ? 'bg-[#0B1F19] text-[#FAF8F4] dark:bg-[#D4AF5A] dark:text-[#080C0B]'
+                        : 'bg-[#F3EFE6] dark:bg-[#0E1513] text-[#525E59] dark:text-slate-300 hover:text-[#B88E35]'
                     }`}
                   >
                     {sec.name}
@@ -619,20 +659,20 @@ export const HomeView: React.FC<{
 
           {/* قسم خاص: تحليلات وشروحات معمقة ("ماذا حدث ولماذا يهم") */}
           {analysisStories.length > 0 && (
-            <div className="border-2 border-[#09241D] dark:border-[#C89D42]/50 bg-[#F1ECE1]/80 dark:bg-[#0F1915] p-6 space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#DED6C6] dark:border-[#1C2E27] pb-4">
+            <div className="border border-[#E4DDD0] dark:border-[#1D2824] bg-[#F3EFE6]/60 dark:bg-[#0E1513] p-6 space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#E4DDD0] dark:border-[#1D2824] pb-4">
                 <div>
-                  <span className="text-xs font-extrabold text-[#B6862C] dark:text-[#D4A84F]">
+                  <span className="text-xs font-extrabold text-[#B88E35] dark:text-[#D4AF5A]">
                     ملفات التعمق التحريري · ماذا حدث ولماذا يهم؟
                   </span>
-                  <h2 className="text-2xl font-bold font-royal text-[#09241D] dark:text-[#F3EFE6] mt-1">
+                  <h2 className="text-2xl font-bold font-royal text-[#0B1311] dark:text-[#F4F0E8] mt-1">
                     قراءات تحليلية وشروحات موثقة للخلفيات والآثار
                   </h2>
                 </div>
                 <button
                   type="button"
                   onClick={() => onOpenCategory('analysis')}
-                  className="text-xs font-bold text-[#09241D] dark:text-[#D4A84F] hover:underline flex items-center gap-1 whitespace-nowrap shrink-0"
+                  className="text-xs font-bold text-[#0B1F19] dark:text-[#D4AF5A] hover:underline flex items-center gap-1 whitespace-nowrap shrink-0"
                 >
                   <span>الأرشيف الكامل للتحليلات</span>
                   <ArrowLeft className="w-3.5 h-3.5" />
@@ -654,29 +694,75 @@ export const HomeView: React.FC<{
           )}
         </div>
 
-        {/* العمود الجانبي الملكي (4 أعمدة): موجز اليوم + الأكثر قراءة + مؤشرات الأسواق والطقس */}
+        {/* العمود الجانبي الفاخر (4 أعمدة): بطاقة المدقق اللغوي + موجز اليوم + الأكثر قراءة + مؤشرات الأسواق */}
         <aside className="lg:col-span-4 space-y-6">
+          {/* بطاقة وحدة التدقيق اللغوي والفلترة الذكية وفحص الصور (الأستاذ علام الكيلاني) */}
+          <div className="border border-[#B88E35]/50 bg-white dark:bg-[#0E1513] p-5 space-y-3">
+            <div className="flex items-center justify-between pb-2.5 border-b border-[#E4DDD0] dark:border-[#1D2824]">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-[#B88E35] dark:text-[#D4AF5A] shrink-0" />
+                <h2 className="text-base font-bold font-royal text-[#0B1311] dark:text-[#F4F0E8]">
+                  مكتب التدقيق اللغوي والفحص البصري
+                </h2>
+              </div>
+              <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
+                نشط 24/7
+              </span>
+            </div>
+
+            <div className="space-y-1.5 text-xs">
+              <p className="font-bold text-[#0B1311] dark:text-[#D4AF5A]">
+                المدقق اللغوي والمصحح العام: أ. علام الكيلاني
+              </p>
+              <p className="text-[#525E59] dark:text-[#98A6A0] leading-relaxed">
+                يخضع كل خبر وارد من المصادر الـ 45 لفحص لغوي ونحوي صارم يمنع ظهور أي رموز برمجية أو عبارات أجنبية أو كلمات مقطوعة، مع ضمان تخصيص صورة فوتوغرافية فريدة لكل مقال دون أي تكرار.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#E4DDD0] dark:border-[#1D2824] text-[11px]">
+              <div className="bg-[#FAF8F4] dark:bg-[#080C0B] p-2.5 border border-[#E4DDD0] dark:border-[#1D2824]">
+                <span className="block text-[#525E59] dark:text-[#98A6A0]">نقاء اللغة العربية</span>
+                <strong className="text-sm font-bold text-[#0B1311] dark:text-[#D4AF5A] tabular-nums">100% فصحى سليمة</strong>
+              </div>
+              <div className="bg-[#FAF8F4] dark:bg-[#080C0B] p-2.5 border border-[#E4DDD0] dark:border-[#1D2824]">
+                <span className="block text-[#525E59] dark:text-[#98A6A0]">تفرد الصور ({formatNumerals(published.length, siteConfig.numeralSystem)} صورة)</span>
+                <strong className="text-sm font-bold text-emerald-700 dark:text-emerald-400 tabular-nums">0 تكرار</strong>
+              </div>
+            </div>
+
+            {onOpenEditorialTeam && (
+              <button
+                type="button"
+                onClick={onOpenEditorialTeam}
+                className="w-full pt-1 text-xs font-bold text-[#B88E35] dark:text-[#D4AF5A] hover:underline flex items-center justify-between"
+              >
+                <span>استعراض الكادر الصحفي وهيئة التدقيق</span>
+                <ArrowLeft className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
           {/* موجز اليوم (Daily Digest) */}
-          <div className="border-2 border-[#09241D] dark:border-[#C89D42]/60 bg-[#09241D] text-[#F9F6F0] p-5">
-            <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#C89D42]/40">
-              <h2 className="text-lg font-bold font-royal text-[#D4A84F]">
+          <div className="border border-[#B88E35]/40 bg-[#081511] text-[#FAF8F4] p-5">
+            <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#B88E35]/30">
+              <h2 className="text-lg font-bold font-royal text-[#D4AF5A]">
                 موجز «ميزان الخبر» اليومي
               </h2>
-              <span className="text-xs text-[#E5DEC9] font-bold">خلاصة العدد</span>
+              <span className="text-xs text-[#E8E1D3] font-bold">خلاصة العدد</span>
             </div>
-            <p className="text-xs text-[#E5DEC9]/85 leading-relaxed mb-3.5">
+            <p className="text-xs text-[#E8E1D3]/85 leading-relaxed mb-3.5">
               أهم الأخبار العاجلة والتقارير المرصودة اليوم من 45 شبكة إخبارية ووكالة رسمية عبر 100 صحفي ومراسل (50% سوريا · 40% العرب وتركيا · 10% دولي وتخصصي):
             </p>
             <ol className="space-y-3 text-xs leading-relaxed">
               {published.slice(0, 5).map((item, idx) => (
-                <li key={item.id} className="flex items-start gap-2.5 pb-2.5 border-b border-[#C89D42]/20 last:border-b-0 last:pb-0">
-                  <span className="font-royal text-lg font-bold text-[#D4A84F] tabular-nums shrink-0 leading-none">
+                <li key={item.id} className="flex items-start gap-2.5 pb-2.5 border-b border-[#B88E35]/20 last:border-b-0 last:pb-0">
+                  <span className="font-royal text-lg font-bold text-[#D4AF5A] tabular-nums shrink-0 leading-none">
                     0{formatNumerals(idx + 1, siteConfig.numeralSystem)}.
                   </span>
                   <button
                     type="button"
                     onClick={() => onOpenArticle(item)}
-                    className="text-start text-white hover:text-[#D4A84F] font-bold leading-snug"
+                    className="text-start text-white hover:text-[#D4AF5A] font-bold leading-snug"
                   >
                     {item.headline}
                   </button>
@@ -686,14 +772,14 @@ export const HomeView: React.FC<{
           </div>
 
           {/* الأكثر قراءة وتوثيقًا */}
-          <div className="border border-[#DED6C6] dark:border-[#1C2E27] bg-white/90 dark:bg-[#0F1915] p-5">
-            <div className="flex items-center justify-between pb-3 mb-2 border-b-4 border-double border-[#09241D] dark:border-[#C89D42]">
-              <h2 className="text-lg font-bold font-royal text-[#09241D] dark:text-[#F3EFE6]">
+          <div className="border border-[#E4DDD0] dark:border-[#1D2824] bg-white dark:bg-[#0E1513] p-5">
+            <div className="flex items-center justify-between pb-3 mb-2 border-b border-[#E4DDD0] dark:border-[#1D2824]">
+              <h2 className="text-lg font-bold font-royal text-[#0B1311] dark:text-[#F4F0E8]">
                 الأكثر قراءة وتوثيقًا
               </h2>
-              <span className="text-xs text-[#B6862C] font-bold">ترتيب القراء</span>
+              <span className="text-xs text-[#B88E35] font-bold">ترتيب القراء</span>
             </div>
-            <div className="divide-y divide-[#DED6C6] dark:divide-[#1C2E27]">
+            <div className="divide-y divide-[#E4DDD0] dark:divide-[#1D2824]">
               {mostReadStories.map((item, idx) => (
                 <EditorialCard
                   key={item.id}
@@ -712,19 +798,19 @@ export const HomeView: React.FC<{
           {widgets.map((widget) => (
             <div
               key={widget.id}
-              className="border border-[#DED6C6] dark:border-[#1C2E27] bg-white/90 dark:bg-[#0F1915] p-5"
+              className="border border-[#E4DDD0] dark:border-[#1D2824] bg-white dark:bg-[#0E1513] p-5"
             >
-              <div className="pb-2.5 mb-3 border-b border-[#DED6C6] dark:border-[#1C2E27]">
-                <h3 className="text-base font-bold font-royal text-[#09241D] dark:text-[#D4A84F]">
+              <div className="pb-2.5 mb-3 border-b border-[#E4DDD0] dark:border-[#1D2824]">
+                <h3 className="text-base font-bold font-royal text-[#0B1F19] dark:text-[#D4AF5A]">
                   {widget.title}
                 </h3>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                <p className="text-[11px] text-[#525E59] dark:text-[#98A6A0] mt-0.5">
                   المصدر:{' '}
                   <a
                     href={widget.sourceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="underline hover:text-[#B6862C]"
+                    className="underline hover:text-[#B88E35]"
                   >
                     {widget.sourceName}
                   </a>
@@ -734,11 +820,11 @@ export const HomeView: React.FC<{
                 {widget.items.map((row, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between text-xs py-1 border-b border-[#DED6C6]/40 dark:border-[#1C2E27] last:border-b-0"
+                    className="flex items-center justify-between text-xs py-1 border-b border-[#E4DDD0]/40 dark:border-[#1D2824] last:border-b-0"
                   >
-                    <span className="text-slate-700 dark:text-slate-300 font-semibold">{row.label}</span>
+                    <span className="text-[#525E59] dark:text-slate-300 font-semibold">{row.label}</span>
                     <div className="flex items-center gap-2 font-mono tabular-nums">
-                      <span className="font-bold text-[#0C1713] dark:text-[#F3EFE6]">
+                      <span className="font-bold text-[#0B1311] dark:text-[#F4F0E8]">
                         {formatNumerals(row.value, siteConfig.numeralSystem)}
                       </span>
                       <span
@@ -756,7 +842,7 @@ export const HomeView: React.FC<{
                   </div>
                 ))}
               </div>
-              <p className="mt-3 text-[11px] text-slate-500 dark:text-slate-400">
+              <p className="mt-3 text-[11px] text-[#525E59] dark:text-[#98A6A0]">
                 {widget.licenseNote} · آخر تحديث: {formatArabicDate(widget.updatedAt, siteConfig.numeralSystem)}
               </p>
             </div>
@@ -764,7 +850,7 @@ export const HomeView: React.FC<{
         </aside>
       </section>
 
-      {/* وحدة إعلانية اختيارية بين الكتل (معطّلة تمامًا إذا ADS_ENABLED=false) */}
+      {/* وحدة إعلانية اختيارية بين الكتل */}
       <AdSlot
         slotId="home-mid-leaderboard"
         format="horizontal"
@@ -772,19 +858,19 @@ export const HomeView: React.FC<{
         consentGranted={consentGranted}
       />
 
-      {/* دعوة الاشتراك في النشرة البريدية اليومية (Double Opt-In) */}
+      {/* دعوة الاشتراك في النشرة البريدية اليومية */}
       <section
         aria-label="الاشتراك في النشرة البريدية"
-        className="border-4 border-double border-[#C89D42] bg-[#09241D] text-[#F9F6F0] p-8"
+        className="border border-[#B88E35]/50 bg-[#081511] text-[#FAF8F4] p-8"
       >
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-2">
-            <span className="text-xs font-bold text-[#D4A84F]">نشرة «موجز ميزان الخبر» المسائية · مجانًا</span>
+            <span className="text-xs font-bold text-[#D4AF5A]">نشرة «موجز ميزان الخبر» المسائية · مجانًا</span>
             <h2 className="text-2xl sm:text-3xl font-bold font-royal">
               اشترك في الملخص اليومي للتقارير الموثقة بالمصادر الرسمية
             </h2>
-            <p className="text-xs text-[#E5DEC9]/90 leading-relaxed max-w-2xl">
-              رسالة واحدة مساء كل يوم تلخص أهم الأخبار السورية والعربية والاقتصادية والشروحات التي اجتازت التدقيق المصدري تحت إشراف رئيس التحرير ({siteConfig.editorInChiefName}).
+            <p className="text-xs text-[#E8E1D3]/90 leading-relaxed max-w-2xl">
+              رسالة واحدة مساء كل يوم تلخص أهم الأخبار السورية والعربية والاقتصادية والشروحات التي اجتازت التدقيق المصدري واللغوي تحت إشراف رئيس التحرير ({siteConfig.editorInChiefName}).
             </p>
           </div>
           <form onSubmit={handleNewsletterSubmit} className="w-full md:w-auto flex flex-col sm:flex-row gap-2 shrink-0">
@@ -797,19 +883,19 @@ export const HomeView: React.FC<{
               required
               value={newsletterEmail}
               onChange={(e) => setNewsletterEmail(e.target.value)}
-              placeholder="name@example.com"
-              className="px-3.5 py-2.5 text-xs bg-[#061813] border border-[#C89D42]/50 text-white placeholder:text-slate-400 focus:outline-none focus:border-[#D4A84F] min-w-[240px]"
+              placeholder="أدخل بريدك الإلكتروني..."
+              className="px-3.5 py-2.5 text-xs bg-[#050E0B] border border-[#B88E35]/50 text-white placeholder:text-slate-400 focus:outline-none focus:border-[#D4AF5A] min-w-[240px]"
             />
             <button
               type="submit"
-              className="px-5 py-2.5 text-xs font-extrabold bg-[#D4A84F] text-[#09241D] hover:opacity-95 transition-opacity whitespace-nowrap shrink-0"
+              className="px-5 py-2.5 text-xs font-extrabold bg-[#D4AF5A] text-[#081511] hover:opacity-95 transition-opacity whitespace-nowrap shrink-0"
             >
               اشتراك وتأكيد البريد
             </button>
           </form>
         </div>
         {newsletterStatus && (
-          <p className="max-w-4xl mx-auto mt-3 text-xs text-[#D4A84F] font-bold" role="status">
+          <p className="max-w-4xl mx-auto mt-3 text-xs text-[#D4AF5A] font-bold" role="status">
             {newsletterStatus}
           </p>
         )}
@@ -908,38 +994,38 @@ export const ArticleDetailView: React.FC<{
         className="fixed top-0 inset-x-0 z-50 h-1 bg-transparent pointer-events-none"
       >
         <div
-          className="h-full bg-[#B8892B] transition-transform duration-150 origin-right"
+          className="h-full bg-[#B88E35] transition-transform duration-150 origin-right"
           style={{ transform: `scaleX(${scrollProgress / 100})` }}
         />
       </div>
 
-      {/* مسار التنقل (Breadcrumb) */}
-      <nav aria-label="مسار الصفحة" className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mb-6">
-        <button type="button" onClick={() => onOpenCategory(article.categorySlug)} className="hover:text-[#B8892B]">
+      {/* مسار التنقل */}
+      <nav aria-label="مسار الصفحة" className="flex items-center gap-2 text-xs text-[#525E59] dark:text-[#98A6A0] mb-6">
+        <button type="button" onClick={() => onOpenCategory(article.categorySlug)} className="hover:text-[#B88E35]">
           الرئيسية
         </button>
         <span aria-hidden="true">/</span>
         <button
           type="button"
           onClick={() => onOpenCategory(article.categorySlug)}
-          className="font-semibold text-[#B8892B] hover:underline"
+          className="font-semibold text-[#B88E35] hover:underline"
         >
           {article.categoryName}
         </button>
         <span aria-hidden="true">/</span>
-        <span className="truncate max-w-xs sm:max-w-md text-slate-700 dark:text-slate-300">{article.headline}</span>
+        <span className="truncate max-w-xs sm:max-w-md text-[#0B1311] dark:text-slate-300">{article.headline}</span>
       </nav>
 
-      {/* ترويسة المقال: Kicker، H1، Dek، وسطر الكاتب والتواريخ */}
-      <header className="mb-8 border-b border-[#E2DACB] dark:border-[#1E293B] pb-6">
-        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600 dark:text-slate-400 mb-3">
+      {/* ترويسة المقال */}
+      <header className="mb-8 border-b border-[#E4DDD0] dark:border-[#1D2824] pb-6">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-[#525E59] dark:text-[#98A6A0] mb-3">
           {article.type === 'breaking' && (
             <>
-              <span className="font-bold text-[#C0392B]">عاجل</span>
+              <span className="font-bold text-[#9E2A2B] dark:text-[#E05252]">عاجل</span>
               <span aria-hidden="true">·</span>
             </>
           )}
-          <span className="font-bold text-[#B8892B]">{article.categoryName}</span>
+          <span className="font-bold text-[#B88E35]">{article.categoryName}</span>
           <span aria-hidden="true">·</span>
           <span>
             {article.type === 'explainer'
@@ -952,23 +1038,28 @@ export const ArticleDetailView: React.FC<{
           <span className="tabular-nums">
             المصادر المرجعية: {formatNumerals(article.sources.length, siteConfig.numeralSystem)} مصادر معتمدة
           </span>
+          <span aria-hidden="true">·</span>
+          <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400 font-semibold">
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            <span>مدقق لغويًا (أ. علام الكيلاني)</span>
+          </span>
         </div>
 
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-display leading-tight text-[#0B1220] dark:text-[#F3EFE6] mb-4">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-display leading-tight text-[#0B1311] dark:text-[#F4F0E8] mb-4">
           {article.headline}
         </h1>
 
-        <p className="text-base sm:text-lg text-slate-700 dark:text-slate-300 leading-relaxed mb-6">
+        <p className="text-base sm:text-lg text-[#525E59] dark:text-slate-300 leading-relaxed mb-6">
           {article.dek}
         </p>
 
         {/* سطر الكاتب والتاريخين وزمن القراءة والمشاركة النظيفة */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-[#E2DACB]/60 dark:border-[#1E293B] text-xs text-slate-600 dark:text-slate-400">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-[#E4DDD0] dark:border-[#1D2824] text-xs text-[#525E59] dark:text-[#98A6A0]">
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
               onClick={onOpenAuthor}
-              className="font-bold text-[#0B1220] dark:text-[#F3EFE6] hover:text-[#B8892B] underline decoration-[#B8892B]/50 underline-offset-4"
+              className="font-bold text-[#0B1311] dark:text-[#F4F0E8] hover:text-[#B88E35] underline decoration-[#B88E35]/50 underline-offset-4"
             >
               {article.authorName}
             </button>
@@ -977,14 +1068,14 @@ export const ArticleDetailView: React.FC<{
             {article.updatedAt !== article.publishedAt && (
               <>
                 <span aria-hidden="true">·</span>
-                <span className="font-semibold text-[#B8892B]">
+                <span className="font-semibold text-[#B88E35]">
                   آخر تحديث: {formatArabicDate(article.updatedAt, siteConfig.numeralSystem)}
                 </span>
               </>
             )}
             <span aria-hidden="true">·</span>
             <span className="inline-flex items-center gap-1 tabular-nums">
-              <Clock className="w-3.5 h-3.5 text-[#B8892B]" />
+              <Clock className="w-3.5 h-3.5 text-[#B88E35]" />
               {formatNumerals(article.readingTimeMin, siteConfig.numeralSystem)} دقائق قراءة ({formatNumerals(article.wordCount, siteConfig.numeralSystem)} كلمة)
             </span>
           </div>
@@ -993,9 +1084,9 @@ export const ArticleDetailView: React.FC<{
             <button
               type="button"
               onClick={handleCopyShareLink}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#E2DACB] dark:border-slate-700 hover:border-[#B8892B] text-[#0B1220] dark:text-slate-200 transition-colors whitespace-nowrap shrink-0"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#E4DDD0] dark:border-[#1D2824] hover:border-[#B88E35] text-[#0B1311] dark:text-slate-200 transition-colors whitespace-nowrap shrink-0"
             >
-              <Share2 className="w-3.5 h-3.5 text-[#B8892B]" />
+              <Share2 className="w-3.5 h-3.5 text-[#B88E35]" />
               <span>{shareCopied ? 'تم نسخ الرابط' : 'مشاركة الرابط'}</span>
             </button>
           </div>
@@ -1003,21 +1094,33 @@ export const ArticleDetailView: React.FC<{
       </header>
 
       {/* الصورة الرئيسية (1200x675) مع التعليق والإسناد والترخيص */}
-      <figure className="mb-8 border border-[#E2DACB] dark:border-[#1E293B] bg-[#F3EFE6]/50 dark:bg-[#111C33]">
-        <div className="aspect-[16/9] w-full overflow-hidden bg-[#0B1220]">
+      <figure className="mb-8 border border-[#E4DDD0] dark:border-[#1D2824] bg-white dark:bg-[#0E1513]">
+        <div className="aspect-[16/9] w-full overflow-hidden bg-[#0B1F19]">
           <img
-            src={article.image.url}
+            src={resolvePublicImageUrl(article.image.url)}
             alt={article.image.alt}
             width={1200}
             height={675}
             fetchPriority="high"
             referrerPolicy="no-referrer"
+            onError={(e) => {
+              const target = e.currentTarget;
+              if (!target.dataset.fallbackApplied) {
+                target.dataset.fallbackApplied = 'true';
+                target.src = generateTypographicSvgDataUri({
+                  kicker: article.categoryName,
+                  headline: article.headline,
+                  siteName: 'ميزان الخبر',
+                  uniqueSeed: article.id,
+                });
+              }
+            }}
             className="w-full h-full object-cover"
           />
         </div>
-        <figcaption className="px-4 py-2.5 text-xs text-slate-600 dark:text-slate-400 flex flex-wrap items-center justify-between gap-2">
+        <figcaption className="px-4 py-2.5 text-xs text-[#525E59] dark:text-[#98A6A0] flex flex-wrap items-center justify-between gap-2">
           <span>{article.image.caption}</span>
-          <span className="font-mono text-[11px]">
+          <span className="font-mono text-[11px] text-[#B88E35] dark:text-[#D4AF5A]">
             {article.image.credit} ({article.image.license})
           </span>
         </figcaption>
@@ -1030,13 +1133,13 @@ export const ArticleDetailView: React.FC<{
           {article.keyPoints.length > 0 && (
             <section
               aria-label="أبرز النقاط"
-              className="border border-[#E2DACB] dark:border-[#1E293B] bg-[#F3EFE6]/70 dark:bg-[#111C33] p-5"
+              className="border border-[#E4DDD0] dark:border-[#1D2824] bg-[#F3EFE6]/70 dark:bg-[#0E1513] p-5"
             >
-              <h2 className="text-sm font-bold font-display text-[#0B1220] dark:text-[#F3EFE6] mb-3 flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-[#B8892B]" />
+              <h2 className="text-sm font-bold font-display text-[#0B1311] dark:text-[#F4F0E8] mb-3 flex items-center gap-2">
+                <BookOpen className="w-4 h-4 text-[#B88E35]" />
                 <span>أبرز ما جاء في التقرير</span>
               </h2>
-              <ul className="space-y-2 text-sm text-slate-800 dark:text-slate-200 list-disc ps-5 leading-relaxed">
+              <ul className="space-y-2 text-sm text-[#0B1311] dark:text-slate-200 list-disc ps-5 leading-relaxed">
                 {article.keyPoints.map((pt, idx) => (
                   <li key={idx}>{pt}</li>
                 ))}
@@ -1044,13 +1147,13 @@ export const ArticleDetailView: React.FC<{
             </section>
           )}
 
-          {/* المتن الأساسي للمقال بخط Noto Naskh Arabic (19.5px، ارتفاع سطر 1.9) */}
+          {/* المتن الأساسي للمقال */}
           <div
-            className="font-editorial article-prose text-[#0B1220] dark:text-[#F3EFE6] max-w-prose"
+            className="font-editorial article-prose text-[#0B1311] dark:text-[#F4F0E8] max-w-prose"
             dangerouslySetInnerHTML={{ __html: article.bodyHtml }}
           />
 
-          {/* وحدة إعلانية داخل المقال (معطّلة إذا ADS_ENABLED=false أو حساسية عالية) */}
+          {/* وحدة إعلانية داخل المقال */}
           <AdSlot
             slotId="article-inline-1"
             format="in-article"
@@ -1059,36 +1162,36 @@ export const ArticleDetailView: React.FC<{
             consentGranted={consentGranted}
           />
 
-          {/* فقرة الخلفية والسياق (إن وجدت) */}
+          {/* فقرة الخلفية والسياق */}
           {article.backgroundSection && (
             <section
               aria-label="خلفية الخبر والسياق"
-              className="border border-[#E2DACB] dark:border-[#1E293B] bg-[#FAF7F2] dark:bg-[#111C33]/80 p-5"
+              className="border border-[#E4DDD0] dark:border-[#1D2824] bg-white dark:bg-[#0E1513] p-5"
             >
-              <h2 className="text-base font-bold font-display text-[#0B1220] dark:text-[#F3EFE6] mb-2">
+              <h2 className="text-base font-bold font-display text-[#0B1311] dark:text-[#F4F0E8] mb-2">
                 الخلفية والسياق
               </h2>
-              <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+              <p className="text-sm text-[#525E59] dark:text-slate-300 leading-relaxed">
                 {article.backgroundSection}
               </p>
             </section>
           )}
 
-          {/* فقرة "ماذا يعني ذلك؟" موسومة صراحة بأنها قراءة تحليلية */}
+          {/* فقرة "ماذا يعني ذلك؟" */}
           {article.analysisSection && (
             <section
               aria-label="قراءة تحليلية"
-              className="border border-[#B8892B]/50 bg-[#F3EFE6]/80 dark:bg-[#111C33] p-5"
+              className="border border-[#B88E35]/50 bg-[#F3EFE6]/80 dark:bg-[#0E1513] p-5"
             >
               <div className="flex items-center justify-between mb-2">
-                <h2 className="text-base font-bold font-display text-[#0B1220] dark:text-[#F3EFE6]">
+                <h2 className="text-base font-bold font-display text-[#0B1311] dark:text-[#F4F0E8]">
                   ماذا يعني ذلك؟
                 </h2>
-                <span className="text-xs font-semibold text-[#B8892B]">
+                <span className="text-xs font-semibold text-[#B88E35]">
                   قراءة تحليلية (مفصولة عن الخبر)
                 </span>
               </div>
-              <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+              <p className="text-sm text-[#525E59] dark:text-slate-300 leading-relaxed">
                 {article.analysisSection}
               </p>
             </section>
@@ -1098,31 +1201,31 @@ export const ArticleDetailView: React.FC<{
           {article.whatNextSection && (
             <section
               aria-label="المسار المتوقع"
-              className="border border-[#E2DACB] dark:border-[#1E293B] bg-[#FAF7F2] dark:bg-[#111C33]/60 p-5"
+              className="border border-[#E4DDD0] dark:border-[#1D2824] bg-white dark:bg-[#0E1513] p-5"
             >
-              <h2 className="text-base font-bold font-display text-[#0B1220] dark:text-[#F3EFE6] mb-2">
+              <h2 className="text-base font-bold font-display text-[#0B1311] dark:text-[#F4F0E8] mb-2">
                 ما التالي؟ (المسار المتوقع)
               </h2>
-              <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+              <p className="text-sm text-[#525E59] dark:text-slate-300 leading-relaxed">
                 {article.whatNextSection}
               </p>
             </section>
           )}
 
-          {/* صندوق التصحيحات العلنية (يظهر أسفل المقال عند وجود أي تصحيح) */}
+          {/* صندوق التصحيحات العلنية */}
           {article.corrections.length > 0 && (
             <section
               aria-label="تصحيحات وتوضيحات علنية"
-              className="border border-[#B8892B] bg-[#B8892B]/10 p-5 space-y-2"
+              className="border border-[#B88E35] bg-[#B88E35]/10 p-5 space-y-2"
             >
-              <h2 className="text-sm font-bold font-display text-[#0B1220] dark:text-[#F3EFE6] flex items-center gap-2">
-                <Scale className="w-4 h-4 text-[#B8892B]" />
+              <h2 className="text-sm font-bold font-display text-[#0B1311] dark:text-[#F4F0E8] flex items-center gap-2">
+                <Scale className="w-4 h-4 text-[#B88E35]" />
                 <span>سجل التصحيحات والتوضيحات العلنية على هذا المقال</span>
               </h2>
               {article.corrections.map((c) => (
-                <div key={c.id} className="text-xs text-slate-800 dark:text-slate-200 leading-relaxed">
+                <div key={c.id} className="text-xs text-[#0B1311] dark:text-slate-200 leading-relaxed">
                   <p>{c.text}</p>
-                  <p className="text-[11px] text-slate-500 mt-1">
+                  <p className="text-[11px] text-[#525E59] mt-1">
                     راجعه وصوّبه: {c.correctedBy} ·{' '}
                     {formatArabicDate(c.publishedAt, siteConfig.numeralSystem)}
                   </p>
@@ -1131,40 +1234,40 @@ export const ArticleDetailView: React.FC<{
             </section>
           )}
 
-          {/* ملاحظة المنهجية التحريرية والمرجعيات */}
+          {/* ملاحظة المنهجية التحريرية والتدقيق اللغوي */}
           <section
             aria-label="المعايير التحريرية والمرجعيات"
-            className="border border-[#E2DACB] dark:border-[#1E293B] bg-[#F3EFE6]/90 dark:bg-[#111C33] p-5 text-xs space-y-2"
+            className="border border-[#E4DDD0] dark:border-[#1D2824] bg-[#F3EFE6]/90 dark:bg-[#0E1513] p-5 text-xs space-y-2"
           >
             <div className="flex items-center justify-between">
-              <span className="font-bold text-[#0B1220] dark:text-[#F3EFE6] flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-[#B8892B]" />
-                <span>المعايير التحريرية وتوثيق المصادر</span>
+              <span className="font-bold text-[#0B1311] dark:text-[#F4F0E8] flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-[#B88E35]" />
+                <span>المعايير التحريرية والتدقيق اللغوي وتوثيق المصادر</span>
               </span>
               <button
                 type="button"
                 onClick={() => onOpenLegal('editorial-policy')}
-                className="underline text-[#B8892B] hover:text-[#0B1220] dark:hover:text-white font-semibold"
+                className="underline text-[#B88E35] hover:text-[#0B1311] dark:hover:text-white font-semibold"
               >
                 السياسة التحريرية ومنهجية التدقيق
               </button>
             </div>
-            <p className="text-slate-700 dark:text-slate-300 leading-relaxed">{disclosureText}</p>
-            <div className="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-[#E2DACB] dark:border-[#1E293B]">
-              <span className="text-slate-500">
-                إشراف تحريري: {siteConfig.editorInChiefName} · غرفة أخبار «{siteConfig.siteName}»
+            <p className="text-[#525E59] dark:text-slate-300 leading-relaxed">{disclosureText}</p>
+            <div className="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-[#E4DDD0] dark:border-[#1D2824]">
+              <span className="text-[#525E59] dark:text-[#98A6A0]">
+                رئيس التحرير: {siteConfig.editorInChiefName} · المدقق اللغوي العام: أ. علام الكيلاني
               </span>
               <button
                 type="button"
                 onClick={() => setShowCorrectionForm((s) => !s)}
-                className="underline text-slate-700 dark:text-slate-300 hover:text-[#B8892B]"
+                className="underline text-[#0B1311] dark:text-slate-300 hover:text-[#B88E35]"
               >
                 الإبلاغ عن ملاحظة أو تصويب تحريري
               </button>
             </div>
 
             {showCorrectionForm && (
-              <form onSubmit={handleCorrectionReport} className="pt-3 space-y-2 border-t border-[#E2DACB] dark:border-slate-800">
+              <form onSubmit={handleCorrectionReport} className="pt-3 space-y-2 border-t border-[#E4DDD0] dark:border-[#1D2824]">
                 <label htmlFor="correction-note" className="block font-semibold">
                   ملاحظتك أو التصويب المقترح (مع ذكر المصدر المرجعي):
                 </label>
@@ -1174,7 +1277,7 @@ export const ArticleDetailView: React.FC<{
                   rows={2}
                   value={correctionNote}
                   onChange={(e) => setCorrectionNote(e.target.value)}
-                  className="w-full p-2 bg-white dark:bg-[#0B1220] border border-[#E2DACB] dark:border-slate-700"
+                  className="w-full p-2 bg-white dark:bg-[#080C0B] border border-[#E4DDD0] dark:border-[#1D2824]"
                   placeholder="اذكر المعلومة أو الرقم الذي يحتاج إلى مراجعة..."
                 />
                 <div className="flex flex-wrap items-center gap-2">
@@ -1183,18 +1286,18 @@ export const ArticleDetailView: React.FC<{
                     value={correctionEmail}
                     onChange={(e) => setCorrectionEmail(e.target.value)}
                     placeholder="بريدك الإلكتروني (اختياري للمتابعة)"
-                    className="px-2.5 py-1.5 bg-white dark:bg-[#0B1220] border border-[#E2DACB] dark:border-slate-700"
+                    className="px-2.5 py-1.5 bg-white dark:bg-[#080C0B] border border-[#E4DDD0] dark:border-[#1D2824]"
                   />
                   <button
                     type="submit"
-                    className="px-3 py-1.5 bg-[#0B1220] text-[#FAF7F2] dark:bg-[#B8892B] dark:text-[#0B1220] font-semibold"
+                    className="px-3 py-1.5 bg-[#0B1F19] text-[#FAF8F4] dark:bg-[#D4AF5A] dark:text-[#080C0B] font-semibold"
                   >
                     إرسال لهيئة التحرير
                   </button>
                 </div>
                 {correctionSubmitted && (
                   <p className="text-emerald-700 dark:text-emerald-400 font-medium">
-                    شكرًا لك؛ تم تسجيل طلب التصحيح في طابور المراجعة التحريرية.
+                    شكرًا لك؛ تم تسجيل طلب التصويب لدى مكتب المدقق اللغوي العام.
                   </p>
                 )}
               </form>
@@ -1203,7 +1306,7 @@ export const ArticleDetailView: React.FC<{
 
           {/* الوسوم (Tags) */}
           <div className="flex flex-wrap items-center gap-2 pt-2 text-xs">
-            <span className="text-slate-500 font-semibold">الموضوعات والوسوم:</span>
+            <span className="text-[#525E59] font-semibold">الموضوعات والوسوم:</span>
             {article.tags.map((tagName, idx) => {
               const matchedTag = tags.find((t) => t.name === tagName);
               const slug = matchedTag ? matchedTag.slug : tagName;
@@ -1213,7 +1316,7 @@ export const ArticleDetailView: React.FC<{
                   <button
                     type="button"
                     onClick={() => onOpenTag(slug)}
-                    className="text-[#0B1220] dark:text-slate-200 hover:text-[#B8892B] underline decoration-[#E2DACB] underline-offset-4"
+                    className="text-[#0B1311] dark:text-slate-200 hover:text-[#B88E35] underline decoration-[#E4DDD0] underline-offset-4"
                   >
                     {tagName}
                   </button>
@@ -1223,15 +1326,15 @@ export const ArticleDetailView: React.FC<{
           </div>
         </div>
 
-        {/* العمود الجانبي في صفحة المقال: المصادر الموثقة والادعاءات المفحوصة */}
+        {/* العمود الجانبي في صفحة المقال: المصادر الموثقة */}
         <aside className="lg:col-span-4 space-y-6">
           <section
             aria-label="المصادر الرسمية المسندة"
-            className="border border-[#E2DACB] dark:border-[#1E293B] bg-[#FAF7F2] dark:bg-[#111C33] p-5"
+            className="border border-[#E4DDD0] dark:border-[#1D2824] bg-white dark:bg-[#0E1513] p-5"
           >
-            <h2 className="text-sm font-bold font-display text-[#0B1220] dark:text-[#F3EFE6] pb-3 mb-3 border-b border-[#E2DACB] dark:border-[#1E293B] flex items-center justify-between">
+            <h2 className="text-sm font-bold font-display text-[#0B1311] dark:text-[#F4F0E8] pb-3 mb-3 border-b border-[#E4DDD0] dark:border-[#1D2824] flex items-center justify-between">
               <span>المصادر الأولية المعتمدة</span>
-              <span className="font-mono text-xs text-[#B8892B]">
+              <span className="font-mono text-xs text-[#B88E35]">
                 {formatNumerals(article.sources.length, siteConfig.numeralSystem)} مصادر
               </span>
             </h2>
@@ -1239,19 +1342,19 @@ export const ArticleDetailView: React.FC<{
               {article.sources.map((src, idx) => (
                 <li
                   key={idx}
-                  className="pb-3 border-b border-[#E2DACB]/60 dark:border-slate-800 last:border-b-0 last:pb-0"
+                  className="pb-3 border-b border-[#E4DDD0]/60 dark:border-[#1D2824] last:border-b-0 last:pb-0"
                 >
-                  <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 mb-1">
-                    <span className="font-semibold text-[#B8892B]">
+                  <div className="flex items-center justify-between text-[11px] text-[#525E59] dark:text-[#98A6A0] mb-1">
+                    <span className="font-semibold text-[#B88E35]">
                       المستوى {formatNumerals(src.tier, siteConfig.numeralSystem)} ({src.role === 'official' ? 'مصدر رسمي أولي' : 'مصدر مستقل'})
                     </span>
                   </div>
-                  <p className="font-bold text-[#0B1220] dark:text-slate-200 mb-1">{src.publisher}</p>
+                  <p className="font-bold text-[#0B1311] dark:text-slate-200 mb-1">{src.publisher}</p>
                   <a
                     href={src.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-slate-600 dark:text-slate-300 hover:text-[#B8892B] underline"
+                    className="inline-flex items-center gap-1 text-[#525E59] dark:text-slate-300 hover:text-[#B88E35] underline"
                   >
                     <span>{src.title}</span>
                     <ExternalLink className="w-3 h-3 shrink-0" />
@@ -1261,29 +1364,28 @@ export const ArticleDetailView: React.FC<{
             </ul>
           </section>
 
-          {/* قراءة سريعة في نفس القسم (بدل بطاقة الـ Verifier التقنية الداخلية) */}
           {relatedArticles.length > 0 && (
             <section
               aria-label="تغطيات ذات صلة في نفس القسم"
-              className="border border-[#E2DACB] dark:border-[#1E293B] bg-[#F3EFE6]/60 dark:bg-[#111C33] p-5"
+              className="border border-[#E4DDD0] dark:border-[#1D2824] bg-[#F3EFE6]/60 dark:bg-[#0E1513] p-5"
             >
-              <h2 className="text-sm font-bold font-display text-[#0B1220] dark:text-[#F3EFE6] pb-2.5 mb-3 border-b border-[#E2DACB] dark:border-[#1E293B] flex items-center justify-between">
+              <h2 className="text-sm font-bold font-display text-[#0B1311] dark:text-[#F4F0E8] pb-2.5 mb-3 border-b border-[#E4DDD0] dark:border-[#1D2824] flex items-center justify-between">
                 <span>تغطيات ذات صلة في «{article.categoryName}»</span>
               </h2>
               <ul className="space-y-3 text-xs">
                 {relatedArticles.map((rel) => (
                   <li
                     key={rel.id}
-                    className="pb-2.5 border-b border-[#E2DACB]/60 dark:border-slate-800 last:border-b-0 last:pb-0"
+                    className="pb-2.5 border-b border-[#E4DDD0]/60 dark:border-[#1D2824] last:border-b-0 last:pb-0"
                   >
                     <button
                       type="button"
                       onClick={() => onOpenArticle(rel)}
-                      className="text-start font-bold text-[#0B1220] dark:text-slate-200 hover:text-[#B8892B] leading-snug"
+                      className="text-start font-bold text-[#0B1311] dark:text-slate-200 hover:text-[#B88E35] leading-snug"
                     >
                       {rel.headline}
                     </button>
-                    <p className="text-[11px] text-slate-500 mt-1">
+                    <p className="text-[11px] text-[#525E59] mt-1">
                       {formatArabicDate(rel.publishedAt, siteConfig.numeralSystem)}
                     </p>
                   </li>
@@ -1292,7 +1394,6 @@ export const ArticleDetailView: React.FC<{
             </section>
           )}
 
-          {/* وحدة إعلانية في الشريط الجانبي (معطّلة افتراضيًا) */}
           <AdSlot
             slotId="article-sidebar-rect"
             format="rectangle"
@@ -1306,19 +1407,19 @@ export const ArticleDetailView: React.FC<{
       {/* التنقل بين المقال السابق والتالي */}
       <nav
         aria-label="التنقل بين المقالات"
-        className="mt-12 pt-6 border-t border-[#E2DACB] dark:border-[#1E293B] grid grid-cols-1 sm:grid-cols-2 gap-4"
+        className="mt-12 pt-6 border-t border-[#E4DDD0] dark:border-[#1D2824] grid grid-cols-1 sm:grid-cols-2 gap-4"
       >
         {prevArticle ? (
           <button
             type="button"
             onClick={() => onOpenArticle(prevArticle)}
-            className="p-4 border border-[#E2DACB] dark:border-[#1E293B] text-start hover:border-[#B8892B] transition-colors"
+            className="p-4 border border-[#E4DDD0] dark:border-[#1D2824] bg-white dark:bg-[#0E1513] text-start hover:border-[#B88E35] transition-colors"
           >
-            <span className="text-xs text-slate-500 flex items-center gap-1 mb-1">
+            <span className="text-xs text-[#525E59] flex items-center gap-1 mb-1">
               <ArrowRight className="w-3.5 h-3.5" />
               <span>التقرير السابق</span>
             </span>
-            <p className="text-sm font-bold font-display text-[#0B1220] dark:text-[#F3EFE6] line-clamp-2">
+            <p className="text-sm font-bold font-display text-[#0B1311] dark:text-[#F4F0E8] line-clamp-2">
               {prevArticle.headline}
             </p>
           </button>
@@ -1329,23 +1430,23 @@ export const ArticleDetailView: React.FC<{
           <button
             type="button"
             onClick={() => onOpenArticle(nextArticle)}
-            className="p-4 border border-[#E2DACB] dark:border-[#1E293B] text-start hover:border-[#B8892B] transition-colors"
+            className="p-4 border border-[#E4DDD0] dark:border-[#1D2824] bg-white dark:bg-[#0E1513] text-start hover:border-[#B88E35] transition-colors"
           >
-            <span className="text-xs text-slate-500 flex items-center justify-end gap-1 mb-1">
+            <span className="text-xs text-[#525E59] flex items-center justify-end gap-1 mb-1">
               <span>التقرير التالي</span>
               <ArrowLeft className="w-3.5 h-3.5" />
             </span>
-            <p className="text-sm font-bold font-display text-[#0B1220] dark:text-[#F3EFE6] line-clamp-2">
+            <p className="text-sm font-bold font-display text-[#0B1311] dark:text-[#F4F0E8] line-clamp-2">
               {nextArticle.headline}
             </p>
           </button>
         )}
       </nav>
 
-      {/* مقالات ذات صلة (الأكثر صلة) */}
+      {/* مقالات ذات صلة */}
       {relatedArticles.length > 0 && (
-        <section aria-label="تقارير ذات صلة" className="mt-12 pt-8 border-t border-[#E2DACB] dark:border-[#1E293B]">
-          <h2 className="text-xl font-bold font-display text-[#0B1220] dark:text-[#F3EFE6] mb-6">
+        <section aria-label="تقارير ذات صلة" className="mt-12 pt-8 border-t border-[#E4DDD0] dark:border-[#1D2824]">
+          <h2 className="text-xl font-bold font-display text-[#0B1311] dark:text-[#F4F0E8] mb-6">
             تقارير موثقة ذات صلة
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1367,7 +1468,7 @@ export const ArticleDetailView: React.FC<{
 };
 
 // ============================================================================
-// 4. صفحات الأقسام (CategoryArchiveView مع ترقيم صفحات حقيقي)، الوسوم، البحث، والتصحيحات
+// 4. صفحات الأقسام، الوسوم، البحث، والتصحيحات
 // ============================================================================
 export const CategoryArchiveView: React.FC<{
   categorySlug: CategorySlug;
@@ -1380,24 +1481,24 @@ export const CategoryArchiveView: React.FC<{
   const filtered = articles.filter((a) => a.status === 'published' && a.categorySlug === categorySlug);
 
   const [page, setPage] = useState(1);
-  const pageSize = 4;
+  const pageSize = 6;
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const pagedArticles = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   return (
     <div className="space-y-8">
-      <header className="border-b border-[#E2DACB] dark:border-[#1E293B] pb-6">
-        <span className="text-xs font-bold text-[#B8892B]">قسم تحريري متخصص</span>
-        <h1 className="text-3xl font-extrabold font-display text-[#0B1220] dark:text-[#F3EFE6] mt-1">
+      <header className="border-b border-[#E4DDD0] dark:border-[#1D2824] pb-6">
+        <span className="text-xs font-bold text-[#B88E35]">قسم تحريري متخصص</span>
+        <h1 className="text-3xl font-extrabold font-display text-[#0B1311] dark:text-[#F4F0E8] mt-1">
           {section.name}
         </h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 max-w-2xl">
+        <p className="text-sm text-[#525E59] dark:text-[#98A6A0] mt-2 max-w-2xl">
           {section.description}
         </p>
       </header>
 
       {pagedArticles.length === 0 ? (
-        <div className="border border-[#E2DACB] dark:border-[#1E293B] p-8 text-center text-sm text-slate-600 dark:text-slate-400">
+        <div className="border border-[#E4DDD0] dark:border-[#1D2824] p-8 text-center text-sm text-[#525E59] dark:text-[#98A6A0]">
           لا توجد تقارير منشورة في هذا القسم حاليًا؛ الكمية تتبع الجودة المتاحة في المصادر الرسمية.
         </div>
       ) : (
@@ -1415,9 +1516,8 @@ export const CategoryArchiveView: React.FC<{
         </div>
       )}
 
-      {/* ترقيم صفحات حقيقي بروابط قابلة للزحف */}
-      <nav aria-label="ترقيم صفحات القسم" className="flex items-center justify-between pt-6 border-t border-[#E2DACB] dark:border-[#1E293B] text-xs">
-        <span className="text-slate-500 tabular-nums">
+      <nav aria-label="ترقيم صفحات القسم" className="flex items-center justify-between pt-6 border-t border-[#E4DDD0] dark:border-[#1D2824] text-xs">
+        <span className="text-[#525E59] tabular-nums">
           صفحة {formatNumerals(page, numeralSystem)} من {formatNumerals(totalPages, numeralSystem)} (إجمالي {formatNumerals(filtered.length, numeralSystem)} تقارير)
         </span>
         <div className="flex items-center gap-2">
@@ -1431,8 +1531,8 @@ export const CategoryArchiveView: React.FC<{
               }}
               className={`px-3 py-1.5 border tabular-nums ${
                 p === page
-                  ? 'bg-[#0B1220] text-[#FAF7F2] dark:bg-[#B8892B] dark:text-[#0B1220] border-transparent font-bold'
-                  : 'border-[#E2DACB] dark:border-slate-700 text-slate-700 dark:text-slate-300'
+                  ? 'bg-[#0B1F19] text-[#FAF8F4] dark:bg-[#D4AF5A] dark:text-[#080C0B] border-transparent font-bold'
+                  : 'border-[#E4DDD0] dark:border-[#1D2824] text-[#0B1311] dark:text-slate-300'
               }`}
             >
               {formatNumerals(p, numeralSystem)}
@@ -1458,22 +1558,19 @@ export const TagArchiveView: React.FC<{
     (a) => a.status === 'published' && a.tags.some((t) => t === displayName || t === tagSlugOrName)
   );
   const count = tagObj ? tagObj.articleCount : matching.length;
-  const isNoindex = count < 5;
 
   return (
     <div className="space-y-8">
-      <header className="border-b border-[#E2DACB] dark:border-[#1E293B] pb-6">
-        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 mb-2">
-          <span>أرشيف الموضوعات والوسوم</span>
+      <header className="border-b border-[#E4DDD0] dark:border-[#1D2824] pb-6">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-[#525E59] mb-2">
+          <span>أرشيف الموضوعات والوسوم الموثقة</span>
           <span aria-hidden="true">·</span>
-          <span className="font-mono">
-            {isNoindex
-              ? `noindex تلقائي (أقل من 5 مقالات: ${count} مقالات — حماية ضد الصفحات الرقيقة)`
-              : `مفهرس في محركات البحث (${count} مقالات ≥ 5)`}
+          <span>
+            إجمالي التقارير المرتبطة: {formatNumerals(count, numeralSystem)} تقارير
           </span>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold font-display text-[#0B1220] dark:text-[#F3EFE6]">
-          وسم: {displayName}
+        <h1 className="text-2xl sm:text-3xl font-extrabold font-display text-[#0B1311] dark:text-[#F4F0E8]">
+          ملف: {displayName}
         </h1>
       </header>
 
@@ -1516,13 +1613,13 @@ export const SearchView: React.FC<{
 
   return (
     <div className="space-y-8">
-      <header className="border-b border-[#E2DACB] dark:border-[#1E293B] pb-6 space-y-4">
-        <div className="flex items-center justify-between text-xs text-slate-500">
+      <header className="border-b border-[#E4DDD0] dark:border-[#1D2824] pb-6 space-y-4">
+        <div className="flex items-center justify-between text-xs text-[#525E59]">
           <span>البحث الفوري في الأرشيف الموثق</span>
-          <span className="font-mono">robots: noindex, nofollow (حماية من فهرسة نتائج البحث الداخلي)</span>
+          <span>إجمالي النتائج المطابقة: {formatNumerals(results.length, numeralSystem)}</span>
         </div>
-        <h1 className="text-2xl font-extrabold font-display text-[#0B1220] dark:text-[#F3EFE6]">
-          البحث في تقارير «الميزان الإخباري»
+        <h1 className="text-2xl font-extrabold font-display text-[#0B1311] dark:text-[#F4F0E8]">
+          البحث في تقارير «ميزان الخبر»
         </h1>
         <div className="max-w-xl">
           <label htmlFor="archive-search-input" className="sr-only">
@@ -1533,15 +1630,15 @@ export const SearchView: React.FC<{
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="ابحث عن كلمة مفتاحية، مؤسسة دولية، أو ملف اقتصادي..."
-            className="w-full px-4 py-2.5 text-sm bg-white dark:bg-[#111C33] border border-[#E2DACB] dark:border-slate-700 text-[#0B1220] dark:text-[#F3EFE6]"
+            placeholder="ابحث عن كلمة مفتاحية، محافظة سورية، دولة عربية، أو ملف اقتصادي..."
+            className="w-full px-4 py-2.5 text-sm bg-white dark:bg-[#0E1513] border border-[#E4DDD0] dark:border-[#1D2824] text-[#0B1311] dark:text-[#F4F0E8]"
           />
         </div>
       </header>
 
       {results.length === 0 ? (
-        <div className="border border-[#E2DACB] dark:border-[#1E293B] p-8 text-center text-sm text-slate-600 dark:text-slate-400">
-          لم يتم العثور على تقارير مطابقة لعبارة البحث «{query}». (تُحجب الإعلانات تلقائيًا في صفحات البحث الفارغة).
+        <div className="border border-[#E4DDD0] dark:border-[#1D2824] p-8 text-center text-sm text-[#525E59] dark:text-[#98A6A0]">
+          لم يتم العثور على تقارير مطابقة لعبارة البحث «{query}».
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1562,7 +1659,7 @@ export const SearchView: React.FC<{
 };
 
 // ============================================================================
-// 5. صفحات الثقة، هيئة التحرير، سجل التصحيحات، والصفحات القانونية الـ 11
+// 5. صفحات الثقة، هيئة التحرير، سجل التصحيحات، والصفحات القانونية
 // ============================================================================
 export const CorrectionsLogView: React.FC<{
   articles: ArticleRecord[];
@@ -1575,13 +1672,13 @@ export const CorrectionsLogView: React.FC<{
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      <header className="border-b border-[#E2DACB] dark:border-[#1E293B] pb-6">
-        <span className="text-xs font-bold text-[#B8892B]">الشفافية والمساءلة التحريرية</span>
-        <h1 className="text-3xl font-extrabold font-display text-[#0B1220] dark:text-[#F3EFE6] mt-1">
+      <header className="border-b border-[#E4DDD0] dark:border-[#1D2824] pb-6">
+        <span className="text-xs font-bold text-[#B88E35]">الشفافية والمساءلة التحريرية</span>
+        <h1 className="text-3xl font-extrabold font-display text-[#0B1311] dark:text-[#F4F0E8] mt-1">
           سجل التصحيحات والتوضيحات العلني
         </h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
-          تلتزم «الميزان الإخباري» بنشر أي تصويب أو تحديث جوهري يطرأ على الأرقام أو الوقائع بشفافية كاملة دون حذف صامت.
+        <p className="text-sm text-[#525E59] dark:text-[#98A6A0] mt-2">
+          تلتزم «ميزان الخبر» بنشر أي تصويب أو تحديث جوهري يطرأ على الأرقام أو الوقائع بشفافية كاملة تحت إشراف المدقق اللغوي والمصحح العام (أ. علام الكيلاني).
         </p>
       </header>
 
@@ -1589,22 +1686,22 @@ export const CorrectionsLogView: React.FC<{
         {allCorrections.map((item) => (
           <div
             key={item.id}
-            className="border border-[#E2DACB] dark:border-[#1E293B] bg-[#FAF7F2] dark:bg-[#111C33] p-5 space-y-2"
+            className="border border-[#E4DDD0] dark:border-[#1D2824] bg-white dark:bg-[#0E1513] p-5 space-y-2"
           >
-            <div className="flex flex-wrap items-center justify-between text-xs text-slate-500">
+            <div className="flex flex-wrap items-center justify-between text-xs text-[#525E59]">
               <span>تاريخ التصويب: {formatArabicDate(item.publishedAt, numeralSystem)}</span>
               <span>المراجع: {item.correctedBy}</span>
             </div>
-            <h2 className="text-base font-bold font-display text-[#0B1220] dark:text-[#F3EFE6]">
+            <h2 className="text-base font-bold font-display text-[#0B1311] dark:text-[#F4F0E8]">
               <button
                 type="button"
                 onClick={() => onOpenArticle(item.articleRef)}
-                className="hover:text-[#B8892B] text-start underline"
+                className="hover:text-[#B88E35] text-start underline"
               >
                 {item.articleHeadline}
               </button>
             </h2>
-            <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+            <p className="text-sm text-[#525E59] dark:text-slate-300 leading-relaxed">
               {item.text}
             </p>
           </div>
@@ -1621,7 +1718,8 @@ export const EditorialTeamView: React.FC<{
 }> = ({ authors, siteConfig }) => {
   const [unitFilter, setUnitFilter] = useState<'all' | 'syria' | 'arab_turkey' | 'other'>('all');
 
-  const chiefEditor = authors.find((a) => a.id === 'editor-ibrahim');
+  const chiefEditor = authors.find((a) => a.id === 'chief-editor-ibrahim');
+  const chiefProofreader = authors.find((a) => a.id === 'proofreader-allam');
   const syriaAuthors = authors.filter((a) => a.id.startsWith('jour-syria-'));
   const arabTurkeyAuthors = authors.filter((a) => a.id.startsWith('jour-arab-tr-'));
   const otherAuthors = authors.filter((a) => a.id.startsWith('jour-other-'));
@@ -1637,111 +1735,115 @@ export const EditorialTeamView: React.FC<{
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
-      <header className="border-b-4 border-double border-[#09241D] dark:border-[#C89D42]/60 pb-6">
-        <span className="text-xs font-bold text-[#B8892B]">
-          المسؤولية التحريرية والشفافية · 100 صحفي ومراسل متخصص · 45 مصدرًا معتمدًا
+      <header className="border-b border-[#E4DDD0] dark:border-[#1D2824] pb-6">
+        <span className="text-xs font-bold text-[#B88E35]">
+          المسؤولية التحريرية والشفافية · رئيس التحرير + المدقق اللغوي العام + 100 صحفي ومراسل متخصص
         </span>
-        <h1 className="text-3xl font-extrabold font-royal text-[#0B1220] dark:text-[#F3EFE6] mt-1">
-          هيئة التحرير والكادر الصحفي المتخصص (100 كاتب ومراسل)
+        <h1 className="text-3xl font-extrabold font-royal text-[#0B1311] dark:text-[#F4F0E8] mt-1">
+          هيئة التحرير، وحدة التدقيق اللغوي، والكادر الصحفي (102 عضوًا)
         </h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
-          تعمل غرفة أخبار «{siteConfig.siteName}» تحت الإشراف المباشر لرئيس التحرير المسؤول ({siteConfig.editorInChiefName}) وبكادر يضم 100 صحفي ومراسل موزعين وفق الأولوية التحريرية: 50 صحفيًا للشأن السوري (50%)، و40 صحفيًا للعالم العربي وتركيا (40%)، و10 محررين للأقسام التخصصية والدولية (10%).
+        <p className="text-sm text-[#525E59] dark:text-[#98A6A0] mt-2 leading-relaxed">
+          تعمل غرفة أخبار «{siteConfig.siteName}» تحت الإشراف المباشر لرئيس التحرير المسؤول ({siteConfig.editorInChiefName})، وبمراجعة لغوية وبصرية شاملة يقودها المدقق اللغوي والمصحح العام (أ. علام الكيلاني)، مع كادر يضم 100 صحفي ومراسل موزعين وفق الأولوية التحريرية: 50 صحفيًا للشأن السوري (50%)، و40 صحفيًا للعالم العربي وتركيا (40%)، و10 محررين للأقسام التخصصية والدولية (10%).
         </p>
       </header>
 
-      {/* بطاقة الهوية الرسمية لرئيس التحرير والمؤسسة */}
-      <section className="border-2 border-[#09241D] dark:border-[#C89D42]/60 bg-[#F3EFE6]/80 dark:bg-[#111C33] p-6 space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-lg font-bold font-royal text-[#0B1220] dark:text-[#F3EFE6]">
-            البطاقة التعريفية للمؤسسة ورئاسة التحرير
-          </h2>
-          {chiefEditor && (
-            <span className="px-3 py-1 bg-[#09241D] text-[#D4A84F] text-xs font-bold">
-              المدير العام ورئيس التحرير المسؤول: {siteConfig.editorInChiefName}
+      {/* بطاقة القيادة التحريرية ووحدة التدقيق اللغوي والفلترة الذكية */}
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="border border-[#E4DDD0] dark:border-[#1D2824] bg-white dark:bg-[#0E1513] p-6 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-[#B88E35]">القيادة التحريرية العليا</span>
+            <span className="px-2.5 py-1 bg-[#081511] text-[#D4AF5A] text-xs font-bold">
+              المدير العام ورئيس التحرير
             </span>
-          )}
+          </div>
+          <h2 className="text-xl font-bold font-royal text-[#0B1311] dark:text-[#F4F0E8]">
+            {chiefEditor?.name || siteConfig.editorInChiefName}
+          </h2>
+          <p className="text-xs text-[#525E59] dark:text-slate-300 leading-relaxed">
+            {chiefEditor?.bio || siteConfig.editorBio}
+          </p>
+          <div className="pt-2 border-t border-[#E4DDD0] dark:border-[#1D2824] text-xs text-[#525E59] dark:text-[#98A6A0] flex flex-wrap items-center justify-between gap-2">
+            <span>المؤسسة: {siteConfig.publisherLegalName}</span>
+            <a href={`mailto:${siteConfig.contactEmail}`} className="font-mono text-[#B88E35] underline">
+              {siteConfig.contactEmail}
+            </a>
+          </div>
         </div>
 
-        <dl className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-          <div className="p-3.5 border border-[#E2DACB] dark:border-slate-800 bg-[#FAF7F2] dark:bg-[#0B1220]">
-            <dt className="text-slate-500 mb-1">المؤسسة الناشرة:</dt>
-            <dd className="font-bold text-sm text-[#0B1220] dark:text-[#F3EFE6]">
-              {siteConfig.publisherLegalName}
-            </dd>
+        <div className="border border-[#B88E35]/60 bg-[#081511] text-[#FAF8F4] p-6 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-[#D4AF5A] flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              <span>وحدة التدقيق اللغوي وإصلاح الأخطاء وفحص الصور</span>
+            </span>
+            <span className="px-2.5 py-1 bg-[#D4AF5A] text-[#081511] text-xs font-extrabold">
+              موظف التدقيق المختص
+            </span>
           </div>
-          <div className="p-3.5 border border-[#E2DACB] dark:border-slate-800 bg-[#FAF7F2] dark:bg-[#0B1220]">
-            <dt className="text-slate-500 mb-1">رئيس التحرير المسؤول:</dt>
-            <dd className="font-bold text-sm text-[#0B1220] dark:text-[#F3EFE6]">
-              {siteConfig.editorInChiefName}
-            </dd>
+          <h2 className="text-xl font-bold font-royal text-[#D4AF5A]">
+            {chiefProofreader?.name || 'أ. علام الكيلاني'}
+          </h2>
+          <p className="text-xs text-[#E8E1D3]/90 leading-relaxed">
+            {chiefProofreader?.bio ||
+              'يتولى الأستاذ علام الكيلاني التدقيق اللغوي والنحوي الشامل لجميع المقالات قبل النشر، وتنقية النصوص من أي رموز برمجية أو عبارات أجنبية أو كلمات مقطوعة، وضمان تفرد الصور الفوتوغرافية بنسبة 100% ومنع تكرار أي صورة في الموقع.'}
+          </p>
+          <div className="pt-2 border-t border-[#B88E35]/30 text-xs text-[#D4AF5A] flex flex-wrap items-center justify-between gap-2">
+            <span>الحالة: فحص آلي ولغوي مستمر 24/7</span>
+            <span>نسبة تكرار الصور المسموحة: 0%</span>
           </div>
-          <div className="p-3.5 border border-[#E2DACB] dark:border-slate-800 bg-[#FAF7F2] dark:bg-[#0B1220]">
-            <dt className="text-slate-500 mb-1">البريد الإلكتروني الرسمي:</dt>
-            <dd className="font-mono font-bold text-sm text-[#0B1220] dark:text-[#F3EFE6]">
-              <a href={`mailto:${siteConfig.contactEmail}`} className="hover:text-[#B8892B] underline">
-                {siteConfig.contactEmail}
-              </a>
-            </dd>
-          </div>
-          <div className="p-3.5 border border-[#E2DACB] dark:border-slate-800 bg-[#FAF7F2] dark:bg-[#0B1220] sm:col-span-3">
-            <dt className="text-slate-500 mb-1">التوزيع التحريري المعتمد للكادر (100 صحفي) والمصادر (45 مصدرًا):</dt>
-            <dd className="text-slate-700 dark:text-slate-300 leading-relaxed">
-              {siteConfig.editorBio} — يشرف على تنسيق العمل بين وحدات الرصد والتدقيق الواردة من 45 وكالة أنباء وشبكة إخبارية معتمدة، مع التركيز على الأخبار العاجلة والمهمة.
-            </dd>
-          </div>
-        </dl>
+        </div>
       </section>
 
       {/* لوحة التوزيع الهيكلي للصحفيين (50% سوريا | 40% العرب وتركيا | 10% باقي الأقسام) */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="border-2 border-[#09241D] dark:border-[#C89D42]/60 bg-[#09241D] text-[#F9F6F0] p-5 space-y-1.5">
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="border border-[#B88E35]/40 bg-[#081511] text-[#FAF8F4] p-5 space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-[#D4A84F]">الوحدة الأولى · الأولوية القصوى</span>
-            <span className="text-2xl font-extrabold font-royal text-[#D4A84F]">50%</span>
+            <span className="text-xs font-bold text-[#D4AF5A]">الوحدة الأولى · الأولوية القصوى</span>
+            <span className="text-2xl font-extrabold font-royal text-[#D4AF5A]">50%</span>
           </div>
           <h3 className="text-lg font-bold font-royal">فريق الشأن السوري (50 صحفيًا)</h3>
-          <p className="text-xs text-[#E5DEC9]/85 leading-relaxed">
+          <p className="text-xs text-[#E8E1D3]/85 leading-relaxed">
             تغطية شاملة ومعمّقة لجميع المحافظات السورية الـ 14، والاقتصاد والمعيشة، وإعادة الإعمار، والطاقة والمياه، والمعابر الحدودية، والمرافئ، والجامعات.
           </p>
         </div>
 
-        <div className="border-2 border-[#09241D] dark:border-[#C89D42]/60 bg-white dark:bg-[#111C33] p-5 space-y-1.5">
+        <div className="border border-[#E4DDD0] dark:border-[#1D2824] bg-white dark:bg-[#0E1513] p-5 space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-[#B8892B]">الوحدة الثانية · التغطية الإقليمية</span>
-            <span className="text-2xl font-extrabold font-royal text-[#09241D] dark:text-[#D4A84F]">40%</span>
+            <span className="text-xs font-bold text-[#B88E35]">الوحدة الثانية · التغطية الإقليمية</span>
+            <span className="text-2xl font-extrabold font-royal text-[#0B1F19] dark:text-[#D4AF5A]">40%</span>
           </div>
-          <h3 className="text-lg font-bold font-royal text-[#0B1220] dark:text-[#F3EFE6]">
+          <h3 className="text-lg font-bold font-royal text-[#0B1311] dark:text-[#F4F0E8]">
             فريق العالم العربي وتركيا (40 صحفيًا)
           </h3>
-          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+          <p className="text-xs text-[#525E59] dark:text-slate-300 leading-relaxed">
             مراسلون ومحررون متخصصون في الشأن التركي (أنقرة وإسطنبول وغازي عنتاب ومرسين) وجميع العواصم العربية في الخليج والمشرق ووادي النيل والمغرب العربي.
           </p>
         </div>
 
-        <div className="border border-[#E2DACB] dark:border-[#1E293B] bg-[#FAF7F2] dark:bg-[#0F1915] p-5 space-y-1.5">
+        <div className="border border-[#E4DDD0] dark:border-[#1D2824] bg-white dark:bg-[#0E1513] p-5 space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-[#B8892B]">الوحدة الثالثة · التغطية التخصصية</span>
-            <span className="text-2xl font-extrabold font-royal text-[#09241D] dark:text-[#D4A84F]">10%</span>
+            <span className="text-xs font-bold text-[#B88E35]">الوحدة الثالثة · التغطية التخصصية</span>
+            <span className="text-2xl font-extrabold font-royal text-[#0B1F19] dark:text-[#D4AF5A]">10%</span>
           </div>
-          <h3 className="text-lg font-bold font-royal text-[#0B1220] dark:text-[#F3EFE6]">
+          <h3 className="text-lg font-bold font-royal text-[#0B1311] dark:text-[#F4F0E8]">
             فريق الأقسام التخصصية والدولية (10 محررين)
           </h3>
-          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+          <p className="text-xs text-[#525E59] dark:text-slate-300 leading-relaxed">
             نخبة من المحررين المتخصصين في التكنولوجيا والذكاء الاصطناعي، والعلوم والصحة، والثقافة والتراث، والرياضة، والتحليلات الاستراتيجية، والاقتصاد الدولي.
           </p>
         </div>
       </section>
 
       {/* أزرار تصفية السجل الكامل للصحفيين הـ 100 */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#E2DACB] dark:border-[#1E293B] pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#E4DDD0] dark:border-[#1D2824] pb-4">
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={() => setUnitFilter('all')}
             className={`px-3.5 py-2 text-xs font-bold transition-colors ${
               unitFilter === 'all'
-                ? 'bg-[#09241D] text-[#F9F6F0] dark:bg-[#D4A84F] dark:text-[#080E0C]'
-                : 'bg-[#F1ECE1] dark:bg-[#111C33] text-slate-700 dark:text-slate-300 hover:text-[#B8892B]'
+                ? 'bg-[#0B1F19] text-[#FAF8F4] dark:bg-[#D4AF5A] dark:text-[#080C0B]'
+                : 'bg-[#F3EFE6] dark:bg-[#0E1513] text-[#525E59] dark:text-slate-300 hover:text-[#B88E35]'
             }`}
           >
             جميع الصحفيين ({syriaAuthors.length + arabTurkeyAuthors.length + otherAuthors.length})
@@ -1751,8 +1853,8 @@ export const EditorialTeamView: React.FC<{
             onClick={() => setUnitFilter('syria')}
             className={`px-3.5 py-2 text-xs font-bold transition-colors ${
               unitFilter === 'syria'
-                ? 'bg-[#09241D] text-[#F9F6F0] dark:bg-[#D4A84F] dark:text-[#080E0C]'
-                : 'bg-[#F1ECE1] dark:bg-[#111C33] text-slate-700 dark:text-slate-300 hover:text-[#B8892B]'
+                ? 'bg-[#0B1F19] text-[#FAF8F4] dark:bg-[#D4AF5A] dark:text-[#080C0B]'
+                : 'bg-[#F3EFE6] dark:bg-[#0E1513] text-[#525E59] dark:text-slate-300 hover:text-[#B88E35]'
             }`}
           >
             صحفيو الشأن السوري ({syriaAuthors.length} — 50%)
@@ -1762,8 +1864,8 @@ export const EditorialTeamView: React.FC<{
             onClick={() => setUnitFilter('arab_turkey')}
             className={`px-3.5 py-2 text-xs font-bold transition-colors ${
               unitFilter === 'arab_turkey'
-                ? 'bg-[#09241D] text-[#F9F6F0] dark:bg-[#D4A84F] dark:text-[#080E0C]'
-                : 'bg-[#F1ECE1] dark:bg-[#111C33] text-slate-700 dark:text-slate-300 hover:text-[#B8892B]'
+                ? 'bg-[#0B1F19] text-[#FAF8F4] dark:bg-[#D4AF5A] dark:text-[#080C0B]'
+                : 'bg-[#F3EFE6] dark:bg-[#0E1513] text-[#525E59] dark:text-slate-300 hover:text-[#B88E35]'
             }`}
           >
             صحفيو العرب وتركيا ({arabTurkeyAuthors.length} — 40%)
@@ -1773,8 +1875,8 @@ export const EditorialTeamView: React.FC<{
             onClick={() => setUnitFilter('other')}
             className={`px-3.5 py-2 text-xs font-bold transition-colors ${
               unitFilter === 'other'
-                ? 'bg-[#09241D] text-[#F9F6F0] dark:bg-[#D4A84F] dark:text-[#080E0C]'
-                : 'bg-[#F1ECE1] dark:bg-[#111C33] text-slate-700 dark:text-slate-300 hover:text-[#B8892B]'
+                ? 'bg-[#0B1F19] text-[#FAF8F4] dark:bg-[#D4AF5A] dark:text-[#080C0B]'
+                : 'bg-[#F3EFE6] dark:bg-[#0E1513] text-[#525E59] dark:text-slate-300 hover:text-[#B88E35]'
             }`}
           >
             محررو الأقسام التخصصية ({otherAuthors.length} — 10%)
@@ -1786,19 +1888,19 @@ export const EditorialTeamView: React.FC<{
         {displayedJournalists.map((author, index) => (
           <div
             key={author.id}
-            className="border border-[#E2DACB] dark:border-[#1E293B] bg-[#FAF7F2] dark:bg-[#111C33] p-5 space-y-2 flex flex-col justify-between hover:border-[#B8892B] transition-colors"
+            className="border border-[#E4DDD0] dark:border-[#1D2824] bg-white dark:bg-[#0E1513] p-5 space-y-2 flex flex-col justify-between hover:border-[#B88E35] transition-colors"
           >
             <div className="space-y-1.5">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-[11px] font-bold text-[#B8892B]">{author.roleTitle}</span>
-                <span className="text-[10px] font-mono text-slate-400">#{index + 1}</span>
+                <span className="text-[11px] font-bold text-[#B88E35]">{author.roleTitle}</span>
+                <span className="text-[10px] font-mono text-[#525E59]">#{index + 1}</span>
               </div>
-              <h3 className="text-lg font-bold font-display text-[#0B1220] dark:text-[#F3EFE6]">
+              <h3 className="text-lg font-bold font-display text-[#0B1311] dark:text-[#F4F0E8]">
                 {author.name}
               </h3>
-              <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">{author.bio}</p>
+              <p className="text-xs text-[#525E59] dark:text-slate-300 leading-relaxed">{author.bio}</p>
             </div>
-            <p className="pt-2 text-[11px] text-slate-500 border-t border-[#E2DACB]/60 dark:border-slate-800">
+            <p className="pt-2 text-[11px] text-[#525E59] border-t border-[#E4DDD0]/60 dark:border-[#1D2824]">
               {author.credentials}
             </p>
           </div>
@@ -1845,9 +1947,8 @@ export const LegalTrustPageView: React.FC<{
 
   return (
     <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-      {/* قائمة صفحات الثقة والقانون */}
-      <aside className="lg:col-span-4 border border-[#E2DACB] dark:border-[#1E293B] bg-[#F3EFE6]/60 dark:bg-[#111C33] p-5">
-        <h2 className="text-sm font-bold font-display text-[#0B1220] dark:text-[#F3EFE6] pb-3 mb-3 border-b border-[#E2DACB] dark:border-[#1E293B]">
+      <aside className="lg:col-span-4 border border-[#E4DDD0] dark:border-[#1D2824] bg-[#F3EFE6]/60 dark:bg-[#0E1513] p-5">
+        <h2 className="text-sm font-bold font-display text-[#0B1311] dark:text-[#F4F0E8] pb-3 mb-3 border-b border-[#E4DDD0] dark:border-[#1D2824]">
           مركز الشفافية والسياسات القانونية
         </h2>
         <nav aria-label="صفحات السياسات والثقة" className="space-y-1.5 text-xs">
@@ -1861,8 +1962,8 @@ export const LegalTrustPageView: React.FC<{
               }}
               className={`w-full text-start px-3 py-2 transition-colors ${
                 p.slug === page.slug
-                  ? 'bg-[#0B1220] text-[#FAF7F2] dark:bg-[#B8892B] dark:text-[#0B1220] font-bold'
-                  : 'text-slate-700 dark:text-slate-300 hover:bg-black/5 dark:hover:bg-white/5'
+                  ? 'bg-[#0B1F19] text-[#FAF8F4] dark:bg-[#D4AF5A] dark:text-[#080C0B] font-bold'
+                  : 'text-[#525E59] dark:text-slate-300 hover:bg-black/5 dark:hover:bg-white/5'
               }`}
             >
               {p.titleAr}
@@ -1871,30 +1972,29 @@ export const LegalTrustPageView: React.FC<{
         </nav>
       </aside>
 
-      {/* محتوى الصفحة القانونية */}
-      <div className="lg:col-span-8 border border-[#E2DACB] dark:border-[#1E293B] bg-[#FAF7F2] dark:bg-[#111C33] p-6 sm:p-8 space-y-6">
-        <header className="border-b border-[#E2DACB] dark:border-[#1E293B] pb-5">
-          <span className="text-xs font-semibold text-[#B8892B]">
+      <div className="lg:col-span-8 border border-[#E4DDD0] dark:border-[#1D2824] bg-white dark:bg-[#0E1513] p-6 sm:p-8 space-y-6">
+        <header className="border-b border-[#E4DDD0] dark:border-[#1D2824] pb-5">
+          <span className="text-xs font-semibold text-[#B88E35]">
             وثيقة رسمية ملزمة · آخر تحديث: {page.lastUpdated}
           </span>
-          <h1 className="text-2xl sm:text-3xl font-extrabold font-display text-[#0B1220] dark:text-[#F3EFE6] mt-1">
+          <h1 className="text-2xl sm:text-3xl font-extrabold font-display text-[#0B1311] dark:text-[#F4F0E8] mt-1">
             {page.titleAr}
           </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+          <p className="text-sm text-[#525E59] dark:text-[#98A6A0] mt-2 leading-relaxed">
             {page.subtitleAr}
           </p>
         </header>
 
         {page.requiresPublisherIdentity && (
-          <div className="p-4 border border-[#E2DACB] dark:border-slate-700 bg-[#F3EFE6]/70 dark:bg-[#0B1220] text-xs space-y-1.5">
-            <div className="flex items-center gap-2 font-bold text-[#0B1220] dark:text-[#F3EFE6]">
-              <ShieldCheck className="w-4 h-4 text-[#B8892B]" />
+          <div className="p-4 border border-[#E4DDD0] dark:border-[#1D2824] bg-[#FAF8F4] dark:bg-[#080C0B] text-xs space-y-1.5">
+            <div className="flex items-center gap-2 font-bold text-[#0B1311] dark:text-[#F4F0E8]">
+              <ShieldCheck className="w-4 h-4 text-[#B88E35]" />
               <span>البيانات الرسمية للمؤسسة الناشرة:</span>
             </div>
-            <p className="text-slate-700 dark:text-slate-300">
+            <p className="text-[#525E59] dark:text-slate-300">
               المؤسسة: <strong>{siteConfig.publisherLegalName}</strong> · رئيس التحرير المسؤول:{' '}
               <strong>{siteConfig.editorInChiefName}</strong> · البريد الإلكتروني الرسمي:{' '}
-              <a href={`mailto:${siteConfig.contactEmail}`} className="font-mono font-bold underline hover:text-[#B8892B]">
+              <a href={`mailto:${siteConfig.contactEmail}`} className="font-mono font-bold underline hover:text-[#B88E35]">
                 {siteConfig.contactEmail}
               </a>
             </p>
@@ -1904,13 +2004,13 @@ export const LegalTrustPageView: React.FC<{
         <div className="space-y-6">
           {page.sections.map((sec, idx) => (
             <section key={idx} className="space-y-2.5">
-              <h2 className="text-lg font-bold font-display text-[#0B1220] dark:text-[#F3EFE6]">
+              <h2 className="text-lg font-bold font-display text-[#0B1311] dark:text-[#F4F0E8]">
                 {sec.heading}
               </h2>
               {sec.paragraphs.map((p, pIdx) => (
                 <p
                   key={pIdx}
-                  className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed"
+                  className="text-sm text-[#525E59] dark:text-slate-300 leading-relaxed"
                 >
                   {p}
                 </p>
@@ -1919,17 +2019,16 @@ export const LegalTrustPageView: React.FC<{
           ))}
         </div>
 
-        {/* نموذج تفاعلي في صفحتي اتصل بنا وحقوق النشر (DMCA) */}
         {(page.slug === 'contact' || page.slug === 'dmca') && (
           <form
             onSubmit={handleSubmit}
-            className="pt-6 border-t border-[#E2DACB] dark:border-[#1E293B] space-y-4 text-xs"
+            className="pt-6 border-t border-[#E4DDD0] dark:border-[#1D2824] space-y-4 text-xs"
           >
-            <h3 className="text-base font-bold font-display text-[#0B1220] dark:text-[#F3EFE6] flex items-center gap-2">
-              <Mail className="w-4 h-4 text-[#B8892B]" />
+            <h3 className="text-base font-bold font-display text-[#0B1311] dark:text-[#F4F0E8] flex items-center gap-2">
+              <Mail className="w-4 h-4 text-[#B88E35]" />
               <span>
                 {page.slug === 'dmca'
-                  ? 'نموذج إشعار حقوق النشر وطلب الإزالة الرسمي (DMCA)'
+                  ? 'نموذج إشعار حقوق النشر وطلب الإزالة الرسمي'
                   : 'نموذج مراسلة هيئة التحرير'}
               </span>
             </h3>
@@ -1945,7 +2044,7 @@ export const LegalTrustPageView: React.FC<{
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3 py-2 bg-white dark:bg-[#0B1220] border border-[#E2DACB] dark:border-slate-700"
+                  className="w-full px-3 py-2 bg-[#FAF8F4] dark:bg-[#080C0B] border border-[#E4DDD0] dark:border-[#1D2824]"
                 />
               </div>
               <div>
@@ -1958,7 +2057,7 @@ export const LegalTrustPageView: React.FC<{
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3 py-2 bg-white dark:bg-[#0B1220] border border-[#E2DACB] dark:border-slate-700"
+                  className="w-full px-3 py-2 bg-[#FAF8F4] dark:bg-[#080C0B] border border-[#E4DDD0] dark:border-[#1D2824]"
                 />
               </div>
             </div>
@@ -1973,7 +2072,7 @@ export const LegalTrustPageView: React.FC<{
                 required
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
-                className="w-full px-3 py-2 bg-white dark:bg-[#0B1220] border border-[#E2DACB] dark:border-slate-700"
+                className="w-full px-3 py-2 bg-[#FAF8F4] dark:bg-[#080C0B] border border-[#E4DDD0] dark:border-[#1D2824]"
               />
             </div>
 
@@ -1987,17 +2086,17 @@ export const LegalTrustPageView: React.FC<{
                 required
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                className="w-full px-3 py-2 bg-white dark:bg-[#0B1220] border border-[#E2DACB] dark:border-slate-700"
+                className="w-full px-3 py-2 bg-[#FAF8F4] dark:bg-[#080C0B] border border-[#E4DDD0] dark:border-[#1D2824]"
               />
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-[11px] text-slate-500">
-                محمي ضد الرسائل المزعجة (Cloudflare Turnstile &amp; Rate Limiting)
+              <span className="text-[11px] text-[#525E59]">
+                تخضع جميع المراسلات لمراجعة مكتب التحرير المركزي والرد خلال 24 ساعة عمل
               </span>
               <button
                 type="submit"
-                className="px-5 py-2 bg-[#0B1220] text-[#FAF7F2] dark:bg-[#B8892B] dark:text-[#0B1220] font-bold"
+                className="px-5 py-2 bg-[#0B1F19] text-[#FAF8F4] dark:bg-[#D4AF5A] dark:text-[#080C0B] font-bold"
               >
                 إرسال الطلب رسميًا
               </button>

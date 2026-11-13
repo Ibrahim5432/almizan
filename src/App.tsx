@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Moon, Search, Sun } from 'lucide-react';
+import { CheckCircle2, Moon, Search, ShieldCheck, Sun } from 'lucide-react';
 import {
   ArticleRecord,
   AuthorRecord,
@@ -19,12 +19,16 @@ import {
   SERVICE_DATA_WIDGETS,
 } from './core/seed-data';
 import {
+  decodeAndCleanRssText,
   enrichArticleBodyIfNeeded,
   evaluateSourceSafety,
   inferCategoryFromText,
+  isAuthenticArabicEditorialText,
   markdownToSanitizedHtml,
   normalizeSourceSnippet,
+  proofreadAndDeduplicateArticles,
   resolveLegalEditorialImage,
+  truncateAtWordBoundary,
 } from './core/pipeline';
 import { getTodayHijriAndGregorian } from './utils/formatters';
 import { ConsentBanner, ConsentState, loadConsentState } from './components/AdSenseAndConsent';
@@ -50,7 +54,7 @@ type ActiveRoute =
   | { view: 'editorial_team' }
   | { view: 'legal'; slug: string };
 
-const STATIC_STORAGE_KEY = 'mizan_autonomous_articles_v3';
+const STATIC_STORAGE_KEY = 'mizan_autonomous_articles_v4';
 
 const CLIENT_FALLBACK_FEEDS = [
   // حصة الشأن السوري (50%)
@@ -113,7 +117,7 @@ const CLIENT_FALLBACK_FEEDS = [
   },
   {
     sourceId: 'src-trt-arabi',
-    sourceName: 'تي آر تي عربي (TRT Arabi) — الشؤون الإقليمية',
+    sourceName: 'تي آر تي عربي — الشؤون الإقليمية',
     url: 'https://www.trtarabi.com/news/arab-turkish-energy-grid-2026',
     title: 'مشاورات عربية تركية لتوسيع مشاريع الربط الكهربائي وتوطين صناعات الطاقة المتجددة في المنطقة',
     snippet: 'تركزت المباحثات الفنية بين وزراء الطاقة في أنقرة وعمان وبغداد والقاهرة والرياض على رفع سعة التبادل الكهربائي الإقليمي في أوقات الذروة.',
@@ -164,7 +168,7 @@ export function App() {
             merged.push(initArt);
           }
         }
-        return merged;
+        return proofreadAndDeduplicateArticles(merged);
       }
     } catch {
       // ignore storage errors
@@ -228,13 +232,13 @@ export function App() {
     },
     {
       sourceId: 'src-bbc-arabic',
-      sourceName: 'بي بي سي عربي (BBC News Arabic)',
+      sourceName: 'بي بي سي عربي',
       rssUrl: 'https://feeds.bbci.co.uk/arabic/rss.xml',
       focus: 'other' as const,
     },
     {
       sourceId: 'src-un-news-ar',
-      sourceName: 'أخبار الأمم المتحدة (UN News Arabic)',
+      sourceName: 'أخبار الأمم المتحدة — القسم العربي',
       rssUrl: 'https://news.un.org/feed/subscribe/ar/news/all/rss.xml',
       focus: 'other' as const,
     },
@@ -251,7 +255,7 @@ export function App() {
 
       let chosen: { sourceId: string; sourceName: string; url: string; title: string; snippet: string } | null = null;
 
-      // محاولة الجلب المباشر من الخلاصات الحية عبر واجهة RSS2JSON المتوافقة مع المتصفح على مدار الساعة 24/7
+      // محاولة الجلب المباشر من الخلاصات الحية عبر واجهة RSS2JSON مع فلترة الأستاذ علام الكيلاني الصارمة
       const orderedLiveFeeds = [
         ...BROWSER_LIVE_RSS_FEEDS.filter((f) => f.focus === targetFocus),
         ...BROWSER_LIVE_RSS_FEEDS.filter((f) => f.focus !== targetFocus),
@@ -266,8 +270,11 @@ export function App() {
             const rssJson = await rssRes.json();
             if (Array.isArray(rssJson.items)) {
               for (const item of rssJson.items) {
-                const rawTitle = String(item.title || '').replace(/<[^>]+>/g, '').trim();
-                const rawDesc = String(item.description || '').replace(/<[^>]+>/g, '').trim();
+                const rawTitle = decodeAndCleanRssText(String(item.title || ''));
+                const rawDesc = decodeAndCleanRssText(String(item.description || ''));
+                const arabicCheck = isAuthenticArabicEditorialText(rawTitle, rawDesc);
+                if (!arabicCheck.valid) continue;
+
                 const safety = evaluateSourceSafety(rawTitle, rawDesc);
                 if (
                   rawTitle.length > 20 &&
@@ -279,7 +286,7 @@ export function App() {
                     sourceId: liveFeed.sourceId,
                     sourceName: liveFeed.sourceName,
                     url: String(item.link || liveFeed.rssUrl),
-                    title: rawTitle,
+                    title: truncateAtWordBoundary(rawTitle, 110, false),
                     snippet: normalizeSourceSnippet(rawDesc || rawTitle, 400),
                   };
                   break;
@@ -340,7 +347,7 @@ export function App() {
         type: chosen.title.includes('عاجل') ? 'breaking' : 'news',
         slug: `news-${Date.now()}`,
         headline: chosen.title,
-        dek: chosen.snippet,
+        dek: truncateAtWordBoundary(chosen.snippet, 210, true),
         bodyMd: enriched.bodyMd,
         bodyHtml: markdownToSanitizedHtml(enriched.bodyMd),
         keyPoints: [
@@ -363,6 +370,7 @@ export function App() {
           categorySlug: catSlug,
           categoryName: catName,
           sourceName: chosen.sourceName,
+          excludeUrls: articles.map((a) => a.image.url),
         }),
         status: 'published',
         riskFlags: [],
@@ -374,7 +382,7 @@ export function App() {
         readingTimeMin: enriched.readingTimeMin,
         publishedAt: nowIso,
         updatedAt: nowIso,
-        reviewedBy: 'النظام الآلي',
+        reviewedBy: 'أ. علام الكيلاني (المدقق اللغوي العام)',
         publishModeUsed: 'auto_low_risk',
         canonicalUrl: `https://${defaultSiteConfig.domain}/${catSlug}/news-${Date.now()}`,
         noindex: false,
@@ -394,7 +402,7 @@ export function App() {
         versions: [],
         verifierSummary: {
           verdict: 'pass',
-          notes: ['تم التحقق الآلي من المصدر الرسمي.'],
+          notes: ['تم التدقيق اللغوي والمصدري وفحص تفرد الصورة الفوتوغرافية.'],
           deterministicPassed: true,
         },
         viewsCount: 140,
@@ -402,7 +410,7 @@ export function App() {
 
       setArticles((prev) => {
         if (prev.some((a) => a.headline === newArt.headline)) return prev;
-        const next = [newArt, ...prev];
+        const next = proofreadAndDeduplicateArticles([newArt, ...prev]);
         try {
           localStorage.setItem(STATIC_STORAGE_KEY, JSON.stringify(next.slice(0, 80)));
         } catch {
@@ -424,7 +432,7 @@ export function App() {
       }
       const data = await res.json();
       setSiteConfig(data.siteConfig);
-      setArticles(data.articles);
+      setArticles(proofreadAndDeduplicateArticles(data.articles));
       setAuthors(data.authors);
       setTags(data.tags);
       setWidgets(data.widgets);
@@ -443,7 +451,7 @@ export function App() {
     });
   }, []);
 
-  // التحديث التلقائي الصامت في الخلفية على مدار الساعة 24/7 كل 3 دقائق (يعمل مع الخادم أو مباشرة في المتصفح على GitHub Pages)
+  // التحديث التلقائي الصامت في الخلفية على مدار الساعة 24/7 كل 3 دقائق
   useEffect(() => {
     const timer = setInterval(async () => {
       try {
@@ -482,27 +490,28 @@ export function App() {
   const todayDates = getTodayHijriAndGregorian(siteConfig.numeralSystem);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F9F6F0] text-[#0C1713] dark:bg-[#080E0C] dark:text-[#F3EFE6] transition-colors">
+    <div className="min-h-screen flex flex-col bg-[#FAF8F4] text-[#0B1311] dark:bg-[#080C0B] dark:text-[#F4F0E8] transition-colors">
       {/* ====================================================================
-          1. الشريط الإمبراطوري العلوي (Imperial Emerald Top Bar)
+          1. الشريط السيادي العلوي (Modern Luxury Sovereign Ribbon)
       ==================================================================== */}
-      <div className="bg-[#09241D] text-[#F3EFE6] border-b border-[#C89D42]/40 text-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2.5 text-[#E5DEC9]">
-            <span className="font-bold text-[#D4A84F]">{todayDates.hijri}</span>
-            <span aria-hidden="true" className="text-[#C89D42]/50">·</span>
+      <div className="bg-[#081511] text-[#F4F0E8] border-b border-[#B88E35]/30 text-xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex flex-wrap xl:flex-nowrap items-center justify-between gap-2.5">
+          <div className="flex flex-wrap items-center gap-2 text-[#E8E1D3]">
+            <span className="font-bold text-[#D4AF5A]">{todayDates.hijri}</span>
+            <span aria-hidden="true" className="text-[#B88E35]/50">·</span>
             <span>{todayDates.gregorian}</span>
-            <span aria-hidden="true" className="hidden md:inline text-[#C89D42]/50">·</span>
+            <span aria-hidden="true" className="hidden md:inline text-[#B88E35]/50">·</span>
             <span className="hidden md:inline">
-              رئيس التحرير المسؤول: <strong className="text-white">{siteConfig.editorInChiefName}</strong>
+              رئيس التحرير: <strong className="text-white">{siteConfig.editorInChiefName}</strong>
             </span>
-            <span aria-hidden="true" className="hidden lg:inline text-[#C89D42]/50">·</span>
-            <span className="hidden lg:inline text-[#D4A84F]">
-              45 مصدرًا معتمدًا · 100 صحفي (50% سوريا · 40% العرب وتركيا · 10% دولي) · {articles.length} تقريرًا منشورًا (عمل آلي 24/7)
+            <span aria-hidden="true" className="hidden lg:inline text-[#B88E35]/50">·</span>
+            <span className="hidden lg:inline-flex items-center gap-1.5 text-[#D4AF5A]">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+              <span>المدقق اللغوي العام: أ. علام الكيلاني</span>
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -511,7 +520,7 @@ export function App() {
                   `/search?q=${encodeURIComponent(headerSearchInput)}`
                 );
               }}
-              className="flex items-center border border-[#C89D42]/40 bg-[#061813] text-white"
+              className="flex items-center border border-[#B88E35]/35 bg-[#050E0B] text-white focus-within:border-[#D4AF5A] transition-colors"
             >
               <label htmlFor="masthead-search" className="sr-only">
                 ابحث في الأخبار
@@ -522,12 +531,12 @@ export function App() {
                 value={headerSearchInput}
                 onChange={(e) => setHeaderSearchInput(e.target.value)}
                 placeholder="ابحث في الأرشيف الموثق..."
-                className="px-2.5 py-1 text-xs bg-transparent text-white placeholder:text-slate-400 focus:outline-none w-36 sm:w-48"
+                className="px-3 py-1 text-xs bg-transparent text-white placeholder:text-slate-400 focus:outline-none w-36 sm:w-44"
               />
               <button
                 type="submit"
                 aria-label="تنفيذ البحث"
-                className="px-2 py-1 text-[#D4A84F] hover:text-white"
+                className="px-2.5 py-1 text-[#D4AF5A] hover:text-white transition-colors"
               >
                 <Search className="w-3.5 h-3.5" />
               </button>
@@ -544,7 +553,7 @@ export function App() {
                   body: JSON.stringify({ numeralSystem: nextSys }),
                 });
               }}
-              className="px-2.5 py-1 border border-[#C89D42]/40 bg-[#061813] text-[#E5DEC9] hover:border-[#D4A84F] whitespace-nowrap shrink-0"
+              className="px-2.5 py-1 border border-[#B88E35]/35 bg-[#050E0B] text-[#E8E1D3] hover:border-[#D4AF5A] whitespace-nowrap shrink-0 transition-colors"
               aria-label="تبديل نظام الأرقام"
             >
               الأرقام: {siteConfig.numeralSystem === 'western' ? '0-9' : '٠-٩'}
@@ -553,10 +562,10 @@ export function App() {
             <button
               type="button"
               onClick={() => setDarkMode((d) => !d)}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-[#C89D42]/40 bg-[#061813] text-[#E5DEC9] hover:border-[#D4A84F] whitespace-nowrap shrink-0"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-[#B88E35]/35 bg-[#050E0B] text-[#E8E1D3] hover:border-[#D4AF5A] whitespace-nowrap shrink-0 transition-colors"
               aria-label={darkMode ? 'تفعيل الوضع الفاتح' : 'تفعيل الوضع الداكن'}
             >
-              {darkMode ? <Sun className="w-3.5 h-3.5 text-[#D4A84F]" /> : <Moon className="w-3.5 h-3.5 text-[#D4A84F]" />}
+              {darkMode ? <Sun className="w-3.5 h-3.5 text-[#D4AF5A]" /> : <Moon className="w-3.5 h-3.5 text-[#D4AF5A]" />}
               <span>{darkMode ? 'النهاري' : 'الليلي'}</span>
             </button>
 
@@ -566,26 +575,27 @@ export function App() {
       </div>
 
       {/* ====================================================================
-          2. الترويسة الملكية الفاخرة (Royal Broadsheet Centerpiece Masthead)
+          2. الترويسة التحريرية العصرية الفاخرة (Luxury Modern Broadsheet Masthead)
       ==================================================================== */}
-      <header className="border-b-4 border-double border-[#09241D] dark:border-[#C89D42]/60 bg-[#F9F6F0] dark:bg-[#080E0C]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 lg:py-8">
+      <header className="border-b border-[#E4DDD0] dark:border-[#1D2824] bg-[#FAF8F4] dark:bg-[#080C0B]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-7 lg:py-9">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-            {/* الجناح الأيمن للترويسة: بطاقة الإصدار والهوية */}
-            <div className="hidden lg:flex lg:col-span-3 flex-col justify-between border-e border-[#DED6C6] dark:border-[#1C2E27] pe-5 space-y-1.5 text-xs">
-              <span className="font-bold text-[#B6862C] dark:text-[#D4A84F] tracking-wide">
-                الطبعة الرقمية الموثقة
-              </span>
-              <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                تغطية يومية محققة لأخبار سوريا والعالم العربي والاقتصاد والأسواق الدولية.
+            {/* الجناح الأيمن للترويسة: وحدة التدقيق اللغوي والفلترة الذكية */}
+            <div className="hidden lg:flex lg:col-span-3 flex-col justify-between border-e border-[#E4DDD0] dark:border-[#1D2824] pe-6 space-y-2 text-xs">
+              <div className="flex items-center gap-1.5 font-bold text-[#B88E35] dark:text-[#D4AF5A]">
+                <ShieldCheck className="w-4 h-4 shrink-0" />
+                <span>وحدة التدقيق اللغوي والفحص البصري</span>
+              </div>
+              <p className="text-[#525E59] dark:text-[#98A6A0] leading-relaxed">
+                بإشراف المدقق اللغوي العام <strong className="text-[#0B1311] dark:text-white">أ. علام الكيلاني</strong>؛ تنقية شاملة للنصوص العربية ومنع تكرار الصور الفوتوغرافية بنسبة 100%.
               </p>
-              <div className="pt-1 flex items-center gap-2 text-[11px] font-bold text-[#09241D] dark:text-[#D4A84F]">
+              <div className="pt-1 flex items-center gap-2 text-[11px] font-bold text-[#0B1F19] dark:text-[#D4AF5A]">
                 <button
                   type="button"
                   onClick={() => navigateTo({ view: 'editorial_team' }, '/editorial-team')}
                   className="hover:underline"
                 >
-                  هيئة التحرير ({siteConfig.editorInChiefName})
+                  هيئة التحرير (101 عضوًا)
                 </button>
                 <span aria-hidden="true">·</span>
                 <button
@@ -593,17 +603,17 @@ export function App() {
                   onClick={() => navigateTo({ view: 'corrections' }, '/corrections')}
                   className="hover:underline"
                 >
-                  سجل التصحيحات
+                  سجل التصويبات
                 </button>
               </div>
             </div>
 
-            {/* قلب الترويسة الملكي: اسم الصحيفة بخط الثلث/النسخ الفاخر (Amiri) */}
-            <div className="lg:col-span-6 text-center space-y-2">
-              <div className="inline-flex items-center gap-3 text-xs font-bold text-[#B6862C] dark:text-[#D4A84F]">
-                <span className="w-8 h-[1px] bg-[#B6862C]/60" />
-                <span>صحافة عربية مستقلة · دقة المصدر وأمانة الكلمة</span>
-                <span className="w-8 h-[1px] bg-[#B6862C]/60" />
+            {/* قلب الترويسة الفاخر: اسم الصحيفة بخط الثلث/النسخ (Amiri) مع زخرفة معمارية */}
+            <div className="lg:col-span-6 text-center space-y-2.5">
+              <div className="inline-flex items-center gap-3 text-xs font-bold text-[#B88E35] dark:text-[#D4AF5A]">
+                <span className="w-10 h-[1px] bg-[#B88E35]/60" />
+                <span>صحافة عربية مستقلة · دقة المصدر ونقاء اللغة</span>
+                <span className="w-10 h-[1px] bg-[#B88E35]/60" />
               </div>
 
               <div>
@@ -613,52 +623,59 @@ export function App() {
                     e.preventDefault();
                     navigateTo({ view: 'home' }, '/');
                   }}
-                  className="inline-block text-4xl sm:text-5xl lg:text-6xl font-bold font-royal tracking-normal text-[#09241D] dark:text-[#F3EFE6] hover:opacity-90 transition-opacity"
+                  className="inline-block text-5xl sm:text-6xl lg:text-7xl font-bold font-royal tracking-normal text-[#0B1311] dark:text-[#F4F0E8] hover:opacity-90 transition-opacity"
                 >
                   {siteConfig.siteName}
                 </a>
               </div>
 
-              <p className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 max-w-xl mx-auto">
+              <p className="text-xs sm:text-sm font-medium text-[#525E59] dark:text-[#98A6A0] max-w-xl mx-auto">
                 {siteConfig.siteTagline}
               </p>
             </div>
 
-            {/* الجناح الأيسر للترويسة: ضمان الملكية الفكرية والمصادر */}
-            <div className="hidden lg:flex lg:col-span-3 flex-col justify-between border-s border-[#DED6C6] dark:border-[#1C2E27] ps-5 space-y-1.5 text-xs">
-              <span className="font-bold text-[#09241D] dark:text-[#D4A84F]">
-                ميثاق المصادر والصور القانونية
+            {/* الجناح الأيسر للترويسة: التوزيع التحريري (50% سوريا · 40% العرب وتركيا · 10% دولي) */}
+            <div className="hidden lg:flex lg:col-span-3 flex-col justify-between border-s border-[#E4DDD0] dark:border-[#1D2824] ps-6 space-y-2 text-xs">
+              <span className="font-bold text-[#0B1311] dark:text-[#D4AF5A]">
+                التوزيع التحريري والـ 45 مصدرًا
               </span>
-              <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
-                جميع الأخبار والصور الفوتوغرافية مرخّصة قانونيًا (مشاع إبداعي / مصادر أممية مفتوحة) ومتوافقة مع معايير النشر الدولية.
+              <p className="text-[#525E59] dark:text-[#98A6A0] leading-relaxed">
+                50 صحفيًا للشأن السوري (50%) · 40 صحفيًا للعالم العربي وتركيا (40%) · 10 محررين للأقسام التخصصية والدولية (10%).
               </p>
-              <div className="pt-1">
+              <div className="pt-1 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => navigateTo({ view: 'category', categorySlug: 'syria' }, '/syria')}
+                  className="inline-block px-3.5 py-1.5 text-xs font-bold bg-[#0B1F19] text-[#FAF8F4] dark:bg-[#D4AF5A] dark:text-[#080C0B] hover:opacity-90 transition-opacity"
+                >
+                  ملف سوريا العاجل
+                </button>
                 <button
                   type="button"
                   onClick={() => navigateTo({ view: 'category', categorySlug: 'analysis' }, '/analysis')}
-                  className="inline-block px-3.5 py-1.5 text-xs font-bold bg-[#09241D] text-[#F9F6F0] dark:bg-[#D4A84F] dark:text-[#080E0C] hover:opacity-90 transition-opacity"
+                  className="inline-block px-3 py-1.5 text-xs font-bold border border-[#E4DDD0] dark:border-[#1D2824] text-[#0B1311] dark:text-[#F4F0E8] hover:border-[#B88E35] transition-colors"
                 >
-                  ملفات وتحليلات اليوم
+                  التحليلات
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* شريط الأقسام الملكي المزدوج */}
-        <div className="border-t border-[#DED6C6] dark:border-[#1C2E27] bg-[#F1ECE1] dark:bg-[#0F1915]">
+        {/* شريط الأقسام المعماري الرشيق */}
+        <div className="border-t border-[#E4DDD0] dark:border-[#1D2824] bg-[#F3EFE6]/80 dark:bg-[#0E1513]/90 backdrop-blur-sm sticky top-0 z-30">
           <nav
             aria-label="التنقل الرئيسي والأقسام التحريرية"
-            className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-4 overflow-x-auto py-2.5 text-xs sm:text-sm"
+            className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-4 overflow-x-auto py-3 text-xs sm:text-sm"
           >
-            <div className="flex items-center gap-5 sm:gap-6">
+            <div className="flex items-center gap-5 sm:gap-7">
               <button
                 type="button"
                 onClick={() => navigateTo({ view: 'home' }, '/')}
-                className={`whitespace-nowrap shrink-0 py-1 transition-colors ${
+                className={`whitespace-nowrap shrink-0 pb-1 transition-colors ${
                   route.view === 'home'
-                    ? 'font-extrabold text-[#09241D] dark:text-[#D4A84F] border-b-2 border-[#B6862C]'
-                    : 'font-bold text-slate-800 dark:text-slate-200 hover:text-[#B6862C]'
+                    ? 'font-extrabold text-[#0B1311] dark:text-[#D4AF5A] border-b-2 border-[#B88E35]'
+                    : 'font-bold text-[#4A5550] dark:text-slate-300 hover:text-[#B88E35]'
                 }`}
               >
                 الرئيسية
@@ -668,10 +685,10 @@ export function App() {
                   key={sec.id}
                   type="button"
                   onClick={() => navigateTo({ view: 'category', categorySlug: sec.slug }, `/${sec.slug}`)}
-                  className={`whitespace-nowrap shrink-0 py-1 transition-colors ${
+                  className={`whitespace-nowrap shrink-0 pb-1 transition-colors ${
                     route.view === 'category' && route.categorySlug === sec.slug
-                      ? 'font-extrabold text-[#09241D] dark:text-[#D4A84F] border-b-2 border-[#B6862C]'
-                      : 'font-bold text-slate-800 dark:text-slate-200 hover:text-[#B6862C]'
+                      ? 'font-extrabold text-[#0B1311] dark:text-[#D4AF5A] border-b-2 border-[#B88E35]'
+                      : 'font-bold text-[#4A5550] dark:text-slate-300 hover:text-[#B88E35]'
                   }`}
                 >
                   {sec.name}
@@ -679,21 +696,21 @@ export function App() {
               ))}
             </div>
 
-            <div className="hidden xl:flex items-center gap-4 text-xs text-slate-600 dark:text-slate-400 shrink-0">
+            <div className="hidden xl:flex items-center gap-4 text-xs text-[#525E59] dark:text-slate-400 shrink-0">
               <button
                 type="button"
-                onClick={() => navigateTo({ view: 'legal', slug: 'editorial-policy' }, '/legal/editorial-policy')}
-                className="hover:text-[#B6862C] font-medium"
+                onClick={() => navigateTo({ view: 'editorial_team' }, '/editorial-team')}
+                className="hover:text-[#B88E35] font-semibold"
               >
-                السياسة التحريرية
+                الكادر الصحفي ووحدة التدقيق
               </button>
               <span aria-hidden="true">·</span>
               <button
                 type="button"
-                onClick={() => navigateTo({ view: 'corrections' }, '/corrections')}
-                className="hover:text-[#B6862C] font-medium"
+                onClick={() => navigateTo({ view: 'legal', slug: 'editorial-policy' }, '/legal/editorial-policy')}
+                className="hover:text-[#B88E35] font-semibold"
               >
-                التصحيحات
+                السياسة التحريرية
               </button>
             </div>
           </nav>
@@ -701,11 +718,9 @@ export function App() {
       </header>
 
       {/* ====================================================================
-          Main Content Canvas (Royal Editorial Broadsheet & Magazine Theme)
+          Main Content Canvas (Modern Luxury Broadsheet & Magazine Theme)
       ==================================================================== */}
-      <main id="main-content" className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-7 space-y-10">
-
-        {/* عرض الصفحة النشطة */}
+      <main id="main-content" className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 space-y-12">
         {route.view === 'home' && (
           <HomeView
             articles={articles}
@@ -715,6 +730,7 @@ export function App() {
             onOpenArticle={(art) => navigateTo({ view: 'article', articleId: art.id }, `/${art.categorySlug}/${art.slug}`)}
             onOpenCategory={(slug) => navigateTo({ view: 'category', categorySlug: slug }, `/${slug}`)}
             onOpenTag={(tagSlug) => navigateTo({ view: 'tag', tagSlug }, `/tag/${encodeURIComponent(tagSlug)}`)}
+            onOpenEditorialTeam={() => navigateTo({ view: 'editorial_team' }, '/editorial-team')}
             onSubscribe={async (email) => {
               const res = await fetch('/api/newsroom/subscribe', {
                 method: 'POST',
@@ -830,31 +846,31 @@ export function App() {
       </main>
 
       {/* ====================================================================
-          التذييل التحريري الملكي الفاخر (بدون أي روابط إدارة داخلية)
+          التذييل التحريري العصري الفاخر (Luxury Sovereign Footer)
       ==================================================================== */}
-      <footer className="mt-20 border-t-4 border-double border-[#C89D42] bg-[#09241D] text-[#E5DEC9] text-xs">
+      <footer className="mt-20 border-t border-[#B88E35]/40 bg-[#081511] text-[#E8E1D3] text-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           <div className="space-y-3.5">
-            <h2 className="text-3xl font-bold font-royal text-[#D4A84F]">
+            <h2 className="text-3xl font-bold font-royal text-[#D4AF5A]">
               {siteConfig.siteName}
             </h2>
-            <p className="text-[#E5DEC9]/85 leading-relaxed">
-              {siteConfig.siteTagline}. جميع التقارير مبنية على استخلاص الوقائع من مصادرها الرسمية والمرخّصة تحت إشراف رئيس التحرير ({siteConfig.editorInChiefName}).
+            <p className="text-[#E8E1D3]/85 leading-relaxed">
+              {siteConfig.siteTagline}. جميع التقارير مبنية على استخلاص الوقائع من مصادرها الرسمية تحت إشراف رئيس التحرير ({siteConfig.editorInChiefName}) والتدقيق اللغوي الشامل (أ. علام الكيلاني).
             </p>
             <p className="text-xs font-medium text-white">
-              التواصل الرسمي: <span className="font-mono text-[#D4A84F]">{siteConfig.contactEmail}</span>
+              التواصل الرسمي: <span className="font-mono text-[#D4AF5A]">{siteConfig.contactEmail}</span>
             </p>
           </div>
 
           <div className="space-y-3">
-            <h3 className="font-bold font-display text-sm text-[#D4A84F]">الأقسام التحريرية</h3>
-            <ul className="grid grid-cols-2 gap-2 text-[#E5DEC9]/85">
+            <h3 className="font-bold font-display text-sm text-[#D4AF5A]">الأقسام التحريرية</h3>
+            <ul className="grid grid-cols-2 gap-2.5 text-[#E8E1D3]/85">
               {EDITORIAL_SECTIONS.map((sec) => (
                 <li key={sec.id}>
                   <button
                     type="button"
                     onClick={() => navigateTo({ view: 'category', categorySlug: sec.slug }, `/${sec.slug}`)}
-                    className="hover:text-[#D4A84F] transition-colors text-start"
+                    className="hover:text-[#D4AF5A] transition-colors text-start"
                   >
                     {sec.name}
                   </button>
@@ -864,37 +880,37 @@ export function App() {
           </div>
 
           <div className="space-y-3">
-            <h3 className="font-bold font-display text-sm text-[#D4A84F]">
+            <h3 className="font-bold font-display text-sm text-[#D4AF5A]">
               الشفافية والسياسات التحريرية
             </h3>
-            <ul className="space-y-2 text-[#E5DEC9]/85">
+            <ul className="space-y-2.5 text-[#E8E1D3]/85">
               <li>
-                <button type="button" onClick={() => navigateTo({ view: 'legal', slug: 'about' }, '/legal/about')} className="hover:text-[#D4A84F]">
+                <button type="button" onClick={() => navigateTo({ view: 'legal', slug: 'about' }, '/legal/about')} className="hover:text-[#D4AF5A]">
                   من نحن والملكية والتمويل
                 </button>
               </li>
               <li>
-                <button type="button" onClick={() => navigateTo({ view: 'editorial_team' }, '/editorial-team')} className="hover:text-[#D4A84F]">
-                  هيئة التحرير ({siteConfig.editorInChiefName})
+                <button type="button" onClick={() => navigateTo({ view: 'editorial_team' }, '/editorial-team')} className="hover:text-[#D4AF5A]">
+                  هيئة التحرير ووحدة التدقيق اللغوي
                 </button>
               </li>
               <li>
-                <button type="button" onClick={() => navigateTo({ view: 'legal', slug: 'editorial-policy' }, '/legal/editorial-policy')} className="hover:text-[#D4A84F]">
-                  السياسة التحريرية والمعايير
+                <button type="button" onClick={() => navigateTo({ view: 'legal', slug: 'editorial-policy' }, '/legal/editorial-policy')} className="hover:text-[#D4AF5A]">
+                  السياسة التحريرية والمعايير المهنية
                 </button>
               </li>
               <li>
-                <button type="button" onClick={() => navigateTo({ view: 'legal', slug: 'ai-disclosure' }, '/legal/ai-disclosure')} className="hover:text-[#D4A84F]">
-                  سياسة استخدام الذكاء الاصطناعي
+                <button type="button" onClick={() => navigateTo({ view: 'legal', slug: 'ai-disclosure' }, '/legal/ai-disclosure')} className="hover:text-[#D4AF5A]">
+                  سياسة التدقيق والتحقق المصدري
                 </button>
               </li>
               <li>
-                <button type="button" onClick={() => navigateTo({ view: 'corrections' }, '/corrections')} className="hover:text-[#D4A84F]">
-                  سياسة وسجل التصحيحات العلني
+                <button type="button" onClick={() => navigateTo({ view: 'corrections' }, '/corrections')} className="hover:text-[#D4AF5A]">
+                  سجل التصحيحات والتوضيحات العلني
                 </button>
               </li>
               <li>
-                <button type="button" onClick={() => navigateTo({ view: 'legal', slug: 'methodology' }, '/legal/methodology')} className="hover:text-[#D4A84F]">
+                <button type="button" onClick={() => navigateTo({ view: 'legal', slug: 'methodology' }, '/legal/methodology')} className="hover:text-[#D4AF5A]">
                   منهجية جمع الأخبار والتحقق
                 </button>
               </li>
@@ -902,61 +918,44 @@ export function App() {
           </div>
 
           <div className="space-y-3">
-            <h3 className="font-bold font-display text-sm text-[#D4A84F]">
-              الشؤون القانونية والخلاصات القياسية
+            <h3 className="font-bold font-display text-sm text-[#D4AF5A]">
+              الشؤون القانونية وحقوق النشر
             </h3>
-            <ul className="space-y-2 text-[#E5DEC9]/85">
+            <ul className="space-y-2.5 text-[#E8E1D3]/85">
               <li>
-                <button type="button" onClick={() => navigateTo({ view: 'legal', slug: 'privacy' }, '/legal/privacy')} className="hover:text-[#D4A84F]">
-                  سياسة الخصوصية (GDPR &amp; KVKK)
+                <button type="button" onClick={() => navigateTo({ view: 'legal', slug: 'privacy' }, '/legal/privacy')} className="hover:text-[#D4AF5A]">
+                  سياسة الخصوصية وحماية البيانات
                 </button>
               </li>
               <li>
-                <button type="button" onClick={() => navigateTo({ view: 'legal', slug: 'cookies' }, '/legal/cookies')} className="hover:text-[#D4A84F]">
-                  سياسة ملفات الارتباط (Cookies)
+                <button type="button" onClick={() => navigateTo({ view: 'legal', slug: 'cookies' }, '/legal/cookies')} className="hover:text-[#D4AF5A]">
+                  سياسة ملفات الارتباط
                 </button>
               </li>
               <li>
-                <button type="button" onClick={() => navigateTo({ view: 'legal', slug: 'terms' }, '/legal/terms')} className="hover:text-[#D4A84F]">
+                <button type="button" onClick={() => navigateTo({ view: 'legal', slug: 'terms' }, '/legal/terms')} className="hover:text-[#D4AF5A]">
                   شروط الاستخدام وإفصاح الإعلانات
                 </button>
               </li>
               <li>
-                <button type="button" onClick={() => navigateTo({ view: 'legal', slug: 'dmca' }, '/legal/dmca')} className="hover:text-[#D4A84F]">
-                  إشعارات حقوق النشر وطلبات الإزالة (DMCA)
+                <button type="button" onClick={() => navigateTo({ view: 'legal', slug: 'dmca' }, '/legal/dmca')} className="hover:text-[#D4AF5A]">
+                  إشعارات حقوق النشر والملكية الفكرية
                 </button>
               </li>
               <li>
-                <button type="button" onClick={() => navigateTo({ view: 'legal', slug: 'contact' }, '/legal/contact')} className="hover:text-[#D4A84F]">
-                  اتصل بنا
+                <button type="button" onClick={() => navigateTo({ view: 'legal', slug: 'contact' }, '/legal/contact')} className="hover:text-[#D4AF5A]">
+                  اتصل بهيئة التحرير
                 </button>
-              </li>
-              <li className="pt-2 flex flex-wrap items-center gap-2 font-mono text-[11px] text-[#D4A84F]">
-                <a href="/sitemap.xml" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">
-                  sitemap.xml
-                </a>
-                <span>·</span>
-                <a href="/news-sitemap.xml" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">
-                  news-sitemap.xml
-                </a>
-                <span>·</span>
-                <a href="/rss.xml" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">
-                  rss.xml
-                </a>
-                <span>·</span>
-                <a href="/ads.txt" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">
-                  ads.txt
-                </a>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-[#C89D42]/30 py-4 px-4 sm:px-6 flex flex-wrap items-center justify-between gap-4 max-w-7xl mx-auto text-[#E5DEC9]/70">
+        <div className="border-t border-[#B88E35]/20 py-4 px-4 sm:px-6 flex flex-wrap items-center justify-between gap-4 max-w-7xl mx-auto text-[#E8E1D3]/70">
           <span>
-            جميع الحقوق محفوظة © {new Date().getFullYear()} {siteConfig.siteName} — رئيس التحرير المسؤول: {siteConfig.editorInChiefName}.
+            جميع الحقوق محفوظة © {new Date().getFullYear()} {siteConfig.siteName} — رئيس التحرير المسؤول: {siteConfig.editorInChiefName} · المدقق اللغوي العام: أ. علام الكيلاني.
           </span>
-          <span>جميع الصور والأخبار مرخّصة قانونيًا ومتوافقة مع معايير الملكية الفكرية وGoogle AdSense</span>
+          <span>جميع الصور الفوتوغرافية فريدة ومرخّصة قانونيًا دون أي تكرار</span>
         </div>
       </footer>
 

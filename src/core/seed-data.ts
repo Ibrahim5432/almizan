@@ -17,6 +17,7 @@ import {
   computeDeterministicEmbedding,
   enrichArticleBodyIfNeeded,
   markdownToSanitizedHtml,
+  proofreadAndDeduplicateArticles,
   resolveLegalEditorialImage,
 } from './pipeline.ts';
 
@@ -772,10 +773,19 @@ export const INITIAL_AUTHORS: AuthorRecord[] = [
     id: 'chief-editor-ibrahim',
     slug: 'ibrahim',
     name: 'إبراهيم',
-    roleTitle: 'رئيس التحرير المسؤول — ميزان الخبر',
-    bio: 'يشرف رئيس التحرير إبراهيم على السياسة التحريرية العامة لمنصة «ميزان الخبر»، ويدير شبكة تضم 100 صحفي ومراسل متخصص (50 للشأن السوري، 40 للعالم العربي وتركيا، و10 للأقسام التخصصية والدولية).',
+    roleTitle: 'رئيس التحرير المسؤول والمدير العام — ميزان الخبر',
+    bio: 'يشرف رئيس التحرير إبراهيم على السياسة التحريرية العامة لمنصة «ميزان الخبر»، ويدير شبكة تضم 100 صحفي ومراسل متخصص (50 للشأن السوري، 40 للعالم العربي وتركيا، و10 للأقسام التخصصية والدولية) إلى جانب وحدة التدقيق اللغوي والفحص البصري.',
     isEditorialTeam: false,
     credentials: 'الإشراف التحريري العام · التواصل الرسمي: ibo19944991@gmail.com',
+  },
+  {
+    id: 'proofreader-allam',
+    slug: 'allam-alkilani-proofreader',
+    name: 'أ. علام الكيلاني',
+    roleTitle: 'المدقق اللغوي والمصحح التحريري العام (رئيس وحدة التدقيق اللغوي والفلترة الذكية وفحص الصور)',
+    bio: 'يتولى الأستاذ علام الكيلاني التدقيق اللغوي والنحوي الشامل لجميع المقالات قبل النشر، وتنقية النصوص من أي رموز برمجية أو عبارات أجنبية أو كلمات مقطوعة، وضمان تفرد الصور الفوتوغرافية بنسبة 100% ومنع تكرار أي صورة في الموقع.',
+    isEditorialTeam: false,
+    credentials: 'إجازة في فقه اللغة العربية والتحرير الصحفي · تدقيق آلي ولغوي على مدار الساعة 24/7',
   },
   ...SYRIA_50_SPECS.map((s, idx) => ({
     id: `jour-syria-${idx + 1}`,
@@ -971,7 +981,7 @@ function createArticle(params: {
   };
 }
 
-export const INITIAL_ARTICLES: ArticleRecord[] = [
+const RAW_INITIAL_ARTICLES: ArticleRecord[] = [
   createArticle({
     id: 'art-12',
     clusterId: 'cluster-syria-damascus-aleppo-power-2026',
@@ -2685,6 +2695,8 @@ export const INITIAL_ARTICLES: ArticleRecord[] = [
   // مسودات في طابور المراجعة البشرية (/admin) لاختبار سير العمل التحريري
   // ============================================================================
 ];
+
+export const INITIAL_ARTICLES: ArticleRecord[] = proofreadAndDeduplicateArticles(RAW_INITIAL_ARTICLES);
 
 export const INITIAL_RAW_ITEMS: RawItemRecord[] = [
   {

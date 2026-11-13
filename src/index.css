@@ -3,14 +3,14 @@
 
 @layer base {
   :root {
-    --bg-canvas: #F9F6F0;
-    --bg-surface: #F1ECE1;
-    --text-ink: #0C1713;
-    --text-muted: #4A5550;
-    --accent-gold: #B6862C;
-    --accent-emerald: #0B2E25;
+    --bg-canvas: #FAF8F4;
+    --bg-surface: #F3EFE6;
+    --text-ink: #0B1311;
+    --text-muted: #525E59;
+    --accent-gold: #B88E35;
+    --accent-emerald: #0B1F19;
     --urgent-red: #9E2A2B;
-    --border-hairline: #DED6C6;
+    --border-hairline: #E4DDD0;
     --font-royal: 'Amiri', 'Noto Naskh Arabic', Georgia, serif;
     --font-display: 'Noto Kufi Arabic', 'IBM Plex Sans Arabic', sans-serif;
     --font-editorial: 'Noto Naskh Arabic', Georgia, serif;
@@ -19,20 +19,22 @@
   }
 
   .dark {
-    --bg-canvas: #080E0C;
-    --bg-surface: #0F1915;
-    --text-ink: #F3EFE6;
-    --text-muted: #94A39E;
-    --accent-gold: #D4A84F;
-    --accent-emerald: #133E32;
+    --bg-canvas: #080C0B;
+    --bg-surface: #0E1513;
+    --text-ink: #F4F0E8;
+    --text-muted: #98A6A0;
+    --accent-gold: #D4AF5A;
+    --accent-emerald: #122922;
     --urgent-red: #E05252;
-    --border-hairline: #1C2E27;
+    --border-hairline: #1D2824;
   }
 
   html {
     font-family: var(--font-ui);
     direction: rtl;
     scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4, .font-display {
@@ -46,8 +48,8 @@
 
   .font-editorial {
     font-family: var(--font-editorial);
-    font-size: 1.21rem; /* ~19.5px */
-    line-height: 1.9;
+    font-size: 1.22rem;
+    line-height: 1.95;
   }
 
   .dark .font-editorial {
@@ -78,34 +80,36 @@
 
 /* تنسيق متن المقال المولد من Markdown المُطهَّر */
 .article-prose p {
-  margin-bottom: 1.45rem;
+  margin-bottom: 1.5rem;
 }
 
 .article-prose h2 {
   font-family: var(--font-display);
   font-size: 1.45rem;
   font-weight: 700;
-  margin-top: 2.25rem;
-  margin-bottom: 0.9rem;
+  margin-top: 2.4rem;
+  margin-bottom: 0.95rem;
   line-height: 1.45;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-hairline);
 }
 
 .article-prose h3 {
   font-family: var(--font-display);
   font-size: 1.2rem;
   font-weight: 700;
-  margin-top: 1.75rem;
+  margin-top: 1.85rem;
   margin-bottom: 0.75rem;
 }
 
 .article-prose ul {
   list-style-type: disc;
   padding-inline-start: 1.5rem;
-  margin-bottom: 1.45rem;
+  margin-bottom: 1.5rem;
 }
 
 .article-prose li {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.55rem;
 }
 
 .article-prose a {
@@ -115,9 +119,9 @@
 }
 
 .article-prose blockquote {
-  padding: 1rem 1.25rem;
-  margin: 1.5rem 0;
+  padding: 1.25rem 1.5rem;
+  margin: 1.75rem 0;
   border: 1px solid var(--border-hairline);
   background-color: var(--bg-surface);
-  font-style: italic;
+  font-style: normal;
 }

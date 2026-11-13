@@ -33,9 +33,9 @@
     "aiIllustrativeImagesEnabled": false,
     "seedDemo": true,
     "llmModels": {
-      "provider": "؟؟",
-      "fast": "؟؟",
-      "writer": "؟؟",
+      "provider": "gemini",
+      "fast": "gemini-3.8-flash",
+      "writer": "gemini-3.8-flash",
       "verifier": "gemini-3.8-flash",
       "embedding": "gemini-embedding-2-preview"
     }

@@ -7,7 +7,12 @@ import {
 } from '../../src/core/types.ts';
 import type { VerifierOutput, WriterOutput } from '../../src/core/types.ts';
 import { defaultSiteConfig } from '../../config/site.config.ts';
-import { buildLongFormJournalisticSections, evaluateSourceSafety } from '../../src/core/pipeline.ts';
+import {
+  buildLongFormJournalisticSections,
+  decodeAndCleanRssText,
+  evaluateSourceSafety,
+  truncateAtWordBoundary,
+} from '../../src/core/pipeline.ts';
 
 export interface LLMProvider {
   name: string;
@@ -235,17 +240,18 @@ export class GeminiServerProvider implements LLMProvider {
         : 'arab-world'
     ) as WriterOutput['category'];
 
-    const headline = params.topicLabel.replace(/\s+/g, ' ').trim().slice(0, 88);
-    const cleanSnippetText = primarySource.snippet
-      .replace(/<[^>]+>/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
+    const headline = truncateAtWordBoundary(decodeAndCleanRssText(params.topicLabel), 110, false);
+    const cleanSnippetText = decodeAndCleanRssText(primarySource.snippet);
 
-    // استخراج جمل خبرية طبيعية من المقتطف بدلاً من العبارات التقنية الآلية
+    // استخراج جمل خبرية طبيعية من المقتطف مع ضمان عدم بتر أي كلمة عربية في المنتصف
     const naturalDek =
       cleanSnippetText.length >= 45 && cleanSnippetText !== headline
-        ? cleanSnippetText.slice(0, 190)
-        : `تغطية إخبارية تسلط الضوء على تفاصيل «${headline}» وأبرز المعطيات الصادرة عن ${primarySource.publisher} والجهات المعنية في المنطقة.`.slice(0, 195);
+        ? truncateAtWordBoundary(cleanSnippetText, 210, true)
+        : truncateAtWordBoundary(
+            `تغطية إخبارية تسلط الضوء على تفاصيل «${headline}» وأبرز المعطيات الصادرة عن ${primarySource.publisher} والجهات المعنية في المنطقة.`,
+            210,
+            false
+          );
 
     const longForm = buildLongFormJournalisticSections({
       headline,
@@ -262,7 +268,7 @@ export class GeminiServerProvider implements LLMProvider {
       body_markdown: longForm.bodyMarkdown,
       key_points: [
         cleanSnippetText.length >= 35
-          ? cleanSnippetText.slice(0, 140)
+          ? truncateAtWordBoundary(cleanSnippetText, 165, true)
           : `مستجدات متسارعة حول «${headline}» وفق ما أوردته ${primarySource.publisher}.`,
         `قراءة شاملة للأبعاد القطاعية والتنظيمية وانعكاساتها المباشرة على الملفات الإقليمية ذات الصلة.`,
         `تنسيق مؤسسي وفني لمتابعة مخرجات التنفيذ وتقييم المؤشرات الميدانية خلال المرحلة المقبلة.`,
@@ -277,7 +283,7 @@ export class GeminiServerProvider implements LLMProvider {
         url: s.url,
       })),
       claims: params.sources.map((s) => ({
-        text: `البيانات الصادرة عن ${s.publisher} حول ${s.title.slice(0, 60)}.`,
+        text: `البيانات الصادرة عن ${s.publisher} حول «${truncateAtWordBoundary(s.title, 75, false)}».`,
         source_ids: [s.sourceId],
       })),
       background_section: longForm.backgroundSection,

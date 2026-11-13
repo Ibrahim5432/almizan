@@ -130,7 +130,7 @@ export const ConsentBanner: React.FC<{
     >
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs">
         <p className="text-slate-700 dark:text-slate-300 leading-relaxed max-w-4xl">
-          <strong>إشعار الخصوصية وحماية البيانات (GDPR &amp; KVKK):</strong> نستخدم ملفات ارتباط تقنية ضرورية لتشغيل الموقع وحفظ تفضيلات القراءة. لا يتم تحميل أي سكربتات إعلانية أو تتبعية إلا بعد موافقتك الصريحة وفق إطار الشفافية والموافقة المعتمد. راجع{' '}
+          <strong>إشعار الخصوصية وحماية البيانات الشخصية:</strong> نستخدم ملفات ارتباط تقنية ضرورية لتشغيل الموقع وحفظ تفضيلات القراءة. لا يتم تحميل أي برمجيات إعلانية أو تتبعية إلا بعد موافقتك الصريحة وفق إطار الشفافية والموافقة المعتمد. راجع{' '}
           <button
             type="button"
             onClick={() => onNavigateLegal('privacy')}

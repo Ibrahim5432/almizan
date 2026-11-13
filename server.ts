@@ -25,16 +25,20 @@ import {
   clusterRawItems,
   computeContentHash,
   computeDeterministicEmbedding,
+  decodeAndCleanRssText,
   enrichArticleBodyIfNeeded,
   evaluateRiskGate,
   evaluateSourceSafety,
   generateTypographicSvgDataUri,
   inferCategoryFromText,
+  isAuthenticArabicEditorialText,
   isSafeExternalUrl,
   markdownToSanitizedHtml,
   normalizeSourceSnippet,
+  proofreadAndDeduplicateArticles,
   resolveLegalEditorialImage,
   runDeterministicVerification,
+  truncateAtWordBoundary,
 } from './src/core/pipeline.ts';
 import {
   evaluateReadinessGate,
@@ -199,23 +203,20 @@ function loadOrInitState(): NewsroomState {
         }
       }
 
-      const decodeXmlEntities = (str: string) =>
-        (str || '')
-          .replace(/&quot;/g, '"')
-          .replace(/&#039;|&apos;/g, "'")
-          .replace(/&amp;/g, '&')
-          .replace(/&lt;/g, '<')
-          .replace(/&gt;/g, '>');
-
-      parsed.articles = existingArticles.map((a) => {
-        const cleanHeadline = decodeXmlEntities(a.headline);
+      const rawNormalizedArticles = existingArticles.map((a) => {
+        const cleanHeadline = truncateAtWordBoundary(decodeAndCleanRssText(a.headline), 115, false);
+        const assigned = assignJournalistForArticle(a.categorySlug, cleanHeadline);
         const primaryPub = a.sources?.[0]?.publisher || 'المصادر المعتمدة';
         const secondaryPub = a.sources?.[1]?.publisher || 'المؤسسات والمرجعيات الإقليمية';
         const isRoboticDek = a.dek?.startsWith('تقرير موثق يستند إلى بيانات');
-        const cleanDek = decodeXmlEntities(
-          isRoboticDek
-            ? `تغطية إخبارية معمّقة تستعرض أبرز المعطيات والتطورات الواردة عبر «${primaryPub}»، مع قراءة في سياقها الإقليمي والخدمي.`
-            : a.dek
+        const cleanDek = truncateAtWordBoundary(
+          decodeAndCleanRssText(
+            isRoboticDek
+              ? `تغطية إخبارية معمّقة تستعرض أبرز المعطيات والتطورات الواردة عبر «${primaryPub}»، مع قراءة في سياقها الإقليمي والخدمي.`
+              : a.dek
+          ),
+          210,
+          true
         );
         const hasRoboticKeyPoints = (a.keyPoints || []).some(
           (kp) => kp.includes('التزام صارم بعدم إضافة أي أرقام') || kp.includes('توثيق الوقائع الأساسية استنادًا إلى')
@@ -228,11 +229,11 @@ function loadOrInitState(): NewsroomState {
               `متابعة مستمرة لتداعيات هذا التطور وانعكاساته على القطاعات المعنية في المنطقة.`,
             ]
           : a.keyPoints
-        ).map(decodeXmlEntities);
+        ).map((kp) => truncateAtWordBoundary(decodeAndCleanRssText(kp), 175, true));
 
         const enriched = enrichArticleBodyIfNeeded({
           headline: cleanHeadline,
-          currentBodyMd: decodeXmlEntities(a.bodyMd),
+          currentBodyMd: decodeAndCleanRssText(a.bodyMd),
           currentDek: cleanDek,
           categorySlug: a.categorySlug,
           primaryPublisher: primaryPub,
@@ -242,8 +243,6 @@ function loadOrInitState(): NewsroomState {
           currentWhatNext: a.whatNextSection,
         });
 
-        const assigned = assignJournalistForArticle(a.categorySlug, cleanHeadline);
-
         return {
           ...a,
           headline: cleanHeadline,
@@ -252,6 +251,7 @@ function loadOrInitState(): NewsroomState {
           authorId: assigned.authorId,
           authorName: assigned.authorName,
           authorRole: assigned.authorRole,
+          reviewedBy: 'أ. علام الكيلاني (المدقق اللغوي العام)',
           bodyMd: enriched.bodyMd,
           bodyHtml: markdownToSanitizedHtml(enriched.bodyMd),
           wordCount: enriched.wordCount,
@@ -259,19 +259,11 @@ function loadOrInitState(): NewsroomState {
           backgroundSection: enriched.backgroundSection,
           analysisSection: enriched.analysisSection,
           whatNextSection: enriched.whatNextSection,
-          image: resolveLegalEditorialImage({
-            headline: a.headline,
-            snippet: cleanDek,
-            categorySlug: a.categorySlug,
-            categoryName: a.categoryName,
-            sourceName: a.sources?.[0]?.publisher,
-            officialRssImageUrl:
-              a.image?.url?.startsWith('https://') && !a.image.url.includes('images.unsplash.com')
-                ? a.image.url
-                : null,
-          }),
         };
       }).sort((x, y) => new Date(y.publishedAt).getTime() - new Date(x.publishedAt).getTime());
+
+      // تمرير جميع المقالات على وحدة التدقيق اللغوي والفلترة الذكية وفحص عدم تكرار الصور (الأستاذ علام الكيلاني)
+      parsed.articles = proofreadAndDeduplicateArticles(rawNormalizedArticles);
       saveState(parsed);
       return parsed;
     }
@@ -283,38 +275,7 @@ function loadOrInitState(): NewsroomState {
     sources: [...INITIAL_SOURCES],
     rawItems: [...INITIAL_RAW_ITEMS],
     clusters: [...INITIAL_CLUSTERS],
-    articles: INITIAL_ARTICLES.map((a) => {
-      const primaryPub = a.sources?.[0]?.publisher || 'المصادر المعتمدة';
-      const secondaryPub = a.sources?.[1]?.publisher || 'المؤسسات والمرجعيات الإقليمية';
-      const enriched = enrichArticleBodyIfNeeded({
-        headline: a.headline,
-        currentBodyMd: a.bodyMd,
-        currentDek: a.dek,
-        categorySlug: a.categorySlug,
-        primaryPublisher: primaryPub,
-        secondaryPublisher: secondaryPub,
-        currentBackground: a.backgroundSection,
-        currentAnalysis: a.analysisSection,
-        currentWhatNext: a.whatNextSection,
-      });
-      return {
-        ...a,
-        bodyMd: enriched.bodyMd,
-        bodyHtml: markdownToSanitizedHtml(enriched.bodyMd),
-        wordCount: enriched.wordCount,
-        readingTimeMin: enriched.readingTimeMin,
-        backgroundSection: enriched.backgroundSection,
-        analysisSection: enriched.analysisSection,
-        whatNextSection: enriched.whatNextSection,
-        image: resolveLegalEditorialImage({
-          headline: a.headline,
-          snippet: a.dek,
-          categorySlug: a.categorySlug,
-          categoryName: a.categoryName,
-          sourceName: a.sources?.[0]?.publisher,
-        }),
-      };
-    }),
+    articles: proofreadAndDeduplicateArticles(INITIAL_ARTICLES),
     authors: [...INITIAL_AUTHORS],
     tags: INITIAL_TAGS.map((t) => ({ ...t, noindex: shouldNoindexTagPage(t.articleCount) })),
     jobsLog: [...INITIAL_JOBS_LOG],
@@ -347,7 +308,12 @@ async function startServer() {
   const app = express();
   const portArgIdx = process.argv.indexOf('--port');
   const portFromArg = portArgIdx !== -1 && process.argv[portArgIdx + 1] ? Number(process.argv[portArgIdx + 1]) : undefined;
-  const PORT = Number(process.env.PORT) || portFromArg || 3000;
+  const PORT =
+    portFromArg ||
+    Number(process.env.npm_config_port) ||
+    Number(process.env.DEFAULT_APP_PORT) ||
+    (process.env.NODE_ENV === 'production' && !process.env.NGINX_PORT ? Number(process.env.PORT) : 3000) ||
+    3000;
 
   const hostArgIdx = process.argv.indexOf('--host');
   const hostFromArg = hostArgIdx !== -1 && process.argv[hostArgIdx + 1] ? process.argv[hostArgIdx + 1] : undefined;
@@ -929,6 +895,7 @@ async function startServer() {
         categorySlug,
         categoryName: sectionObj.name,
         sourceName: newItem.sourceName,
+        excludeUrls: state.articles.map((a) => a.image.url),
       }),
       status: gate.decision === 'auto_publish' ? 'published' : 'needs_review',
       riskFlags: combinedRiskFlags,
@@ -1373,18 +1340,17 @@ async function startServer() {
               /<enclosure[^>]+url=["'](https:\/\/[^"']+\.(?:jpg|jpeg|png|webp)[^"']*)["'][^>]*>/i
             );
 
-            const decodeRssEntities = (s: string) =>
-              s
-                .replace(/&quot;/g, '"')
-                .replace(/&#039;|&apos;/g, "'")
-                .replace(/&amp;/g, '&')
-                .replace(/&lt;/g, '<')
-                .replace(/&gt;/g, '>');
-            const rawTitle = decodeRssEntities((titleMatch?.[1] || titleMatch?.[2] || '').replace(/<[^>]+>/g, '').trim());
+            const rawTitle = decodeAndCleanRssText(titleMatch?.[1] || titleMatch?.[2] || '');
             const rawLink = (linkMatch?.[1] || '').trim();
-            const rawDesc = decodeRssEntities((descMatch?.[1] || descMatch?.[2] || '').replace(/<[^>]+>/g, '').trim());
+            const rawDesc = decodeAndCleanRssText(descMatch?.[1] || descMatch?.[2] || '');
             const openOfficialImg =
               feed.url.includes('news.un.org') && enclosureMatch?.[1] ? enclosureMatch[1].trim() : null;
+
+            const arabicCheck = isAuthenticArabicEditorialText(rawTitle, rawDesc);
+            if (!arabicCheck.valid) {
+              discardedDoubtfulCount++;
+              continue;
+            }
 
             if (
               rawTitle.length > 20 &&
@@ -1553,6 +1519,7 @@ async function startServer() {
         categoryName: sectionObj.name,
         sourceName: selectedFeedItem.sourceName,
         officialRssImageUrl: selectedFeedItem.officialRssImageUrl,
+        excludeUrls: state.articles.map((a) => a.image.url),
       }),
       status: 'published',
       riskFlags: [],
@@ -1564,7 +1531,7 @@ async function startServer() {
       readingTimeMin: enrichedAuto.readingTimeMin,
       publishedAt: nowIso,
       updatedAt: nowIso,
-      reviewedBy: `المدقق الآلي (${state.siteConfig.siteName})`,
+      reviewedBy: 'أ. علام الكيلاني (المدقق اللغوي العام)',
       publishModeUsed: 'auto_low_risk',
       canonicalUrl: `https://${state.siteConfig.domain}/${categorySlug}/${draftRes.output.slug_ascii}`,
       noindex: false,
@@ -1784,11 +1751,15 @@ export { ErrorOverlay, createHotContext, injectQuery, removeStyle, updateStyle }
         .end(clientShim);
     });
 
-    const vite = await createViteServer({
-      server: { middlewareMode: true, hmr: false },
+    const vitePromise = createViteServer({
+      server: { middlewareMode: true, hmr: false, ws: false },
       appType: 'custom',
     });
-    app.use(vite.middlewares);
+
+    app.use(async (req, res, next) => {
+      const vite = await vitePromise;
+      vite.middlewares(req, res, next);
+    });
 
     app.use('*', async (req, res, next) => {
       const url = req.originalUrl.split('?')[0];
@@ -1797,6 +1768,7 @@ export { ErrorOverlay, createHotContext, injectQuery, removeStyle, updateStyle }
         return;
       }
 
+      const vite = await vitePromise;
       try {
         let template = fs.readFileSync(path.resolve(process.cwd(), 'index.html'), 'utf-8');
         template = await vite.transformIndexHtml(url, template);
@@ -1807,6 +1779,25 @@ export { ErrorOverlay, createHotContext, injectQuery, removeStyle, updateStyle }
         next(e);
       }
     });
+
+    const server = app.listen(PORT, HOST, () => {
+      console.log(`  ➜  Local:   http://localhost:${PORT}/`);
+      console.log(`  ➜  Network: http://${HOST}:${PORT}/`);
+      console.log(`[server] Al-Mizan Newsroom running on http://${HOST}:${PORT}`);
+      setTimeout(() => {
+        if (!state.siteConfig.killSwitchActive) {
+          runAutoFetchAndPublishCycle().catch(() => {});
+        }
+      }, 2500);
+    });
+
+    const shutdown = () => {
+      server.close(() => {
+        process.exit(0);
+      });
+    };
+    process.on('SIGTERM', shutdown);
+    process.on('SIGINT', shutdown);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath, { index: false }));
@@ -1816,27 +1807,21 @@ export { ErrorOverlay, createHotContext, injectQuery, removeStyle, updateStyle }
       const enrichedHtml = injectServerSideSeoAndHtml(template, req.path, req.originalUrl);
       res.status(200).set({ 'Content-Type': 'text/html; charset=utf-8' }).end(enrichedHtml);
     });
-  }
 
-  const server = app.listen(PORT, HOST, () => {
-    console.log(`  ➜  Local:   http://localhost:${PORT}/`);
-    console.log(`  ➜  Network: http://${HOST}:${PORT}/`);
-    console.log(`[server] Al-Mizan Newsroom running on http://${HOST}:${PORT}`);
-    // فحص أولي لتنشيط النشر التلقائي فور بدء تشغيل الخادم
-    setTimeout(() => {
-      if (!state.siteConfig.killSwitchActive) {
-        runAutoFetchAndPublishCycle().catch(() => {});
-      }
-    }, 2500);
-  });
-
-  const shutdown = () => {
-    server.close(() => {
-      process.exit(0);
+    const server = app.listen(PORT, HOST, () => {
+      console.log(`  ➜  Local:   http://localhost:${PORT}/`);
+      console.log(`  ➜  Network: http://${HOST}:${PORT}/`);
+      console.log(`[server] Al-Mizan Newsroom running on http://${HOST}:${PORT}`);
     });
-  };
-  process.on('SIGTERM', shutdown);
-  process.on('SIGINT', shutdown);
+
+    const shutdown = () => {
+      server.close(() => {
+        process.exit(0);
+      });
+    };
+    process.on('SIGTERM', shutdown);
+    process.on('SIGINT', shutdown);
+  }
 }
 
 /**
