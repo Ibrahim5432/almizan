@@ -79,10 +79,10 @@ export const PWAInstallButton: React.FC = () => {
             setShowGuideModal(true);
           }
         }}
-        className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium border border-[#E2DACB] dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-[#B8892B] transition-colors whitespace-nowrap shrink-0"
+        className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold border border-[#D4AF5A]/35 bg-[#0A1D18]/80 text-[#E5DFD3] hover:border-[#D4AF5A] hover:text-[#D4AF5A] transition-colors whitespace-nowrap shrink-0"
         aria-label="تثبيت تطبيق ميزان الخبر"
       >
-        <Download className="w-3.5 h-3.5 text-[#B8892B]" />
+        <Download className="w-3.5 h-3.5 text-[#D4AF5A]" />
         <span>تثبيت التطبيق</span>
       </button>
 
@@ -93,11 +93,11 @@ export const PWAInstallButton: React.FC = () => {
           aria-label="تثبيت تطبيق ميزان الخبر"
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
         >
-          <div className="w-full max-w-md border border-[#E2DACB] dark:border-slate-700 bg-[#FAF7F2] dark:bg-[#111C33] p-6 shadow-xl">
-            <h3 className="text-base font-bold font-display text-[#0B1220] dark:text-[#F3EFE6]">
+          <div className="w-full max-w-md border border-[#E2DDD3] dark:border-[#1F2724] bg-[#FAF9F6] dark:bg-[#111614] p-6 shadow-xl">
+            <h3 className="text-base font-bold font-display text-[#111312] dark:text-[#F3F0EA]">
               تثبيت «ميزان الخبر» كتطبيق ويب (PWA)
             </h3>
-            <p className="mt-2 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+            <p className="mt-2 text-xs text-[#5A5D5B] dark:text-[#C5C2BA] leading-relaxed">
               {isIOS
                 ? 'لتثبيت التطبيق على iPhone أو iPad: اضغط على زر المشاركة (Share) في شريط متصفح Safari ثم اختر «إضافة إلى الشاشة الرئيسية» (Add to Home Screen).'
                 : 'لتثبيت المنصة للوصول السريع والقراءة دون اتصال: اضغط على أيقونة التثبيت في شريط عنوان المتصفح أو من قائمة المتصفح اختر «تثبيت التطبيق».'}
@@ -106,7 +106,7 @@ export const PWAInstallButton: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowGuideModal(false)}
-                className="px-4 py-1.5 text-xs font-semibold bg-[#0B1220] text-[#FAF7F2] dark:bg-[#B8892B] dark:text-[#0B1220]"
+                className="px-4 py-1.5 text-xs font-semibold bg-[#0F2922] text-[#FAF9F6] dark:bg-[#D4AF5A] dark:text-[#0A0D0C]"
               >
                 إغلاق
               </button>

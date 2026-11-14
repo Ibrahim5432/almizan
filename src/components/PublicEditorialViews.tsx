@@ -21,7 +21,7 @@ import {
   TagRecord,
 } from '../core/types';
 import { SiteConfig } from '../../config/site.config';
-import { buildEditorialDisclosure, generateTypographicSvgDataUri } from '../core/pipeline';
+import { buildEditorialDisclosure, curateMagazineArticlesOrder, generateTypographicSvgDataUri } from '../core/pipeline';
 import { LegalPageContent } from '../core/seed-data';
 import { formatArabicDate, formatNumerals } from '../utils/formatters';
 import { AdSlot } from './AdSenseAndConsent';
@@ -276,7 +276,8 @@ export const EditorialCard: React.FC<{
 };
 
 // ============================================================================
-// 2. الصفحة الرئيسية (HomeView) — تصميم الصحيفة المرجعية الكبرى (Sovereign Broadsheet)
+// 2. الصفحة الرئيسية (HomeView) — تصميم المجلة الإخبارية السورية والعربية الحديثة
+// مستوحى من أفضل عناصر «تلفزيون سوريا» و«زمان الوصل» و«حلب اليوم» بإشراف أ. مازن الدمشقي ود. حسام الشامي
 // ============================================================================
 export const HomeView: React.FC<{
   articles: ArticleRecord[];
@@ -296,23 +297,10 @@ export const HomeView: React.FC<{
   onOpenCategory,
   onSubscribe,
 }) => {
-  const rawPublished = articles.filter((a) => a.status === 'published');
-  // تصدّر أهم خبر سوري حديث لقصة الغلاف الرئيسية بما ينسجم مع التوزيع التحريري
-  const firstSyriaIdx = rawPublished.findIndex((a) => a.categorySlug === 'syria');
-  const firstSyriaOrArabIdx =
-    firstSyriaIdx >= 0
-      ? firstSyriaIdx
-      : rawPublished.findIndex((a) => a.categorySlug === 'arab-world');
-  const published =
-    firstSyriaOrArabIdx > 0
-      ? [
-          rawPublished[firstSyriaOrArabIdx],
-          ...rawPublished.slice(0, firstSyriaOrArabIdx),
-          ...rawPublished.slice(firstSyriaOrArabIdx + 1),
-        ]
-      : rawPublished;
+  // ترتيب المجلة بإشراف أ. مازن الدمشقي (مدير الإخراج الفني والترتيب التحريري)
+  const published = curateMagazineArticlesOrder(articles.filter((a) => a.status === 'published'));
 
-  // توزيع غير متداخل للمقالات والصور عبر أقسام الصفحة الرئيسية (صفر تكرار)
+  // توزيع غير متداخل للمقالات والصور عبر أقسام واجهة المجلة (صفر تكرار لأي مقال أو صورة)
   const usedIds = new Set<string>();
   const takeArticles = (count: number, predicate?: (a: ArticleRecord) => boolean): ArticleRecord[] => {
     const picked: ArticleRecord[] = [];
@@ -326,35 +314,50 @@ export const HomeView: React.FC<{
     return picked;
   };
 
-  const leadStory = takeArticles(1)[0];
-  const editorPicks = takeArticles(2);
-  const syriaBandPrimary = takeArticles(4, (a) => a.categorySlug === 'syria');
-  const syriaBandStories =
-    syriaBandPrimary.length >= 4
-      ? syriaBandPrimary
-      : [...syriaBandPrimary, ...takeArticles(4 - syriaBandPrimary.length, (a) => a.categorySlug === 'arab-world')];
+  // 1. ملف الغلاف الرئيسي (صدارة الشأن السوري)
+  const leadStory = takeArticles(1, (a) => a.categorySlug === 'syria')[0] || takeArticles(1)[0];
 
-  const regionalVisualStories = takeArticles(
+  // 2. تقارير العدد المصورة في العمود الأوسط لواجهة المجلة (مقالان مصوران بارزان)
+  const centerMagazineFeatures = takeArticles(
     2,
-    (a) => a.categorySlug === 'arab-world' || a.categorySlug === 'politics' || a.categorySlug === 'economy'
+    (a) => a.categorySlug === 'syria' || a.categorySlug === 'arab-world' || a.categorySlug === 'economy'
   );
-  const regionalColumnStories = takeArticles(
+
+  // 3. مرصد المحافظات والمدن السورية (4 تقارير ميدانية وخدمية سورية)
+  const syriaPrimary = takeArticles(4, (a) => a.categorySlug === 'syria');
+  const syriaMonitorStories =
+    syriaPrimary.length >= 4
+      ? syriaPrimary
+      : [...syriaPrimary, ...takeArticles(4 - syriaPrimary.length, (a) => a.categorySlug === 'economy' || a.categorySlug === 'arab-world')];
+
+  // 4. ملفات خاصة وتحقيقات معمّقة (على خطى زمان الوصل — 3 ملفات استقصائية وتحليلية مصورة)
+  const dossierPrimary = takeArticles(
+    3,
+    (a) => a.categorySlug === 'analysis' || a.type === 'explainer' || a.categorySlug === 'politics' || a.categorySlug === 'economy'
+  );
+  const specialDossiers =
+    dossierPrimary.length >= 3
+      ? dossierPrimary
+      : [...dossierPrimary, ...takeArticles(3 - dossierPrimary.length)];
+
+  // 5. المشهد العربي والإقليمي وتركيا (شبكة مجلية مصورة من 4 تقارير)
+  const arabTurkeyMagazineGrid = takeArticles(
     4,
     (a) => a.categorySlug === 'arab-world' || a.categorySlug === 'economy' || a.categorySlug === 'politics' || a.categorySlug === 'syria'
   );
 
-  // عمود آخر الأخبار السريعة (نصوص وعناوين مركزة في الواجهة اليمنى)
-  const latestWireStories = takeArticles(5);
+  // 6. الخط الزمني لآخر الأخبار («نبض الساعة» على طراز تلفزيون سوريا وحلب اليوم — 5 عناوين سريعة)
+  const latestTimelineStories = takeArticles(5);
+
+  // 7. بقية التقارير لبوابة الأقسام التخصصية
   const remainingExplorerStories = published.filter((a) => !usedIds.has(a.id));
 
   const wireTickerArticles = published.slice(0, 6);
   const mostReadStories = [...published].sort((a, b) => b.viewsCount - a.viewsCount).slice(0, 6);
-  const analysisStories = published
-    .filter((a) => a.categorySlug === 'analysis' || a.type === 'explainer')
-    .slice(0, 3);
 
   const [wireIndex, setWireIndex] = useState(0);
   const [tickerPaused, setTickerPaused] = useState(false);
+  const [syriaGovFilter, setSyriaGovFilter] = useState<string>('all');
   const [selectedDeptFilter, setSelectedDeptFilter] = useState<'all' | CategorySlug>('all');
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [newsletterStatus, setNewsletterStatus] = useState<string | null>(null);
@@ -369,12 +372,40 @@ export const HomeView: React.FC<{
 
   const activeWireItem = wireTickerArticles[wireIndex % Math.max(1, wireTickerArticles.length)] || leadStory;
 
+  // فلاتر مرصد المحافظات السورية (على غرار حلب اليوم وزمان الوصل)
+  const SYRIA_GOVERNORATE_FILTERS: { id: string; label: string; pattern: RegExp | null }[] = [
+    { id: 'all', label: 'كل المحافظات السورية', pattern: null },
+    { id: 'damascus', label: 'دمشق وريفها', pattern: /(دمشق|عدرا|قاسيون|الغوطة|الفيجة)/ },
+    { id: 'aleppo_north', label: 'حلب وإدلب والشمال', pattern: /(حلب|إدلب|الشيخ نجار|باب الهوى|الشمال)/ },
+    { id: 'central', label: 'حمص وحماة والوسط', pattern: /(حمص|حماة|حسياء|سهل الغاب|العاصي)/ },
+    { id: 'coast', label: 'اللاذقية وطرطوس والمرافئ', pattern: /(اللاذقية|طرطوس|الساحل|المرافئ|مرفأ)/ },
+    { id: 'jazira', label: 'الجزيرة والفرات والشرق', pattern: /(الجزيرة|الفرات|دير الزور|الحسكة|الرقة|القمح)/ },
+    { id: 'south', label: 'درعا والسويداء والجنوب', pattern: /(درعا|السويداء|حوران|نصيب|القنيطرة)/ },
+  ];
+
+  const allSyriaArticles = published.filter((a) => a.categorySlug === 'syria');
+  const activeGovRule = SYRIA_GOVERNORATE_FILTERS.find((g) => g.id === syriaGovFilter);
+  const filteredSyriaStories =
+    !activeGovRule || !activeGovRule.pattern
+      ? syriaMonitorStories
+      : (() => {
+          const matched = allSyriaArticles.filter((a) =>
+            activeGovRule.pattern!.test(`${a.headline} ${a.dek} ${a.bodyMd}`)
+          );
+          return matched.length > 0 ? matched.slice(0, 4) : syriaMonitorStories;
+        })();
+
+  const allTabList =
+    remainingExplorerStories.length >= 4
+      ? remainingExplorerStories
+      : published.slice(Math.min(10, Math.max(0, published.length - 6)));
+  const evenAllTabList =
+    allTabList.length > 2 && allTabList.length % 2 !== 0 ? allTabList.slice(0, -1) : allTabList;
+
   const filteredDepartmentStories =
     selectedDeptFilter === 'all'
-      ? remainingExplorerStories.length >= 4
-        ? remainingExplorerStories
-        : published.slice(Math.min(8, published.length))
-      : published.filter((a) => a.categorySlug === selectedDeptFilter);
+      ? evenAllTabList
+      : published.filter((a) => a.categorySlug === selectedDeptFilter).slice(0, 6);
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -387,21 +418,21 @@ export const HomeView: React.FC<{
   return (
     <div className="space-y-12">
       {/* ====================================================================
-          الطبقة 1: شريط البرقيات السيادي (Sovereign Breaking Wire)
+          الطبقة 1: شريط البرقيات العاجلة (Live Breaking Ticker — Syria TV / Halab Today Style)
       ==================================================================== */}
       {activeWireItem && (
         <section
           aria-label="شريط البرقيات الإخبارية"
-          className="border border-[#E2DDD3] dark:border-[#1F2724] bg-[#0F2922] text-[#FAF9F6] px-4 py-2.5 flex items-center justify-between gap-4"
+          className="border border-[#0B221C] dark:border-[#D4AF5A]/45 bg-[#0B221C] text-[#FAF9F6] px-4 py-2.5 flex items-center justify-between gap-4"
         >
           <div className="flex items-center gap-3 min-w-0">
-            <span className="bg-[#9B1C1C] text-white px-2.5 py-0.5 text-[11px] font-extrabold tracking-wide shrink-0">
-              {activeWireItem.type === 'breaking' ? 'عاجل' : 'برقية'}
+            <span className="bg-[#9B1C1C] text-white px-2.5 py-1 text-[11px] font-extrabold tracking-wide shrink-0">
+              {activeWireItem.type === 'breaking' || activeWireItem.headline.includes('عاجل') ? 'عاجل' : 'نبض الساعة'}
             </span>
             <span className="text-xs text-[#D4AF5A] font-bold shrink-0 hidden sm:inline">
               {activeWireItem.categoryName}
             </span>
-            <span aria-hidden="true" className="text-[#D4AF5A]/40 hidden sm:inline">|</span>
+            <span aria-hidden="true" className="text-[#D4AF5A]/40 hidden sm:inline">·</span>
             <button
               type="button"
               onClick={() => onOpenArticle(activeWireItem)}
@@ -421,7 +452,7 @@ export const HomeView: React.FC<{
                 setWireIndex((prev) => (prev - 1 + wireTickerArticles.length) % wireTickerArticles.length)
               }
               aria-label="الخبر السابق"
-              className="p-1 border border-[#D4AF5A]/30 hover:border-[#D4AF5A] text-[#E5DFD3] hover:text-[#D4AF5A] transition-colors"
+              className="p-1 border border-[#D4AF5A]/35 hover:border-[#D4AF5A] text-[#E5DFD3] hover:text-[#D4AF5A] transition-colors"
             >
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
@@ -429,7 +460,7 @@ export const HomeView: React.FC<{
               type="button"
               onClick={() => setTickerPaused((p) => !p)}
               aria-label={tickerPaused ? 'تشغيل شريط الأخبار' : 'إيقاف شريط الأخبار مؤقتًا'}
-              className="p-1 border border-[#D4AF5A]/30 hover:border-[#D4AF5A] text-[#E5DFD3] hover:text-[#D4AF5A] transition-colors"
+              className="p-1 border border-[#D4AF5A]/35 hover:border-[#D4AF5A] text-[#E5DFD3] hover:text-[#D4AF5A] transition-colors"
             >
               {tickerPaused ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />}
             </button>
@@ -437,7 +468,7 @@ export const HomeView: React.FC<{
               type="button"
               onClick={() => setWireIndex((prev) => (prev + 1) % wireTickerArticles.length)}
               aria-label="الخبر التالي"
-              className="p-1 border border-[#D4AF5A]/30 hover:border-[#D4AF5A] text-[#E5DFD3] hover:text-[#D4AF5A] transition-colors"
+              className="p-1 border border-[#D4AF5A]/35 hover:border-[#D4AF5A] text-[#E5DFD3] hover:text-[#D4AF5A] transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
             </button>
@@ -446,270 +477,287 @@ export const HomeView: React.FC<{
       )}
 
       {/* ====================================================================
-          الطبقة 2: صدر الصحيفة الثلاثي (Veteran 3-Column Broadsheet Hero: 3 + 6 + 3)
+          الطبقة 2: واجهة المجلة البانورامية الكبرى (Syria TV & Zaman Al-Wasl Magazine Hero: 5 + 4 + 3)
       ==================================================================== */}
       {leadStory && (
-        <section aria-label="صدر الصفحة الرئيسية" className="grid grid-cols-1 lg:grid-cols-12 gap-7 items-start">
-          {/* العمود الأيمن (3 أعمدة): آخر الأخبار والتحديثات السريعة */}
-          <div className="lg:col-span-3 lg:border-e lg:border-[#E2DDD3] dark:lg:border-[#1F2724] lg:pe-6 space-y-4 order-2 lg:order-1">
-            <div className="border-b-2 border-[#111312] dark:border-[#D4AF5A] pb-2 flex items-center justify-between">
-              <h2 className="text-base font-bold font-display text-[#111312] dark:text-[#F3F0EA] flex items-center gap-2">
-                <span className="w-2 h-2 bg-[#9B1C1C] inline-block shrink-0" aria-hidden="true" />
-                <span>آخر الأخبار والتحديثات</span>
-              </h2>
-              <span className="text-[11px] font-semibold text-[#9A7125] dark:text-[#D4AF5A]">مباشر</span>
-            </div>
+        <section aria-label="واجهة المجلة الرئيسية" className="grid grid-cols-1 lg:grid-cols-12 gap-7 items-stretch">
+          {/* الجناح الأيمن (5 أعمدة): قصة غلاف المجلة الكبرى */}
+          <article className="lg:col-span-5 bg-white dark:bg-[#111715] border border-[#DED8CC] dark:border-[#1E2824] p-5 flex flex-col justify-between group hover:border-[#9A7125] dark:hover:border-[#D4AF5A] transition-colors">
+            <div className="space-y-4">
+              <figure className="space-y-2">
+                <div className="aspect-[16/10] w-full overflow-hidden bg-[#0B221C] border border-[#DED8CC] dark:border-[#1E2824]">
+                  <img
+                    src={resolvePublicImageUrl(leadStory.image.url)}
+                    alt={leadStory.image.alt}
+                    width={1200}
+                    height={750}
+                    fetchPriority="high"
+                    referrerPolicy="no-referrer"
+                    onError={(e) => handleArticleImageError(e, leadStory)}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                  />
+                </div>
+                <figcaption className="flex items-center justify-between text-[11px] text-[#575B59] dark:text-[#9CA39F]">
+                  <span className="truncate">{leadStory.image.caption}</span>
+                </figcaption>
+              </figure>
 
-            <div className="divide-y divide-[#E2DDD3] dark:divide-[#1F2724]">
-              {latestWireStories.map((wireItem, idx) => (
-                <article key={wireItem.id} className="py-3.5 first:pt-1 last:pb-0 group space-y-1.5">
-                  <div className="flex items-center justify-between text-[11px] text-[#5A5D5B] dark:text-[#9CA39F]">
-                    <button
-                      type="button"
-                      onClick={() => onOpenCategory(wireItem.categorySlug)}
-                      className="font-bold text-[#0F2922] dark:text-[#D4AF5A] hover:underline"
-                    >
-                      {wireItem.categoryName}
-                    </button>
-                    <span className="tabular-nums">
-                      {formatArabicDate(wireItem.publishedAt, siteConfig.numeralSystem)}
-                    </span>
-                  </div>
-                  <h3 className="text-sm font-bold font-display leading-snug text-[#111312] dark:text-[#F3F0EA] group-hover:text-[#9A7125] dark:group-hover:text-[#D4AF5A] transition-colors">
-                    <button
-                      type="button"
-                      onClick={() => onOpenArticle(wireItem)}
-                      className="text-start"
-                    >
-                      {wireItem.headline}
-                    </button>
-                  </h3>
-                  {idx < 2 && (
-                    <p className="text-xs text-[#5A5D5B] dark:text-[#9CA39F] leading-relaxed line-clamp-2">
-                      {wireItem.dek}
-                    </p>
-                  )}
-                </article>
-              ))}
-            </div>
-          </div>
-
-          {/* العمود الأوسط (6 أعمدة): قصة الغلاف الكبرى */}
-          <article className="lg:col-span-6 space-y-4 order-1 lg:order-2 group">
-            <figure className="space-y-2">
-              <div className="aspect-[16/9] w-full overflow-hidden bg-[#0F2922] border border-[#E2DDD3] dark:border-[#1F2724]">
-                <img
-                  src={resolvePublicImageUrl(leadStory.image.url)}
-                  alt={leadStory.image.alt}
-                  width={1200}
-                  height={675}
-                  fetchPriority="high"
-                  referrerPolicy="no-referrer"
-                  onError={(e) => handleArticleImageError(e, leadStory)}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-                />
+              <div className="flex flex-wrap items-center gap-2 text-xs text-[#575B59] dark:text-[#9CA39F]">
+                <span className="font-extrabold text-[#9B1C1C] dark:text-[#E05A47]">ملف الغلاف الرئيسي</span>
+                <span aria-hidden="true">·</span>
+                <button
+                  type="button"
+                  onClick={() => onOpenCategory(leadStory.categorySlug)}
+                  className="font-bold text-[#0B221C] dark:text-[#D4AF5A] hover:underline"
+                >
+                  {leadStory.categoryName}
+                </button>
+                <span aria-hidden="true">·</span>
+                <span>{formatArabicDate(leadStory.publishedAt, siteConfig.numeralSystem)}</span>
               </div>
-              <figcaption className="flex items-center justify-between text-[11px] text-[#5A5D5B] dark:text-[#9CA39F]">
-                <span className="truncate">{leadStory.image.caption}</span>
-                <span className="shrink-0 ms-3 font-medium">{leadStory.image.credit}</span>
-              </figcaption>
-            </figure>
 
-            <div className="flex flex-wrap items-center gap-2 text-xs text-[#5A5D5B] dark:text-[#9CA39F]">
-              <span className="font-extrabold text-[#9B1C1C] dark:text-[#E05252]">التغطية الرئيسية</span>
-              <span aria-hidden="true">·</span>
-              <button
-                type="button"
-                onClick={() => onOpenCategory(leadStory.categorySlug)}
-                className="font-bold text-[#0F2922] dark:text-[#D4AF5A] hover:underline"
-              >
-                {leadStory.categoryName}
-              </button>
-              <span aria-hidden="true">·</span>
-              <span>{formatArabicDate(leadStory.publishedAt, siteConfig.numeralSystem)}</span>
-              <span aria-hidden="true">·</span>
-              <span className="tabular-nums font-bold text-[#9A7125] dark:text-[#D4AF5A]">
-                {formatNumerals(leadStory.sources.length, siteConfig.numeralSystem)} مصادر رسمية
-              </span>
-            </div>
-
-            <h1 className="text-3xl sm:text-4xl lg:text-[2.5rem] font-bold font-royal leading-[1.28] text-[#111312] dark:text-[#F3F0EA] group-hover:text-[#9A7125] dark:group-hover:text-[#D4AF5A] transition-colors">
-              <button
-                type="button"
-                onClick={() => onOpenArticle(leadStory)}
-                className="text-start"
-              >
-                {leadStory.headline}
-              </button>
-            </h1>
-
-            <p className="text-base sm:text-[17px] text-[#5A5D5B] dark:text-[#C5C2BA] leading-relaxed">
-              {leadStory.dek}
-            </p>
-
-            {/* خلاصة الوقائع المحققة */}
-            <div className="border-t border-b border-[#E2DDD3] dark:border-[#1F2724] bg-[#F2EFE9]/65 dark:bg-[#111614] p-4 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-extrabold text-[#0F2922] dark:text-[#D4AF5A]">
-                  أبرز الوقائع المحققة
-                </span>
+              <h1 className="text-2xl sm:text-3xl lg:text-[2.1rem] font-bold font-royal leading-[1.3] text-[#141716] dark:text-[#F3F0EA] group-hover:text-[#9B1C1C] dark:group-hover:text-[#D4AF5A] transition-colors">
                 <button
                   type="button"
                   onClick={() => onOpenArticle(leadStory)}
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-[#9A7125] dark:text-[#D4AF5A] hover:underline"
+                  className="text-start"
                 >
-                  <span>قراءة التقرير الكامل</span>
-                  <ArrowLeft className="w-3.5 h-3.5" />
+                  {leadStory.headline}
                 </button>
+              </h1>
+
+              <p className="text-sm sm:text-[15px] text-[#575B59] dark:text-[#C5C2BA] leading-relaxed">
+                {leadStory.dek}
+              </p>
+
+              {/* خلاصة الوقائع المحققة */}
+              <div className="border-t border-[#DED8CC] dark:border-[#1E2824] pt-3.5 space-y-2">
+                <span className="text-xs font-extrabold text-[#0B221C] dark:text-[#D4AF5A] block">
+                  أبرز محاور التقرير الموثق:
+                </span>
+                <ul className="space-y-1.5 text-xs text-[#141716] dark:text-[#E5DFD3] list-disc ps-4 leading-relaxed">
+                  {leadStory.keyPoints.slice(0, 3).map((pt, i) => (
+                    <li key={i}>{pt}</li>
+                  ))}
+                </ul>
               </div>
-              <ul className="space-y-1.5 text-xs sm:text-sm text-[#111312] dark:text-[#E5DFD3] list-disc ps-5 leading-relaxed">
-                {leadStory.keyPoints.slice(0, 3).map((pt, i) => (
-                  <li key={i}>{pt}</li>
-                ))}
-              </ul>
+            </div>
+
+            <div className="pt-4 mt-4 border-t border-[#DED8CC] dark:border-[#1E2824] flex items-center justify-between text-xs text-[#575B59] dark:text-[#9CA39F]">
+              <span className="font-semibold truncate">{leadStory.authorName}</span>
+              <button
+                type="button"
+                onClick={() => onOpenArticle(leadStory)}
+                className="inline-flex items-center gap-1.5 font-extrabold text-[#9B1C1C] dark:text-[#D4AF5A] hover:underline shrink-0 ms-2"
+              >
+                <span>قراءة الملف كاملًا</span>
+                <ArrowLeft className="w-3.5 h-3.5" />
+              </button>
             </div>
           </article>
 
-          {/* العمود الأيسر (3 أعمدة): مختارات التحرير المصورة */}
-          <div className="lg:col-span-3 lg:border-s lg:border-[#E2DDD3] dark:lg:border-[#1F2724] lg:ps-6 space-y-5 order-3">
-            <div className="border-b-2 border-[#9A7125] dark:border-[#D4AF5A] pb-2 flex items-center justify-between">
-              <h2 className="text-base font-bold font-display text-[#111312] dark:text-[#F3F0EA]">
-                مختارات التحرير
-              </h2>
-              <span className="text-[11px] font-semibold text-[#5A5D5B] dark:text-[#9CA39F]">تقارير منتقاة</span>
-            </div>
-
-            <div className="space-y-6 divide-y divide-[#E2DDD3] dark:divide-[#1F2724]">
-              {editorPicks.map((pick) => (
-                <article key={pick.id} className="pt-5 first:pt-0 space-y-2.5 group">
-                  <div className="aspect-[16/10] w-full overflow-hidden bg-[#0F2922] border border-[#E2DDD3] dark:border-[#1F2724]">
+          {/* الجناح الأوسط (4 أعمدة): تقارير العدد المصورة (Syria TV Magazine Stack) */}
+          <div className="lg:col-span-4 flex flex-col justify-between gap-6">
+            {centerMagazineFeatures.map((feature) => (
+              <article
+                key={feature.id}
+                className="flex-1 bg-white dark:bg-[#111715] border border-[#DED8CC] dark:border-[#1E2824] p-4 flex flex-col justify-between group hover:border-[#9A7125] dark:hover:border-[#D4AF5A] transition-colors"
+              >
+                <div className="space-y-3">
+                  <div className="aspect-[16/9] w-full overflow-hidden bg-[#0B221C] border border-[#DED8CC] dark:border-[#1E2824]">
                     <img
-                      src={resolvePublicImageUrl(pick.image.url)}
-                      alt={pick.image.alt}
+                      src={resolvePublicImageUrl(feature.image.url)}
+                      alt={feature.image.alt}
                       width={800}
-                      height={500}
+                      height={450}
                       loading="eager"
                       referrerPolicy="no-referrer"
-                      onError={(e) => handleArticleImageError(e, pick)}
+                      onError={(e) => handleArticleImageError(e, feature)}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                     />
                   </div>
-                  <div className="flex items-center justify-between text-[11px] text-[#5A5D5B] dark:text-[#9CA39F]">
+                  <div className="flex items-center justify-between text-[11px] text-[#575B59] dark:text-[#9CA39F]">
                     <button
                       type="button"
-                      onClick={() => onOpenCategory(pick.categorySlug)}
-                      className="font-bold text-[#0F2922] dark:text-[#D4AF5A] hover:underline"
+                      onClick={() => onOpenCategory(feature.categorySlug)}
+                      className="font-extrabold text-[#9B1C1C] dark:text-[#D4AF5A] hover:underline"
                     >
-                      {pick.categoryName}
+                      {feature.categoryName}
                     </button>
-                    <span className="tabular-nums font-semibold text-[#9A7125] dark:text-[#D4AF5A]">
-                      {formatNumerals(pick.sources.length, siteConfig.numeralSystem)} مصادر
+                    <span className="tabular-nums">
+                      {formatArabicDate(feature.publishedAt, siteConfig.numeralSystem)}
                     </span>
                   </div>
-                  <h3 className="text-[15px] font-extrabold font-display leading-snug text-[#111312] dark:text-[#F3F0EA] group-hover:text-[#9A7125] dark:group-hover:text-[#D4AF5A] transition-colors">
+                  <h2 className="text-base sm:text-lg font-extrabold font-display leading-snug text-[#141716] dark:text-[#F3F0EA] group-hover:text-[#9A7125] dark:group-hover:text-[#D4AF5A] transition-colors">
                     <button
                       type="button"
-                      onClick={() => onOpenArticle(pick)}
+                      onClick={() => onOpenArticle(feature)}
                       className="text-start"
                     >
-                      {pick.headline}
+                      {feature.headline}
                     </button>
-                  </h3>
-                  <p className="text-xs text-[#5A5D5B] dark:text-[#9CA39F] leading-relaxed line-clamp-2">
-                    {pick.dek}
+                  </h2>
+                  <p className="text-xs text-[#575B59] dark:text-[#C5C2BA] leading-relaxed line-clamp-2">
+                    {feature.dek}
                   </p>
-                </article>
-              ))}
-            </div>
+                </div>
+                <div className="pt-2.5 mt-3 border-t border-[#DED8CC] dark:border-[#1E2824] flex items-center justify-between text-[11px] text-[#575B59] dark:text-[#9CA39F]">
+                  <span className="font-medium truncate">{feature.authorName}</span>
+                  <span className="tabular-nums font-bold text-[#0B221C] dark:text-[#D4AF5A]">
+                    {formatNumerals(feature.sources.length, siteConfig.numeralSystem)} مصادر
+                  </span>
+                </div>
+              </article>
+            ))}
           </div>
+
+          {/* الجناح الأيسر (3 أعمدة): نبض الساعة — آخر الأخبار (Halab Today / Syria TV Live Timeline) */}
+          <aside className="lg:col-span-3 bg-white dark:bg-[#111715] border border-[#DED8CC] dark:border-[#1E2824] p-5 flex flex-col justify-between">
+            <div className="space-y-4">
+              <div className="border-b-2 border-[#9B1C1C] dark:border-[#D4AF5A] pb-2.5 flex items-center justify-between">
+                <h2 className="text-base font-extrabold font-display text-[#141716] dark:text-[#F3F0EA]">
+                  نبض الساعة · آخر الأخبار
+                </h2>
+                <span className="text-[11px] font-bold text-[#9B1C1C] dark:text-[#D4AF5A] flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>محدّث</span>
+                </span>
+              </div>
+
+              <div className="divide-y divide-[#DED8CC] dark:divide-[#1E2824]">
+                {latestTimelineStories.map((wireItem) => (
+                  <article key={wireItem.id} className="py-3.5 first:pt-1 last:pb-1 group space-y-1.5">
+                    <div className="flex items-center justify-between text-[11px] text-[#575B59] dark:text-[#9CA39F]">
+                      <button
+                        type="button"
+                        onClick={() => onOpenCategory(wireItem.categorySlug)}
+                        className="font-bold text-[#0B221C] dark:text-[#D4AF5A] hover:underline"
+                      >
+                        {wireItem.categoryName}
+                      </button>
+                      <span className="tabular-nums text-[10px]">
+                        {formatArabicDate(wireItem.publishedAt, siteConfig.numeralSystem)}
+                      </span>
+                    </div>
+                    <h3 className="text-sm font-bold font-display leading-snug text-[#141716] dark:text-[#F3F0EA] group-hover:text-[#9B1C1C] dark:group-hover:text-[#D4AF5A] transition-colors">
+                      <button
+                        type="button"
+                        onClick={() => onOpenArticle(wireItem)}
+                        className="text-start"
+                      >
+                        {wireItem.headline}
+                      </button>
+                    </h3>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => onOpenCategory('syria')}
+              className="mt-4 pt-3 border-t border-[#DED8CC] dark:border-[#1E2824] text-xs font-extrabold text-[#0B221C] dark:text-[#D4AF5A] hover:underline flex items-center justify-between w-full"
+            >
+              <span>استعراض جميع أخبار اليوم</span>
+              <ArrowLeft className="w-3.5 h-3.5" />
+            </button>
+          </aside>
         </section>
       )}
 
       {/* ====================================================================
-          الطبقة 3: ملف سوريا الميداني والاقتصادي (Dedicated Syria Flagship Band)
+          الطبقة 3: مرصد المحافظات والمدن السورية (Halab Today & Zaman Al-Wasl Governorate Monitor)
       ==================================================================== */}
-      {syriaBandStories.length > 0 && (
+      {filteredSyriaStories.length > 0 && (
         <section
-          aria-label="ملف سوريا الميداني والاقتصادي"
-          className="border-t-2 border-b border-[#0F2922] dark:border-[#D4AF5A]/60 bg-[#F2EFE9]/75 dark:bg-[#111614] py-8 px-5 sm:px-7"
+          aria-label="مرصد المحافظات والمدن السورية"
+          className="border-t-2 border-b border-[#0B221C] dark:border-[#D4AF5A]/60 bg-[#EFECE4]/80 dark:bg-[#111715] py-8 px-5 sm:px-7 space-y-6"
         >
-          <div className="flex flex-wrap items-end justify-between gap-4 pb-4 mb-6 border-b border-[#E2DDD3] dark:border-[#1F2724]">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 pb-4 border-b border-[#DED8CC] dark:border-[#1E2824]">
             <div>
-              <span className="text-xs font-extrabold text-[#9A7125] dark:text-[#D4AF5A]">
-                الأولوية التحريرية الأولى · تغطية المحافظات وإعادة الإعمار
+              <span className="text-xs font-extrabold text-[#9B1C1C] dark:text-[#D4AF5A]">
+                الأولوية التحريرية الأولى (50%) · شبكة مراسلي المحافظات والملف الخدمي والمعيشي
               </span>
-              <h2 className="text-2xl sm:text-3xl font-bold font-royal text-[#111312] dark:text-[#F3F0EA] mt-0.5">
-                ملف سوريا الميداني والاقتصادي
+              <h2 className="text-2xl sm:text-3xl font-bold font-royal text-[#141716] dark:text-[#F3F0EA] mt-1">
+                ميدان سوريا · مرصد المحافظات والاقتصاد والإعمار
               </h2>
             </div>
-            <button
-              type="button"
-              onClick={() => onOpenCategory('syria')}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0F2922] dark:text-[#D4AF5A] hover:underline whitespace-nowrap shrink-0"
-            >
-              <span>تصفح ملف سوريا الكامل</span>
-              <ArrowLeft className="w-3.5 h-3.5" />
-            </button>
+
+            {/* أزرار التصفية التفاعلية حسب المحافظات والأقاليم السورية */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              {SYRIA_GOVERNORATE_FILTERS.map((gov) => (
+                <button
+                  key={gov.id}
+                  type="button"
+                  onClick={() => setSyriaGovFilter(gov.id)}
+                  className={`px-3 py-1.5 text-xs font-bold transition-colors whitespace-nowrap shrink-0 ${
+                    syriaGovFilter === gov.id
+                      ? 'bg-[#0B221C] text-[#FAF9F6] dark:bg-[#D4AF5A] dark:text-[#090D0C]'
+                      : 'bg-white dark:bg-[#090D0C] text-[#3D423F] dark:text-[#C5C2BA] border border-[#DED8CC] dark:border-[#1E2824] hover:border-[#9A7125]'
+                  }`}
+                >
+                  {gov.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-            {/* التقرير السوري الرئيسي */}
-            {syriaBandStories[0] && (
-              <article className="lg:col-span-6 bg-white dark:bg-[#0A0D0C] border border-[#E2DDD3] dark:border-[#1F2724] p-5 flex flex-col justify-between group hover:border-[#9A7125] dark:hover:border-[#D4AF5A] transition-colors">
+            {/* التقرير السوري الميداني الرئيسي */}
+            {filteredSyriaStories[0] && (
+              <article className="lg:col-span-5 bg-white dark:bg-[#090D0C] border border-[#DED8CC] dark:border-[#1E2824] p-5 flex flex-col justify-between group hover:border-[#9A7125] dark:hover:border-[#D4AF5A] transition-colors">
                 <div>
-                  <div className="aspect-[16/10] w-full overflow-hidden bg-[#0F2922] mb-4 border border-[#E2DDD3] dark:border-[#1F2724]">
+                  <div className="aspect-[16/10] w-full overflow-hidden bg-[#0B221C] mb-4 border border-[#DED8CC] dark:border-[#1E2824]">
                     <img
-                      src={resolvePublicImageUrl(syriaBandStories[0].image.url)}
-                      alt={syriaBandStories[0].image.alt}
+                      src={resolvePublicImageUrl(filteredSyriaStories[0].image.url)}
+                      alt={filteredSyriaStories[0].image.alt}
                       width={1000}
                       height={625}
                       loading="lazy"
                       referrerPolicy="no-referrer"
-                      onError={(e) => handleArticleImageError(e, syriaBandStories[0])}
+                      onError={(e) => handleArticleImageError(e, filteredSyriaStories[0])}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                     />
                   </div>
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-[#5A5D5B] dark:text-[#9CA39F] mb-2">
-                    <span className="font-bold text-[#0F2922] dark:text-[#D4AF5A]">
-                      {syriaBandStories[0].categoryName}
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-[#575B59] dark:text-[#9CA39F] mb-2">
+                    <span className="font-extrabold text-[#9B1C1C] dark:text-[#E05A47]">تقرير ميداني خاص</span>
+                    <span aria-hidden="true">·</span>
+                    <span className="font-bold text-[#0B221C] dark:text-[#D4AF5A]">
+                      {filteredSyriaStories[0].categoryName}
                     </span>
                     <span aria-hidden="true">·</span>
-                    <span>{formatArabicDate(syriaBandStories[0].publishedAt, siteConfig.numeralSystem)}</span>
-                    <span aria-hidden="true">·</span>
-                    <span className="tabular-nums font-bold text-[#9A7125] dark:text-[#D4AF5A]">
-                      {formatNumerals(syriaBandStories[0].sources.length, siteConfig.numeralSystem)} مصادر رسمية
-                    </span>
+                    <span>{formatArabicDate(filteredSyriaStories[0].publishedAt, siteConfig.numeralSystem)}</span>
                   </div>
-                  <h3 className="text-xl sm:text-2xl font-bold font-royal leading-snug text-[#111312] dark:text-[#F3F0EA] mb-2.5 group-hover:text-[#9A7125] dark:group-hover:text-[#D4AF5A] transition-colors">
+                  <h3 className="text-xl sm:text-2xl font-bold font-royal leading-snug text-[#141716] dark:text-[#F3F0EA] mb-2.5 group-hover:text-[#9A7125] dark:group-hover:text-[#D4AF5A] transition-colors">
                     <button
                       type="button"
-                      onClick={() => onOpenArticle(syriaBandStories[0])}
+                      onClick={() => onOpenArticle(filteredSyriaStories[0])}
                       className="text-start"
                     >
-                      {syriaBandStories[0].headline}
+                      {filteredSyriaStories[0].headline}
                     </button>
                   </h3>
-                  <p className="text-sm text-[#5A5D5B] dark:text-[#C5C2BA] leading-relaxed mb-4">
-                    {syriaBandStories[0].dek}
+                  <p className="text-sm text-[#575B59] dark:text-[#C5C2BA] leading-relaxed mb-4">
+                    {filteredSyriaStories[0].dek}
                   </p>
                 </div>
-                <div className="pt-3 border-t border-[#E2DDD3] dark:border-[#1F2724] flex items-center justify-between text-xs text-[#5A5D5B] dark:text-[#9CA39F]">
-                  <span className="font-medium">{syriaBandStories[0].authorName}</span>
+                <div className="pt-3 mt-4 border-t border-[#DED8CC] dark:border-[#1E2824] flex items-center justify-between text-xs text-[#575B59] dark:text-[#9CA39F]">
+                  <span className="font-medium">{filteredSyriaStories[0].authorName}</span>
                   <button
                     type="button"
-                    onClick={() => onOpenArticle(syriaBandStories[0])}
-                    className="inline-flex items-center gap-1 font-bold text-[#0F2922] dark:text-[#D4AF5A] hover:underline"
+                    onClick={() => onOpenArticle(filteredSyriaStories[0])}
+                    className="inline-flex items-center gap-1 font-bold text-[#0B221C] dark:text-[#D4AF5A] hover:underline"
                   >
-                    <span>التفاصيل</span>
+                    <span>التفاصيل الكاملة</span>
                     <ArrowLeft className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </article>
             )}
 
-            {/* 3 تقارير سورية ميدانية متكاملة */}
-            <div className="lg:col-span-6 flex flex-col justify-between gap-4">
-              {syriaBandStories.slice(1, 4).map((story) => (
+            {/* 3 تقارير سورية ميدانية مصورة على اليسار */}
+            <div className="lg:col-span-7 flex flex-col justify-between gap-4">
+              {filteredSyriaStories.slice(1, 4).map((story) => (
                 <EditorialCard
                   key={story.id}
                   article={story}
@@ -725,79 +773,129 @@ export const HomeView: React.FC<{
       )}
 
       {/* ====================================================================
-          الطبقة 4: المشهد العربي والإقليمي وتركيا (Magazine & Typographic Columns)
+          الطبقة 4: ملفات خاصة وتحقيقات معمّقة (Zaman Al-Wasl Investigative Magazine Spread)
       ==================================================================== */}
-      {(regionalVisualStories.length > 0 || regionalColumnStories.length > 0) && (
-        <section aria-label="المشهد العربي والإقليمي وتركيا" className="space-y-7">
-          <div className="flex flex-wrap items-end justify-between gap-4 pb-3 border-b-2 border-[#111312] dark:border-[#D4AF5A]">
+      {specialDossiers.length > 0 && (
+        <section
+          aria-label="ملفات خاصة وتحقيقات معمقة"
+          className="bg-[#0B221C] text-[#FAF9F6] border border-[#9A7125]/50 p-6 sm:p-8 space-y-6"
+        >
+          <div className="flex flex-wrap items-end justify-between gap-4 pb-4 border-b border-[#D4AF5A]/30">
+            <div>
+              <span className="text-xs font-extrabold text-[#D4AF5A]">
+                صحافة المعمّق والاستقصاء · ماذا حدث ولماذا يهم؟
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-bold font-royal text-white mt-1">
+                ملفات خاصة وقراءات استراتيجية
+              </h2>
+            </div>
+            <button
+              type="button"
+              onClick={() => onOpenCategory('analysis')}
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#D4AF5A] hover:underline whitespace-nowrap shrink-0"
+            >
+              <span>جميع الملفات والتحليلات</span>
+              <ArrowLeft className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {specialDossiers.map((dossier, idx) => (
+              <article
+                key={dossier.id}
+                className="bg-[#071612] border border-[#D4AF5A]/30 p-5 flex flex-col justify-between group hover:border-[#D4AF5A] transition-colors"
+              >
+                <div className="space-y-3.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-mono font-bold text-[#D4AF5A]">
+                      ملف 0{formatNumerals(idx + 1, siteConfig.numeralSystem)}
+                    </span>
+                    <span className="text-[#E5DFD3]/80">{dossier.categoryName}</span>
+                  </div>
+                  <div className="aspect-[16/10] w-full overflow-hidden bg-[#0B221C] border border-[#D4AF5A]/20">
+                    <img
+                      src={resolvePublicImageUrl(dossier.image.url)}
+                      alt={dossier.image.alt}
+                      width={800}
+                      height={500}
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                      onError={(e) => handleArticleImageError(e, dossier)}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                    />
+                  </div>
+                  <h3 className="text-lg font-bold font-royal leading-snug text-white group-hover:text-[#D4AF5A] transition-colors">
+                    <button
+                      type="button"
+                      onClick={() => onOpenArticle(dossier)}
+                      className="text-start"
+                    >
+                      {dossier.headline}
+                    </button>
+                  </h3>
+                  <p className="text-xs text-[#E5DFD3]/85 leading-relaxed line-clamp-3">
+                    {dossier.dek}
+                  </p>
+                </div>
+                <div className="pt-3 mt-4 border-t border-[#D4AF5A]/20 flex items-center justify-between text-[11px] text-[#E5DFD3]/80">
+                  <span className="truncate">{dossier.authorName}</span>
+                  <span className="text-[#D4AF5A] font-bold shrink-0 ms-2">
+                    {formatNumerals(dossier.readingTimeMin, siteConfig.numeralSystem)} د قراءة
+                  </span>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ====================================================================
+          الطبقة 5: المشهد العربي والإقليمي وتركيا (4-Column Visual Magazine Grid — 40%)
+      ==================================================================== */}
+      {arabTurkeyMagazineGrid.length > 0 && (
+        <section aria-label="المشهد العربي والإقليمي وتركيا" className="space-y-6">
+          <div className="flex flex-wrap items-end justify-between gap-4 pb-3 border-b-2 border-[#0B221C] dark:border-[#D4AF5A]">
             <div>
               <span className="text-xs font-extrabold text-[#9A7125] dark:text-[#D4AF5A]">
-                التغطية الإقليمية والدولية · الخليج والمشرق ومصر والمغرب العربي وتركيا
+                التغطية الإقليمية (40%) · أنقرة والرياض والدوحة والقاهرة وعمّان وبغداد والمغرب العربي
               </span>
-              <h2 className="text-2xl sm:text-3xl font-bold font-royal text-[#111312] dark:text-[#F3F0EA] mt-0.5">
+              <h2 className="text-2xl sm:text-3xl font-bold font-royal text-[#141716] dark:text-[#F3F0EA] mt-0.5">
                 المشهد العربي والإقليمي وتركيا
               </h2>
             </div>
             <button
               type="button"
               onClick={() => onOpenCategory('arab-world')}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0F2922] dark:text-[#D4AF5A] hover:underline whitespace-nowrap shrink-0"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0B221C] dark:text-[#D4AF5A] hover:underline whitespace-nowrap shrink-0"
             >
               <span>أرشيف العالم العربي وتركيا</span>
               <ArrowLeft className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          {regionalVisualStories.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {regionalVisualStories.map((art) => (
-                <EditorialCard
-                  key={art.id}
-                  article={art}
-                  size="large"
-                  numeralSystem={siteConfig.numeralSystem}
-                  onOpenArticle={onOpenArticle}
-                  onOpenCategory={onOpenCategory}
-                />
-              ))}
-            </div>
-          )}
-
-          {regionalColumnStories.length > 0 && (
-            <div className="pt-6 border-t border-[#E2DDD3] dark:border-[#1F2724] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-0 lg:divide-x lg:divide-x-reverse divide-[#E2DDD3] dark:divide-[#1F2724]">
-              {regionalColumnStories.map((colStory, idx) => (
-                <div
-                  key={colStory.id}
-                  className={
-                    idx === 0
-                      ? 'lg:pe-6'
-                      : idx === regionalColumnStories.length - 1
-                        ? 'lg:ps-6'
-                        : 'lg:px-6'
-                  }
-                >
-                  <EditorialCard
-                    article={colStory}
-                    size="column"
-                    numeralSystem={siteConfig.numeralSystem}
-                    onOpenArticle={onOpenArticle}
-                    onOpenCategory={onOpenCategory}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {arabTurkeyMagazineGrid.map((art) => (
+              <EditorialCard
+                key={art.id}
+                article={art}
+                size="medium"
+                numeralSystem={siteConfig.numeralSystem}
+                onOpenArticle={onOpenArticle}
+                onOpenCategory={onOpenCategory}
+              />
+            ))}
+          </div>
         </section>
       )}
 
       {/* ====================================================================
-          الطبقة 5: بوابة الأقسام التفاعلية (8 أعمدة) + عمود القراءة والملفات التحليلية (4 أعمدة)
+          الطبقة 6: بوابة الأقسام التخصصية (8 أعمدة) + جناح «الأكثر قراءة وتداولًا» (4 أعمدة)
       ==================================================================== */}
       <section aria-label="تغطيات الأقسام والملفات المختارة" className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         <div className="lg:col-span-8 space-y-6">
-          <div className="border-b-2 border-[#111312] dark:border-[#D4AF5A] pb-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <h2 className="text-2xl font-bold font-royal text-[#111312] dark:text-[#F3F0EA]">
-              تغطيات الأقسام المتخصصة
+          <div className="border-b-2 border-[#0B221C] dark:border-[#D4AF5A] pb-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <h2 className="text-2xl font-bold font-royal text-[#141716] dark:text-[#F3F0EA]">
+              أبواب المجلة التخصصية
             </h2>
 
             <div className="flex flex-wrap items-center gap-1.5">
@@ -806,21 +904,21 @@ export const HomeView: React.FC<{
                 onClick={() => setSelectedDeptFilter('all')}
                 className={`px-3 py-1.5 text-xs font-bold transition-colors whitespace-nowrap shrink-0 ${
                   selectedDeptFilter === 'all'
-                    ? 'bg-[#0F2922] text-[#FAF9F6] dark:bg-[#D4AF5A] dark:text-[#0A0D0C]'
-                    : 'bg-[#F2EFE9] dark:bg-[#111614] text-[#5A5D5B] dark:text-[#C5C2BA] hover:text-[#9A7125]'
+                    ? 'bg-[#0B221C] text-[#FAF9F6] dark:bg-[#D4AF5A] dark:text-[#090D0C]'
+                    : 'bg-[#EFECE4] dark:bg-[#111715] text-[#575B59] dark:text-[#C5C2BA] hover:text-[#9A7125]'
                 }`}
               >
-                جميع الأقسام
+                جميع الأبواب
               </button>
-              {EDITORIAL_SECTIONS.slice(0, 6).map((sec) => (
+              {EDITORIAL_SECTIONS.map((sec) => (
                 <button
                   key={sec.id}
                   type="button"
                   onClick={() => setSelectedDeptFilter(sec.slug)}
                   className={`px-3 py-1.5 text-xs font-bold transition-colors whitespace-nowrap shrink-0 ${
                     selectedDeptFilter === sec.slug
-                      ? 'bg-[#0F2922] text-[#FAF9F6] dark:bg-[#D4AF5A] dark:text-[#0A0D0C]'
-                      : 'bg-[#F2EFE9] dark:bg-[#111614] text-[#5A5D5B] dark:text-[#C5C2BA] hover:text-[#9A7125]'
+                      ? 'bg-[#0B221C] text-[#FAF9F6] dark:bg-[#D4AF5A] dark:text-[#090D0C]'
+                      : 'bg-[#EFECE4] dark:bg-[#111715] text-[#575B59] dark:text-[#C5C2BA] hover:text-[#9A7125]'
                   }`}
                 >
                   {sec.name}
@@ -830,8 +928,8 @@ export const HomeView: React.FC<{
           </div>
 
           {filteredDepartmentStories.length === 0 ? (
-            <div className="border border-[#E2DDD3] dark:border-[#1F2724] bg-white dark:bg-[#111614] p-8 text-center text-sm text-[#5A5D5B] dark:text-[#9CA39F]">
-              لا توجد تقارير إضافية في هذا القسم حاليًا.
+            <div className="border border-[#DED8CC] dark:border-[#1E2824] bg-white dark:bg-[#111715] p-8 text-center text-sm text-[#575B59] dark:text-[#9CA39F]">
+              لا توجد تقارير إضافية في هذا الباب حاليًا.
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -849,16 +947,16 @@ export const HomeView: React.FC<{
           )}
         </div>
 
-        {/* الجناح الجانبي التحريري (4 أعمدة): الأكثر قراءة وتأثيرًا + قراءات تحليلية */}
+        {/* الجناح الجانبي للمجلة (4 أعمدة): الأكثر قراءة وتداولًا */}
         <aside className="lg:col-span-4 space-y-6">
-          <div className="border border-[#E2DDD3] dark:border-[#1F2724] bg-white dark:bg-[#111614] p-5">
-            <div className="flex items-center justify-between pb-3 mb-2 border-b-2 border-[#111312] dark:border-[#D4AF5A]">
-              <h2 className="text-lg font-bold font-royal text-[#111312] dark:text-[#F3F0EA]">
-                الأكثر قراءة وتأثيرًا
+          <div className="border border-[#DED8CC] dark:border-[#1E2824] bg-white dark:bg-[#111715] p-5">
+            <div className="flex items-center justify-between pb-3 mb-2 border-b-2 border-[#9B1C1C] dark:border-[#D4AF5A]">
+              <h2 className="text-lg font-bold font-royal text-[#141716] dark:text-[#F3F0EA]">
+                الأكثر قراءة وتداولًا
               </h2>
-              <span className="text-xs text-[#9A7125] dark:text-[#D4AF5A] font-bold">ترتيب القراء</span>
+              <span className="text-xs text-[#9B1C1C] dark:text-[#D4AF5A] font-bold">ترتيب القراء</span>
             </div>
-            <div className="divide-y divide-[#E2DDD3] dark:divide-[#1F2724]">
+            <div className="divide-y divide-[#DED8CC] dark:divide-[#1E2824]">
               {mostReadStories.map((item, idx) => (
                 <EditorialCard
                   key={item.id}
@@ -872,51 +970,6 @@ export const HomeView: React.FC<{
               ))}
             </div>
           </div>
-
-          {analysisStories.length > 0 && (
-            <div className="border border-[#9A7125]/45 bg-[#0F2922] text-[#FAF9F6] p-5 space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-[#D4AF5A]/30">
-                <div>
-                  <span className="text-[11px] font-bold text-[#D4AF5A] block">ماذا حدث ولماذا يهم؟</span>
-                  <h2 className="text-lg font-bold font-royal text-white mt-0.5">
-                    قراءات تحليلية وشروحات
-                  </h2>
-                </div>
-                <BookOpen className="w-4 h-4 text-[#D4AF5A] shrink-0" />
-              </div>
-
-              <div className="space-y-4 divide-y divide-[#D4AF5A]/20">
-                {analysisStories.map((story) => (
-                  <article key={story.id} className="pt-3.5 first:pt-0 space-y-1.5 group">
-                    <span className="text-[11px] font-bold text-[#D4AF5A]">
-                      {story.categoryName}
-                    </span>
-                    <h3 className="text-sm font-bold font-display leading-snug text-white group-hover:text-[#D4AF5A] transition-colors">
-                      <button
-                        type="button"
-                        onClick={() => onOpenArticle(story)}
-                        className="text-start"
-                      >
-                        {story.headline}
-                      </button>
-                    </h3>
-                    <p className="text-xs text-[#E5DFD3]/80 leading-relaxed line-clamp-2">
-                      {story.dek}
-                    </p>
-                  </article>
-                ))}
-              </div>
-
-              <button
-                type="button"
-                onClick={() => onOpenCategory('analysis')}
-                className="w-full pt-2 border-t border-[#D4AF5A]/25 text-xs font-bold text-[#D4AF5A] hover:underline flex items-center justify-between"
-              >
-                <span>الأرشيف الكامل للتحليلات</span>
-                <ArrowLeft className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          )}
         </aside>
       </section>
 
@@ -929,20 +982,20 @@ export const HomeView: React.FC<{
       />
 
       {/* ====================================================================
-          الطبقة 6: دعوة الاشتراك في النشرة البريدية اليومية
+          الطبقة 7: دعوة الاشتراك في النشرة البريدية اليومية
       ==================================================================== */}
       <section
         aria-label="الاشتراك في النشرة البريدية"
-        className="border border-[#9A7125]/50 bg-[#0F2922] text-[#FAF9F6] p-8"
+        className="border border-[#9A7125]/50 bg-[#0B221C] text-[#FAF9F6] p-8"
       >
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-2">
             <span className="text-xs font-bold text-[#D4AF5A]">نشرة «موجز ميزان الخبر» المسائية · مجانًا</span>
             <h2 className="text-2xl sm:text-3xl font-bold font-royal">
-              اشترك في الملخص اليومي للتقارير الموثقة بالمصادر الرسمية
+              اشترك في الملخص اليومي للتقارير السورية والعربية الموثقة
             </h2>
             <p className="text-xs text-[#E5DFD3]/90 leading-relaxed max-w-2xl">
-              رسالة واحدة مساء كل يوم تلخص أهم الأخبار السورية والعربية والاقتصادية والتحليلات المعمّقة تحت إشراف رئيس التحرير المسؤول ({siteConfig.editorInChiefName}).
+              رسالة واحدة مساء كل يوم تلخص أهم الأخبار السورية والعربية والاقتصادية والتحقيقات الخاصة تحت إشراف رئيس التحرير المسؤول ({siteConfig.editorInChiefName}).
             </p>
           </div>
           <form onSubmit={handleNewsletterSubmit} className="w-full md:w-auto flex flex-col sm:flex-row gap-2 shrink-0">
@@ -956,11 +1009,11 @@ export const HomeView: React.FC<{
               value={newsletterEmail}
               onChange={(e) => setNewsletterEmail(e.target.value)}
               placeholder="أدخل بريدك الإلكتروني..."
-              className="px-3.5 py-2.5 text-xs bg-[#0A1D18] border border-[#D4AF5A]/50 text-white placeholder:text-slate-400 focus:outline-none focus:border-[#D4AF5A] min-w-[240px]"
+              className="px-3.5 py-2.5 text-xs bg-[#061410] border border-[#D4AF5A]/50 text-white placeholder:text-slate-400 focus:outline-none focus:border-[#D4AF5A] min-w-[240px]"
             />
             <button
               type="submit"
-              className="px-5 py-2.5 text-xs font-extrabold bg-[#D4AF5A] text-[#0F2922] hover:opacity-95 transition-opacity whitespace-nowrap shrink-0"
+              className="px-5 py-2.5 text-xs font-extrabold bg-[#D4AF5A] text-[#0B221C] hover:opacity-95 transition-opacity whitespace-nowrap shrink-0"
             >
               اشتراك وتأكيد البريد
             </button>
@@ -1303,7 +1356,7 @@ export const ArticleDetailView: React.FC<{
             <p className="text-[#5A5D5B] dark:text-slate-300 leading-relaxed">{disclosureText}</p>
             <div className="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-[#E2DDD3] dark:border-[#1F2724]">
               <span className="text-[#5A5D5B] dark:text-[#9CA39F]">
-                رئيس التحرير المسؤول: {siteConfig.editorInChiefName}
+                رئيس التحرير المسؤول: {siteConfig.editorInChiefName} · المراقب اللغوي (كلمةً كلمةً): د. عبد الرحمن الحموي · مطابقة العنوان والمحتوى: د. حسام الشامي
               </span>
               <button
                 type="button"
@@ -1762,6 +1815,10 @@ export const EditorialTeamView: React.FC<{
   const [unitFilter, setUnitFilter] = useState<'all' | 'syria' | 'arab_turkey' | 'other'>('all');
 
   const chiefEditor = authors.find((a) => a.id === 'chief-editor-ibrahim');
+  const layoutDirector = authors.find((a) => a.id === 'layout-director-mazen');
+  const alignmentInspector = authors.find((a) => a.id === 'alignment-inspector-hussam');
+  const wordMonitor = authors.find((a) => a.id === 'word-monitor-abdulrahman');
+  const proofreader = authors.find((a) => a.id === 'proofreader-allam');
   const syriaAuthors = authors.filter((a) => a.id.startsWith('jour-syria-'));
   const arabTurkeyAuthors = authors.filter((a) => a.id.startsWith('jour-arab-tr-'));
   const otherAuthors = authors.filter((a) => a.id.startsWith('jour-other-'));
@@ -1777,38 +1834,121 @@ export const EditorialTeamView: React.FC<{
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
-      <header className="border-b-2 border-[#111312] dark:border-[#D4AF5A] pb-6">
+      <header className="border-b-2 border-[#0B221C] dark:border-[#D4AF5A] pb-6">
         <span className="text-xs font-bold text-[#9A7125] dark:text-[#D4AF5A]">
-          المسؤولية التحريرية والشفافية · رئيس التحرير وكادر من 100 صحفي ومراسل متخصص
+          المسؤولية التحريرية والإخراج الفني ومراقبة المقالات كلمةً كلمةً · كادر من 100 صحفي ومراسل متخصص
         </span>
-        <h1 className="text-3xl sm:text-4xl font-bold font-royal text-[#111312] dark:text-[#F3F0EA] mt-1">
-          هيئة التحرير والكادر الصحفي
+        <h1 className="text-3xl sm:text-4xl font-bold font-royal text-[#141716] dark:text-[#F3F0EA] mt-1">
+          هيئة التحرير والإخراج الفني والكادر الصحفي
         </h1>
-        <p className="text-sm text-[#5A5D5B] dark:text-[#9CA39F] mt-2 leading-relaxed">
-          تعمل غرفة أخبار «{siteConfig.siteName}» تحت الإشراف المباشر لرئيس التحرير المسؤول ({siteConfig.editorInChiefName})، مع كادر يضم 100 صحفي ومراسل موزعين وفق الأولوية التحريرية: 50 صحفيًا للشأن السوري (50%)، و40 صحفيًا للعالم العربي وتركيا (40%)، و10 محررين للأقسام التخصصية والدولية (10%).
+        <p className="text-sm text-[#575B59] dark:text-[#9CA39F] mt-2 leading-relaxed">
+          تعمل غرفة أخبار «{siteConfig.siteName}» تحت الإشراف المباشر لرئيس التحرير المسؤول ({siteConfig.editorInChiefName})، وبإشراف وحدة الإخراج الفني والتنسيق المجلي، ووحدة تتبع المقالات كلمةً كلمةً وفحص سلامة الجمل والمعنى، ووحدة فحص مطابقة العناوين والمحتوى والصور، مع كادر يضم 100 صحفي ومراسل موزعين وفق الأولوية التحريرية: 50 صحفيًا للشأن السوري (50%)، و40 صحفيًا للعالم العربي وتركيا (40%)، و10 محررين للأقسام التخصصية والدولية (10%).
         </p>
       </header>
 
       {/* بطاقة القيادة التحريرية العليا */}
-      <section className="border border-[#E2DDD3] dark:border-[#1F2724] bg-white dark:bg-[#111614] p-6 space-y-3">
+      <section className="border border-[#DED8CC] dark:border-[#1E2824] bg-white dark:bg-[#111715] p-6 space-y-3">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <span className="text-xs font-bold text-[#9A7125] dark:text-[#D4AF5A]">القيادة التحريرية العليا</span>
-          <span className="px-2.5 py-1 bg-[#0F2922] text-[#D4AF5A] text-xs font-bold">
+          <span className="px-2.5 py-1 bg-[#0B221C] text-[#D4AF5A] text-xs font-bold">
             المدير العام ورئيس التحرير
           </span>
         </div>
-        <h2 className="text-2xl font-bold font-royal text-[#111312] dark:text-[#F3F0EA]">
+        <h2 className="text-2xl font-bold font-royal text-[#141716] dark:text-[#F3F0EA]">
           {chiefEditor?.name || siteConfig.editorInChiefName}
         </h2>
-        <p className="text-sm text-[#5A5D5B] dark:text-slate-300 leading-relaxed max-w-4xl">
+        <p className="text-sm text-[#575B59] dark:text-slate-300 leading-relaxed max-w-4xl">
           {chiefEditor?.bio || siteConfig.editorBio}
         </p>
-        <div className="pt-3 border-t border-[#E2DDD3] dark:border-[#1F2724] text-xs text-[#5A5D5B] dark:text-[#9CA39F] flex flex-wrap items-center justify-between gap-2">
+        <div className="pt-3 border-t border-[#DED8CC] dark:border-[#1E2824] text-xs text-[#575B59] dark:text-[#9CA39F] flex flex-wrap items-center justify-between gap-2">
           <span>المؤسسة الناشرة: {siteConfig.publisherLegalName}</span>
           <a href={`mailto:${siteConfig.contactEmail}`} className="font-mono text-[#9A7125] dark:text-[#D4AF5A] underline">
             {siteConfig.contactEmail}
           </a>
         </div>
+      </section>
+
+      {/* وحدات الإخراج المجلي وتتبع الكلمات وفحص مطابقة العناوين والمحتوى */}
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {wordMonitor && (
+          <div className="border-2 border-[#0B221C] dark:border-[#D4AF5A] bg-white dark:bg-[#111715] p-5 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-extrabold text-[#9B1C1C] dark:text-[#D4AF5A]">
+                وحدة تتبع المقالات كلمةً كلمةً وفحص الجمل والمعنى
+              </span>
+              <span className="text-xs font-bold text-[#0B221C] dark:text-[#D4AF5A]">رقابة لغوية صارمة</span>
+            </div>
+            <h3 className="text-xl font-bold font-royal text-[#141716] dark:text-[#F3F0EA]">
+              {wordMonitor.name} — {wordMonitor.roleTitle}
+            </h3>
+            <p className="text-xs text-[#575B59] dark:text-slate-300 leading-relaxed">
+              {wordMonitor.bio}
+            </p>
+            <p className="pt-2 border-t border-[#DED8CC] dark:border-[#1E2824] text-[11px] text-[#575B59] dark:text-[#9CA39F]">
+              {wordMonitor.credentials}
+            </p>
+          </div>
+        )}
+
+        {alignmentInspector && (
+          <div className="border border-[#DED8CC] dark:border-[#1E2824] bg-white dark:bg-[#111715] p-5 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-extrabold text-[#0B221C] dark:text-[#D4AF5A]">
+                وحدة فحص مطابقة العناوين والمحتوى والصور
+              </span>
+              <span className="text-xs font-bold text-[#9A7125] dark:text-[#D4AF5A]">مطابقة 100% بلا أخطاء</span>
+            </div>
+            <h3 className="text-xl font-bold font-royal text-[#141716] dark:text-[#F3F0EA]">
+              {alignmentInspector.name} — {alignmentInspector.roleTitle}
+            </h3>
+            <p className="text-xs text-[#575B59] dark:text-slate-300 leading-relaxed">
+              {alignmentInspector.bio}
+            </p>
+            <p className="pt-2 border-t border-[#DED8CC] dark:border-[#1E2824] text-[11px] text-[#575B59] dark:text-[#9CA39F]">
+              {alignmentInspector.credentials}
+            </p>
+          </div>
+        )}
+
+        {layoutDirector && (
+          <div className="border border-[#DED8CC] dark:border-[#1E2824] bg-white dark:bg-[#111715] p-5 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-extrabold text-[#9B1C1C] dark:text-[#D4AF5A]">
+                وحدة الترتيب والتنسيق والإخراج المجلي
+              </span>
+              <span className="text-xs font-bold text-[#0B221C] dark:text-[#D4AF5A]">إشراف فني وتحريري</span>
+            </div>
+            <h3 className="text-xl font-bold font-royal text-[#141716] dark:text-[#F3F0EA]">
+              {layoutDirector.name} — {layoutDirector.roleTitle}
+            </h3>
+            <p className="text-xs text-[#575B59] dark:text-slate-300 leading-relaxed">
+              {layoutDirector.bio}
+            </p>
+            <p className="pt-2 border-t border-[#DED8CC] dark:border-[#1E2824] text-[11px] text-[#575B59] dark:text-[#9CA39F]">
+              {layoutDirector.credentials}
+            </p>
+          </div>
+        )}
+
+        {proofreader && (
+          <div className="border border-[#DED8CC] dark:border-[#1E2824] bg-white dark:bg-[#111715] p-5 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-extrabold text-[#0B221C] dark:text-[#D4AF5A]">
+                وحدة التدقيق اللغوي والفلترة الذكية وفحص تفرد الصور
+              </span>
+              <span className="text-xs font-bold text-[#9A7125] dark:text-[#D4AF5A]">0 تكرار للصور</span>
+            </div>
+            <h3 className="text-xl font-bold font-royal text-[#141716] dark:text-[#F3F0EA]">
+              {proofreader.name} — {proofreader.roleTitle}
+            </h3>
+            <p className="text-xs text-[#575B59] dark:text-slate-300 leading-relaxed">
+              {proofreader.bio}
+            </p>
+            <p className="pt-2 border-t border-[#DED8CC] dark:border-[#1E2824] text-[11px] text-[#575B59] dark:text-[#9CA39F]">
+              {proofreader.credentials}
+            </p>
+          </div>
+        )}
       </section>
 
       {/* لوحة التوزيع الهيكلي للصحفيين (50% سوريا | 40% العرب وتركيا | 10% باقي الأقسام) */}

@@ -8,7 +8,10 @@ import {
 import type { VerifierOutput, WriterOutput } from '../../src/core/types.ts';
 import { defaultSiteConfig } from '../../config/site.config.ts';
 import {
+  auditSentenceWordByWord,
   buildLongFormJournalisticSections,
+  cleanPublisherForProse,
+  cleanTopicForProse,
   decodeAndCleanRssText,
   evaluateSourceSafety,
   truncateAtWordBoundary,
@@ -241,24 +244,23 @@ export class GeminiServerProvider implements LLMProvider {
     ) as WriterOutput['category'];
 
     const headline = truncateAtWordBoundary(decodeAndCleanRssText(params.topicLabel), 110, false);
-    const cleanSnippetText = decodeAndCleanRssText(primarySource.snippet);
+    const topicProse = cleanTopicForProse(headline);
+    const pub1 = cleanPublisherForProse(primarySource.publisher);
+    const pub2 = cleanPublisherForProse(secondarySource.publisher);
+    const cleanSnippetText = auditSentenceWordByWord(primarySource.snippet, 260);
 
-    // استخراج جمل خبرية طبيعية من المقتطف مع ضمان عدم بتر أي كلمة عربية في المنتصف
+    // استخراج جمل خبرية طبيعية من المقتطف مع ضمان عدم بتر أي كلمة أو جملة عربية في المنتصف
     const naturalDek =
-      cleanSnippetText.length >= 45 && cleanSnippetText !== headline
-        ? truncateAtWordBoundary(cleanSnippetText, 210, true)
-        : truncateAtWordBoundary(
-            `تغطية إخبارية تسلط الضوء على تفاصيل «${headline}» وأبرز المعطيات الصادرة عن ${primarySource.publisher} والجهات المعنية في المنطقة.`,
-            210,
-            false
-          );
+      cleanSnippetText.length >= 45 && cleanTopicForProse(cleanSnippetText) !== topicProse
+        ? truncateAtWordBoundary(cleanSnippetText, 220, true)
+        : `تفاصيل ومعطيات رسمية صادرة عن «${pub1}» حول ${topicProse} وانعكاساتها المباشرة على القطاعات الحيوية والخدمية.`;
 
     const longForm = buildLongFormJournalisticSections({
       headline,
       cleanSnippet: cleanSnippetText,
       categorySlug: validCat,
-      primaryPublisher: primarySource.publisher,
-      secondaryPublisher: secondarySource.publisher,
+      primaryPublisher: pub1,
+      secondaryPublisher: pub2,
     });
 
     const output: WriterOutput = {
@@ -267,9 +269,9 @@ export class GeminiServerProvider implements LLMProvider {
       slug_ascii: `news-${Date.now().toString(36)}`,
       body_markdown: longForm.bodyMarkdown,
       key_points: [
-        cleanSnippetText.length >= 35
-          ? truncateAtWordBoundary(cleanSnippetText, 165, true)
-          : `مستجدات متسارعة حول «${headline}» وفق ما أوردته ${primarySource.publisher}.`,
+        cleanSnippetText.length >= 40
+          ? truncateAtWordBoundary(cleanSnippetText, 210, true)
+          : naturalDek,
         `قراءة شاملة للأبعاد القطاعية والتنظيمية وانعكاساتها المباشرة على الملفات الإقليمية ذات الصلة.`,
         `تنسيق مؤسسي وفني لمتابعة مخرجات التنفيذ وتقييم المؤشرات الميدانية خلال المرحلة المقبلة.`,
         `ترقب للبيانات التفصيلية اللاحقة الصادرة عن الجهات المختصة والمؤسسات الشريكة.`,
@@ -279,11 +281,11 @@ export class GeminiServerProvider implements LLMProvider {
       article_type: 'news',
       sources_used: params.sources.map((s) => ({
         source_id: s.sourceId,
-        publisher: s.publisher,
+        publisher: cleanPublisherForProse(s.publisher),
         url: s.url,
       })),
       claims: params.sources.map((s) => ({
-        text: `البيانات الصادرة عن ${s.publisher} حول «${truncateAtWordBoundary(s.title, 75, false)}».`,
+        text: `المعطيات والبيانات الرسمية الصادرة عن «${cleanPublisherForProse(s.publisher)}» بشأن ${topicProse}.`,
         source_ids: [s.sourceId],
       })),
       background_section: longForm.backgroundSection,

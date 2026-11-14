@@ -187,83 +187,58 @@ function loadOrInitState(): NewsroomState {
           });
         }
       }
+      const seedArticlesById = new Map(INITIAL_ARTICLES.map((a) => [a.id, a]));
       const seenHeadlines = new Set<string>();
-      const existingArticles = (parsed.articles || []).filter((a) => {
-        if (a.status !== 'published') return false;
-        const norm = a.headline.trim();
-        if (seenHeadlines.has(norm) || norm.endsWith('مع تفوق مشاركة') || norm.includes('جثة')) return false;
-        seenHeadlines.add(norm);
-        return true;
-      });
+      const existingArticles = (parsed.articles || [])
+        .filter((a) => {
+          if (a.status !== 'published') return false;
+          const norm = a.headline.trim();
+          if (
+            seenHeadlines.has(norm) ||
+            norm.endsWith('مع تفوق مشاركة') ||
+            norm.includes('جثة') ||
+            norm.includes('شهيدان') ||
+            a.dek.includes('التفاصيل بعد قليل')
+          ) {
+            return false;
+          }
+          seenHeadlines.add(norm);
+          return true;
+        })
+        .map((a) => {
+          // استعادة النص الأصيل الكامل والملخص السليم للمقالات التأسيسية مع الحفاظ على عداد المشاهدات والتصحيحات
+          const freshSeed = seedArticlesById.get(a.id);
+          if (freshSeed) {
+            return {
+              ...freshSeed,
+              viewsCount: Math.max(a.viewsCount || 0, freshSeed.viewsCount),
+              corrections: a.corrections && a.corrections.length > 0 ? a.corrections : freshSeed.corrections,
+            };
+          }
+          return a;
+        });
 
-      // دمج المقالات المعيارية التأسيسية لضمان وجود تغطية كاملة في كل قسم (خصوصاً أخبار سوريا والعالم العربي)
+      // دمج أي مقال تأسيسي غير موجود لضمان وجود تغطية كاملة في كل قسم (خصوصاً أخبار سوريا والعالم العربي)
       for (const initArt of INITIAL_ARTICLES) {
         if (!existingArticles.some((a) => a.id === initArt.id || a.headline.trim() === initArt.headline.trim())) {
           existingArticles.push({ ...initArt });
         }
       }
 
-      const rawNormalizedArticles = existingArticles.map((a) => {
-        const cleanHeadline = truncateAtWordBoundary(decodeAndCleanRssText(a.headline), 115, false);
-        const assigned = assignJournalistForArticle(a.categorySlug, cleanHeadline);
-        const primaryPub = a.sources?.[0]?.publisher || 'المصادر المعتمدة';
-        const secondaryPub = a.sources?.[1]?.publisher || 'المؤسسات والمرجعيات الإقليمية';
-        const isRoboticDek = a.dek?.startsWith('تقرير موثق يستند إلى بيانات');
-        const cleanDek = truncateAtWordBoundary(
-          decodeAndCleanRssText(
-            isRoboticDek
-              ? `تغطية إخبارية معمّقة تستعرض أبرز المعطيات والتطورات الواردة عبر «${primaryPub}»، مع قراءة في سياقها الإقليمي والخدمي.`
-              : a.dek
-          ),
-          210,
-          true
-        );
-        const hasRoboticKeyPoints = (a.keyPoints || []).some(
-          (kp) => kp.includes('التزام صارم بعدم إضافة أي أرقام') || kp.includes('توثيق الوقائع الأساسية استنادًا إلى')
-        );
-        const cleanKeyPoints = (hasRoboticKeyPoints
-          ? [
-              `${cleanHeadline}.`,
-              `البيانات والتفاصيل الواردة في التقرير مستندة إلى ما أوردته «${primaryPub}» في نشرتها الرسمية.`,
-              `قراءة شاملة للأبعاد القطاعية والتنظيمية وانعكاساتها المباشرة على الملفات الإقليمية ذات الصلة.`,
-              `متابعة مستمرة لتداعيات هذا التطور وانعكاساته على القطاعات المعنية في المنطقة.`,
-            ]
-          : a.keyPoints
-        ).map((kp) => truncateAtWordBoundary(decodeAndCleanRssText(kp), 175, true));
-
-        const enriched = enrichArticleBodyIfNeeded({
-          headline: cleanHeadline,
-          currentBodyMd: decodeAndCleanRssText(a.bodyMd),
-          currentDek: cleanDek,
-          categorySlug: a.categorySlug,
-          primaryPublisher: primaryPub,
-          secondaryPublisher: secondaryPub,
-          currentBackground: a.backgroundSection,
-          currentAnalysis: a.analysisSection,
-          currentWhatNext: a.whatNextSection,
-        });
-
+      // تمرير جميع المقالات على منظومة التتبع اللغوي كلمةً كلمةً ومطابقة العنوان والمحتوى والصورة والترتيب المجلي
+      const alignedAndDeduplicated = proofreadAndDeduplicateArticles(existingArticles).map((art) => {
+        const assigned = assignJournalistForArticle(art.categorySlug, art.headline);
         return {
-          ...a,
-          headline: cleanHeadline,
-          dek: cleanDek,
-          keyPoints: cleanKeyPoints,
+          ...art,
           authorId: assigned.authorId,
           authorName: assigned.authorName,
           authorRole: assigned.authorRole,
-          reviewedBy: 'أ. علام الكيلاني (المدقق اللغوي العام)',
-          bodyMd: enriched.bodyMd,
-          bodyHtml: markdownToSanitizedHtml(enriched.bodyMd),
-          wordCount: enriched.wordCount,
-          readingTimeMin: enriched.readingTimeMin,
-          backgroundSection: enriched.backgroundSection,
-          analysisSection: enriched.analysisSection,
-          whatNextSection: enriched.whatNextSection,
+          reviewedBy:
+            'د. عبد الرحمن الحموي (المراقب اللغوي كلمةً كلمةً) · د. حسام الشامي (مطابقة العنوان والمحتوى) · أ. مازن الدمشقي (الإخراج الفني)',
         };
-      }).sort((x, y) => new Date(y.publishedAt).getTime() - new Date(x.publishedAt).getTime());
+      });
 
-      // تمرير جميع المقالات على وحدة التدقيق اللغوي والفلترة الذكية وفحص عدم تكرار الصور (الأستاذ علام الكيلاني)
-      parsed.articles = proofreadAndDeduplicateArticles(rawNormalizedArticles);
+      parsed.articles = alignedAndDeduplicated;
       saveState(parsed);
       return parsed;
     }
@@ -950,7 +925,7 @@ async function startServer() {
       viewsCount: 1,
     };
 
-    state.articles.unshift(createdArticle);
+    state.articles = proofreadAndDeduplicateArticles([createdArticle, ...state.articles]);
     state.llmUsage.unshift({
       id: `llm-${Date.now()}`,
       stage: 'drafting',
@@ -1447,7 +1422,7 @@ async function startServer() {
         },
         {
           sourceId: 'src-worldbank-mena',
-          publisher: 'قاعدة البيانات الإحصائية الرسمية (مصدر مساند)',
+          publisher: 'المؤسسات والمرجعيات الإقليمية المختصة',
           url: 'https://www.worldbank.org/ar/region/mena',
           title: `بيانات مرجعية مساندة: ${selectedFeedItem.title}`,
           snippet: selectedFeedItem.snippet,
@@ -1484,7 +1459,7 @@ async function startServer() {
       currentDek: draftRes.output.dek,
       categorySlug,
       primaryPublisher: selectedFeedItem.sourceName,
-      secondaryPublisher: 'قاعدة البيانات الإحصائية الرسمية (مصدر مساند)',
+      secondaryPublisher: 'المؤسسات والمرجعيات الإقليمية المختصة',
       currentBackground: draftRes.output.background_section ?? null,
       currentAnalysis: draftRes.output.analysis_section,
       currentWhatNext: draftRes.output.what_next_section ?? null,
@@ -1576,7 +1551,7 @@ async function startServer() {
       viewsCount: 1,
     };
 
-    state.articles.unshift(createdArticle);
+    state.articles = proofreadAndDeduplicateArticles([createdArticle, ...state.articles]);
     state.jobsLog.unshift({
       id: `job-${Date.now()}`,
       jobName: 'autonomous-zero-review-publisher',

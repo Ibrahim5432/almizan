@@ -54,7 +54,7 @@ type ActiveRoute =
   | { view: 'editorial_team' }
   | { view: 'legal'; slug: string };
 
-const STATIC_STORAGE_KEY = 'mizan_autonomous_articles_v5';
+const STATIC_STORAGE_KEY = 'mizan_autonomous_articles_v6';
 
 const CLIENT_FALLBACK_FEEDS = [
   // حصة الشأن السوري (50%)
@@ -490,23 +490,26 @@ export function App() {
   const todayDates = getTodayHijriAndGregorian(siteConfig.numeralSystem);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF9F6] text-[#111312] dark:bg-[#0A0D0C] dark:text-[#F3F0EA] transition-colors">
+    <div className="min-h-screen flex flex-col bg-[#F7F4EE] text-[#141716] dark:bg-[#090D0C] dark:text-[#F3F0EA] transition-colors">
       {/* ====================================================================
-          1. الشريط السيادي العلوي الرشيق
+          1. شريط الإصدار والنبض الإقليمي (Top Magazine Edition & Pulse Bar)
       ==================================================================== */}
-      <div className="bg-[#0F2922] text-[#F3F0EA] border-b border-[#9A7125]/35 text-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex flex-wrap xl:flex-nowrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2.5 text-[#E5DFD3]">
+      <div className="bg-[#0B221C] text-[#F3F0EA] border-b border-[#B8892B]/40 text-xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex flex-wrap lg:flex-nowrap items-center justify-between gap-2.5">
+          <div className="flex flex-wrap items-center gap-2 text-[#E5DFD3] shrink-0">
+            <span className="px-2 py-0.5 bg-[#9B1C1C] text-white font-bold text-[11px] tracking-wide">
+              العدد اليومي
+            </span>
             <span className="font-bold text-[#D4AF5A]">{todayDates.hijri}</span>
             <span aria-hidden="true" className="text-[#D4AF5A]/50">·</span>
             <span>{todayDates.gregorian}</span>
-            <span aria-hidden="true" className="hidden md:inline text-[#D4AF5A]/50">·</span>
-            <span className="hidden md:inline text-[#E5DFD3]">
-              رئيس التحرير: <strong className="text-white">{siteConfig.editorInChiefName}</strong>
+            <span aria-hidden="true" className="hidden 2xl:inline text-[#D4AF5A]/50">·</span>
+            <span className="hidden 2xl:inline text-[#E5DFD3]/90">
+              دمشق · حلب · حمص · إدلب · اللاذقية · الجزيرة · درعا | أنقرة · الرياض · القاهرة · الدوحة
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 w-full sm:w-auto min-w-0 shrink-0">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -515,7 +518,7 @@ export function App() {
                   `/search?q=${encodeURIComponent(headerSearchInput)}`
                 );
               }}
-              className="flex items-center border border-[#D4AF5A]/30 bg-[#081713] text-white focus-within:border-[#D4AF5A] transition-colors"
+              className="flex items-center flex-1 sm:flex-initial min-w-0 border border-[#D4AF5A]/35 bg-[#061410] text-white focus-within:border-[#D4AF5A] transition-colors"
             >
               <label htmlFor="masthead-search" className="sr-only">
                 ابحث في الأخبار
@@ -525,13 +528,13 @@ export function App() {
                 type="search"
                 value={headerSearchInput}
                 onChange={(e) => setHeaderSearchInput(e.target.value)}
-                placeholder="ابحث في الأرشيف الإخباري..."
-                className="px-3 py-1 text-xs bg-transparent text-white placeholder:text-slate-400 focus:outline-none w-36 sm:w-48"
+                placeholder="ابحث في تقارير المجلة والأرشيف..."
+                className="px-3 py-1 text-xs bg-transparent text-white placeholder:text-slate-400 focus:outline-none w-full sm:w-48 min-w-0"
               />
               <button
                 type="submit"
                 aria-label="تنفيذ البحث"
-                className="px-2.5 py-1 text-[#D4AF5A] hover:text-white transition-colors"
+                className="px-2.5 py-1 text-[#D4AF5A] hover:text-white transition-colors shrink-0"
               >
                 <Search className="w-3.5 h-3.5" />
               </button>
@@ -548,7 +551,7 @@ export function App() {
                   body: JSON.stringify({ numeralSystem: nextSys }),
                 });
               }}
-              className="px-2.5 py-1 border border-[#D4AF5A]/30 bg-[#081713] text-[#E5DFD3] hover:border-[#D4AF5A] whitespace-nowrap shrink-0 transition-colors"
+              className="px-2.5 py-1 border border-[#D4AF5A]/35 bg-[#061410] text-[#E5DFD3] hover:border-[#D4AF5A] whitespace-nowrap shrink-0 transition-colors"
               aria-label="تبديل نظام الأرقام"
             >
               الأرقام: {siteConfig.numeralSystem === 'western' ? '0-9' : '٠-٩'}
@@ -557,7 +560,7 @@ export function App() {
             <button
               type="button"
               onClick={() => setDarkMode((d) => !d)}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-[#D4AF5A]/30 bg-[#081713] text-[#E5DFD3] hover:border-[#D4AF5A] whitespace-nowrap shrink-0 transition-colors"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-[#D4AF5A]/35 bg-[#061410] text-[#E5DFD3] hover:border-[#D4AF5A] whitespace-nowrap shrink-0 transition-colors"
               aria-label={darkMode ? 'تفعيل الوضع الفاتح' : 'تفعيل الوضع الداكن'}
             >
               {darkMode ? <Sun className="w-3.5 h-3.5 text-[#D4AF5A]" /> : <Moon className="w-3.5 h-3.5 text-[#D4AF5A]" />}
@@ -570,65 +573,113 @@ export function App() {
       </div>
 
       {/* ====================================================================
-          2. الترويسة التحريرية العريقة (Monumental Sovereign Masthead)
+          2. الترويسة المجلية الكبرى (Editorial Magazine Masthead — Syria TV / Zaman Al-Wasl Spirit)
       ==================================================================== */}
-      <header className="border-b-2 border-[#111312] dark:border-[#D4AF5A]/60 bg-[#FAF9F6] dark:bg-[#0A0D0C]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-5">
-          {/* شريط الطبعة الدولي */}
-          <div className="flex items-center justify-between text-[11px] font-semibold text-[#5A5D5B] dark:text-[#9CA39F] pb-3 border-b border-[#E2DDD3] dark:border-[#1F2724]">
-            <span>الطبعة الرقمية اليومية · دمشق — العالم العربي</span>
-            <span className="hidden sm:inline text-[#9A7125] dark:text-[#D4AF5A] font-bold">
-              صحافة عربية مستقلة · الخبر الموثق بالمصادر الرسمية
-            </span>
-          </div>
+      <header className="border-b-2 border-[#0B221C] dark:border-[#D4AF5A]/60 bg-[#FBF9F5] dark:bg-[#0D1311]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+            {/* الجناح الأيمن: ملفات العدد السريعة */}
+            <div className="hidden lg:flex lg:col-span-4 flex-col items-start space-y-1.5 border-e border-[#DED8CC] dark:border-[#1E2824] pe-5">
+              <span className="text-[11px] font-extrabold text-[#9B1C1C] dark:text-[#E05A47]">
+                ملفات العدد المفتوحة · متابعة خاصة
+              </span>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-bold text-[#0B221C] dark:text-[#D4AF5A]">
+                <button
+                  type="button"
+                  onClick={() => navigateTo({ view: 'category', categorySlug: 'syria' }, '/syria')}
+                  className="hover:underline whitespace-nowrap"
+                >
+                  مرصد المحافظات السورية
+                </button>
+                <span aria-hidden="true" className="text-[#9A7125]">·</span>
+                <button
+                  type="button"
+                  onClick={() => navigateTo({ view: 'category', categorySlug: 'analysis' }, '/analysis')}
+                  className="hover:underline whitespace-nowrap"
+                >
+                  ملفات وتحقيقات
+                </button>
+                <span aria-hidden="true" className="text-[#9A7125]">·</span>
+                <button
+                  type="button"
+                  onClick={() => navigateTo({ view: 'category', categorySlug: 'economy' }, '/economy')}
+                  className="hover:underline whitespace-nowrap"
+                >
+                  المعابر والإعمار
+                </button>
+              </div>
+            </div>
 
-          {/* قلب الترويسة السيادي */}
-          <div className="py-5 text-center space-y-2">
-            <div>
+            {/* قلب الترويسة المجلية */}
+            <div className="lg:col-span-4 text-center space-y-1.5">
               <a
                 href="/"
                 onClick={(e) => {
                   e.preventDefault();
                   navigateTo({ view: 'home' }, '/');
                 }}
-                className="inline-block text-5xl sm:text-6xl lg:text-[4.4rem] leading-none font-bold font-royal tracking-normal text-[#0F2922] dark:text-[#F3F0EA] hover:opacity-90 transition-opacity"
+                className="inline-block text-5xl sm:text-6xl leading-none font-bold font-royal tracking-normal text-[#0B221C] dark:text-[#F3F0EA] hover:opacity-90 transition-opacity"
               >
                 {siteConfig.siteName}
               </a>
+              <p className="text-xs font-semibold text-[#575B59] dark:text-[#A3ABA7] max-w-md mx-auto">
+                مجلة إخبارية سورية وعربية شاملة · {siteConfig.siteTagline}
+              </p>
             </div>
-            <p className="text-xs sm:text-sm font-medium text-[#5A5D5B] dark:text-[#9CA39F] max-w-2xl mx-auto">
-              {siteConfig.siteTagline}
-            </p>
+
+            {/* الجناح الأيسر: المسؤولية التحريرية وهندسة العدد */}
+            <div className="hidden lg:flex lg:col-span-4 flex-col items-end text-end space-y-1.5 border-s border-[#DED8CC] dark:border-[#1E2824] ps-5">
+              <span className="text-[11px] font-bold text-[#9A7125] dark:text-[#D4AF5A]">
+                الإشراف التحريري العام: <strong className="text-[#141716] dark:text-white">{siteConfig.editorInChiefName}</strong>
+              </span>
+              <div className="flex items-center gap-2 text-xs text-[#575B59] dark:text-[#A3ABA7]">
+                <button
+                  type="button"
+                  onClick={() => navigateTo({ view: 'editorial_team' }, '/editorial-team')}
+                  className="font-bold text-[#0B221C] dark:text-[#D4AF5A] hover:underline"
+                >
+                  هيئة التحرير (100 صحفي ومراسل)
+                </button>
+                <span aria-hidden="true">·</span>
+                <button
+                  type="button"
+                  onClick={() => navigateTo({ view: 'corrections' }, '/corrections')}
+                  className="font-semibold hover:text-[#9A7125]"
+                >
+                  سجل التصويبات
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* شريط الأقسام المعماري الرشيق */}
-        <div className="border-t border-[#E2DDD3] dark:border-[#1F2724] bg-[#F2EFE9]/90 dark:bg-[#111614]/95 backdrop-blur-sm sticky top-0 z-30">
+        {/* شريط أبواب المجلة اللاصق */}
+        <div className="border-t border-[#DED8CC] dark:border-[#1E2824] bg-[#EFECE4]/95 dark:bg-[#111715]/95 backdrop-blur-sm sticky top-0 z-30">
           <nav
             aria-label="التنقل الرئيسي والأقسام التحريرية"
-            className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-4 overflow-x-auto py-3 text-xs sm:text-sm"
+            className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-4 overflow-x-auto py-2.5 text-xs sm:text-sm"
           >
-            <div className="flex items-center gap-5 sm:gap-7">
+            <div className="flex items-center gap-5 sm:gap-6">
               <button
                 type="button"
                 onClick={() => navigateTo({ view: 'home' }, '/')}
-                className={`whitespace-nowrap shrink-0 pb-0.5 transition-colors ${
+                className={`whitespace-nowrap shrink-0 py-1 transition-colors ${
                   route.view === 'home'
-                    ? 'font-extrabold text-[#0F2922] dark:text-[#D4AF5A] border-b-2 border-[#9A7125]'
-                    : 'font-bold text-[#3D423F] dark:text-slate-300 hover:text-[#9A7125]'
+                    ? 'font-extrabold text-[#9B1C1C] dark:text-[#D4AF5A] border-b-2 border-[#9B1C1C] dark:border-[#D4AF5A]'
+                    : 'font-bold text-[#222624] dark:text-slate-200 hover:text-[#9B1C1C] dark:hover:text-[#D4AF5A]'
                 }`}
               >
-                الرئيسية
+                واجهة المجلة
               </button>
               {EDITORIAL_SECTIONS.map((sec) => (
                 <button
                   key={sec.id}
                   type="button"
                   onClick={() => navigateTo({ view: 'category', categorySlug: sec.slug }, `/${sec.slug}`)}
-                  className={`whitespace-nowrap shrink-0 pb-0.5 transition-colors ${
+                  className={`whitespace-nowrap shrink-0 py-1 transition-colors ${
                     route.view === 'category' && route.categorySlug === sec.slug
-                      ? 'font-extrabold text-[#0F2922] dark:text-[#D4AF5A] border-b-2 border-[#9A7125]'
-                      : 'font-bold text-[#3D423F] dark:text-slate-300 hover:text-[#9A7125]'
+                      ? 'font-extrabold text-[#9B1C1C] dark:text-[#D4AF5A] border-b-2 border-[#9B1C1C] dark:border-[#D4AF5A]'
+                      : 'font-bold text-[#222624] dark:text-slate-200 hover:text-[#9B1C1C] dark:hover:text-[#D4AF5A]'
                   }`}
                 >
                   {sec.name}
@@ -636,13 +687,13 @@ export function App() {
               ))}
             </div>
 
-            <div className="hidden xl:flex items-center gap-4 text-xs text-[#5A5D5B] dark:text-[#9CA39F] shrink-0">
+            <div className="hidden xl:flex items-center gap-3 text-xs text-[#575B59] dark:text-[#A3ABA7] shrink-0">
               <button
                 type="button"
                 onClick={() => navigateTo({ view: 'editorial_team' }, '/editorial-team')}
-                className="hover:text-[#9A7125] font-semibold whitespace-nowrap shrink-0"
+                className="hover:text-[#9A7125] font-bold whitespace-nowrap shrink-0"
               >
-                هيئة التحرير
+                هيئة التحرير والإخراج
               </button>
               <span aria-hidden="true">·</span>
               <button
@@ -650,7 +701,7 @@ export function App() {
                 onClick={() => navigateTo({ view: 'legal', slug: 'editorial-policy' }, '/legal/editorial-policy')}
                 className="hover:text-[#9A7125] font-semibold whitespace-nowrap shrink-0"
               >
-                السياسة التحريرية
+                ميثاق الشرف الصحفي
               </button>
             </div>
           </nav>
