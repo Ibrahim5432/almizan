@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CheckCircle2, Moon, Search, ShieldCheck, Sun } from 'lucide-react';
+import { Moon, Search, Sun } from 'lucide-react';
 import {
   ArticleRecord,
   AuthorRecord,
@@ -54,7 +54,7 @@ type ActiveRoute =
   | { view: 'editorial_team' }
   | { view: 'legal'; slug: string };
 
-const STATIC_STORAGE_KEY = 'mizan_autonomous_articles_v4';
+const STATIC_STORAGE_KEY = 'mizan_autonomous_articles_v5';
 
 const CLIENT_FALLBACK_FEEDS = [
   // حصة الشأن السوري (50%)
@@ -490,24 +490,19 @@ export function App() {
   const todayDates = getTodayHijriAndGregorian(siteConfig.numeralSystem);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF8F4] text-[#0B1311] dark:bg-[#080C0B] dark:text-[#F4F0E8] transition-colors">
+    <div className="min-h-screen flex flex-col bg-[#FAF9F6] text-[#111312] dark:bg-[#0A0D0C] dark:text-[#F3F0EA] transition-colors">
       {/* ====================================================================
-          1. الشريط السيادي العلوي (Modern Luxury Sovereign Ribbon)
+          1. الشريط السيادي العلوي الرشيق
       ==================================================================== */}
-      <div className="bg-[#081511] text-[#F4F0E8] border-b border-[#B88E35]/30 text-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex flex-wrap xl:flex-nowrap items-center justify-between gap-2.5">
-          <div className="flex flex-wrap items-center gap-2 text-[#E8E1D3]">
+      <div className="bg-[#0F2922] text-[#F3F0EA] border-b border-[#9A7125]/35 text-xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex flex-wrap xl:flex-nowrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2.5 text-[#E5DFD3]">
             <span className="font-bold text-[#D4AF5A]">{todayDates.hijri}</span>
-            <span aria-hidden="true" className="text-[#B88E35]/50">·</span>
+            <span aria-hidden="true" className="text-[#D4AF5A]/50">·</span>
             <span>{todayDates.gregorian}</span>
-            <span aria-hidden="true" className="hidden md:inline text-[#B88E35]/50">·</span>
-            <span className="hidden md:inline">
+            <span aria-hidden="true" className="hidden md:inline text-[#D4AF5A]/50">·</span>
+            <span className="hidden md:inline text-[#E5DFD3]">
               رئيس التحرير: <strong className="text-white">{siteConfig.editorInChiefName}</strong>
-            </span>
-            <span aria-hidden="true" className="hidden lg:inline text-[#B88E35]/50">·</span>
-            <span className="hidden lg:inline-flex items-center gap-1.5 text-[#D4AF5A]">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-              <span>المدقق اللغوي العام: أ. علام الكيلاني</span>
             </span>
           </div>
 
@@ -520,7 +515,7 @@ export function App() {
                   `/search?q=${encodeURIComponent(headerSearchInput)}`
                 );
               }}
-              className="flex items-center border border-[#B88E35]/35 bg-[#050E0B] text-white focus-within:border-[#D4AF5A] transition-colors"
+              className="flex items-center border border-[#D4AF5A]/30 bg-[#081713] text-white focus-within:border-[#D4AF5A] transition-colors"
             >
               <label htmlFor="masthead-search" className="sr-only">
                 ابحث في الأخبار
@@ -530,8 +525,8 @@ export function App() {
                 type="search"
                 value={headerSearchInput}
                 onChange={(e) => setHeaderSearchInput(e.target.value)}
-                placeholder="ابحث في الأرشيف الموثق..."
-                className="px-3 py-1 text-xs bg-transparent text-white placeholder:text-slate-400 focus:outline-none w-36 sm:w-44"
+                placeholder="ابحث في الأرشيف الإخباري..."
+                className="px-3 py-1 text-xs bg-transparent text-white placeholder:text-slate-400 focus:outline-none w-36 sm:w-48"
               />
               <button
                 type="submit"
@@ -553,7 +548,7 @@ export function App() {
                   body: JSON.stringify({ numeralSystem: nextSys }),
                 });
               }}
-              className="px-2.5 py-1 border border-[#B88E35]/35 bg-[#050E0B] text-[#E8E1D3] hover:border-[#D4AF5A] whitespace-nowrap shrink-0 transition-colors"
+              className="px-2.5 py-1 border border-[#D4AF5A]/30 bg-[#081713] text-[#E5DFD3] hover:border-[#D4AF5A] whitespace-nowrap shrink-0 transition-colors"
               aria-label="تبديل نظام الأرقام"
             >
               الأرقام: {siteConfig.numeralSystem === 'western' ? '0-9' : '٠-٩'}
@@ -562,7 +557,7 @@ export function App() {
             <button
               type="button"
               onClick={() => setDarkMode((d) => !d)}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-[#B88E35]/35 bg-[#050E0B] text-[#E8E1D3] hover:border-[#D4AF5A] whitespace-nowrap shrink-0 transition-colors"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-[#D4AF5A]/30 bg-[#081713] text-[#E5DFD3] hover:border-[#D4AF5A] whitespace-nowrap shrink-0 transition-colors"
               aria-label={darkMode ? 'تفعيل الوضع الفاتح' : 'تفعيل الوضع الداكن'}
             >
               {darkMode ? <Sun className="w-3.5 h-3.5 text-[#D4AF5A]" /> : <Moon className="w-3.5 h-3.5 text-[#D4AF5A]" />}
@@ -575,95 +570,40 @@ export function App() {
       </div>
 
       {/* ====================================================================
-          2. الترويسة التحريرية العصرية الفاخرة (Luxury Modern Broadsheet Masthead)
+          2. الترويسة التحريرية العريقة (Monumental Sovereign Masthead)
       ==================================================================== */}
-      <header className="border-b border-[#E4DDD0] dark:border-[#1D2824] bg-[#FAF8F4] dark:bg-[#080C0B]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-7 lg:py-9">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-            {/* الجناح الأيمن للترويسة: وحدة التدقيق اللغوي والفلترة الذكية */}
-            <div className="hidden lg:flex lg:col-span-3 flex-col justify-between border-e border-[#E4DDD0] dark:border-[#1D2824] pe-6 space-y-2 text-xs">
-              <div className="flex items-center gap-1.5 font-bold text-[#B88E35] dark:text-[#D4AF5A]">
-                <ShieldCheck className="w-4 h-4 shrink-0" />
-                <span>وحدة التدقيق اللغوي والفحص البصري</span>
-              </div>
-              <p className="text-[#525E59] dark:text-[#98A6A0] leading-relaxed">
-                بإشراف المدقق اللغوي العام <strong className="text-[#0B1311] dark:text-white">أ. علام الكيلاني</strong>؛ تنقية شاملة للنصوص العربية ومنع تكرار الصور الفوتوغرافية بنسبة 100%.
-              </p>
-              <div className="pt-1 flex items-center gap-2 text-[11px] font-bold text-[#0B1F19] dark:text-[#D4AF5A]">
-                <button
-                  type="button"
-                  onClick={() => navigateTo({ view: 'editorial_team' }, '/editorial-team')}
-                  className="hover:underline"
-                >
-                  هيئة التحرير (101 عضوًا)
-                </button>
-                <span aria-hidden="true">·</span>
-                <button
-                  type="button"
-                  onClick={() => navigateTo({ view: 'corrections' }, '/corrections')}
-                  className="hover:underline"
-                >
-                  سجل التصويبات
-                </button>
-              </div>
+      <header className="border-b-2 border-[#111312] dark:border-[#D4AF5A]/60 bg-[#FAF9F6] dark:bg-[#0A0D0C]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-5">
+          {/* شريط الطبعة الدولي */}
+          <div className="flex items-center justify-between text-[11px] font-semibold text-[#5A5D5B] dark:text-[#9CA39F] pb-3 border-b border-[#E2DDD3] dark:border-[#1F2724]">
+            <span>الطبعة الرقمية اليومية · دمشق — العالم العربي</span>
+            <span className="hidden sm:inline text-[#9A7125] dark:text-[#D4AF5A] font-bold">
+              صحافة عربية مستقلة · الخبر الموثق بالمصادر الرسمية
+            </span>
+          </div>
+
+          {/* قلب الترويسة السيادي */}
+          <div className="py-5 text-center space-y-2">
+            <div>
+              <a
+                href="/"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigateTo({ view: 'home' }, '/');
+                }}
+                className="inline-block text-5xl sm:text-6xl lg:text-[4.4rem] leading-none font-bold font-royal tracking-normal text-[#0F2922] dark:text-[#F3F0EA] hover:opacity-90 transition-opacity"
+              >
+                {siteConfig.siteName}
+              </a>
             </div>
-
-            {/* قلب الترويسة الفاخر: اسم الصحيفة بخط الثلث/النسخ (Amiri) مع زخرفة معمارية */}
-            <div className="lg:col-span-6 text-center space-y-2.5">
-              <div className="inline-flex items-center gap-3 text-xs font-bold text-[#B88E35] dark:text-[#D4AF5A]">
-                <span className="w-10 h-[1px] bg-[#B88E35]/60" />
-                <span>صحافة عربية مستقلة · دقة المصدر ونقاء اللغة</span>
-                <span className="w-10 h-[1px] bg-[#B88E35]/60" />
-              </div>
-
-              <div>
-                <a
-                  href="/"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigateTo({ view: 'home' }, '/');
-                  }}
-                  className="inline-block text-5xl sm:text-6xl lg:text-7xl font-bold font-royal tracking-normal text-[#0B1311] dark:text-[#F4F0E8] hover:opacity-90 transition-opacity"
-                >
-                  {siteConfig.siteName}
-                </a>
-              </div>
-
-              <p className="text-xs sm:text-sm font-medium text-[#525E59] dark:text-[#98A6A0] max-w-xl mx-auto">
-                {siteConfig.siteTagline}
-              </p>
-            </div>
-
-            {/* الجناح الأيسر للترويسة: التوزيع التحريري (50% سوريا · 40% العرب وتركيا · 10% دولي) */}
-            <div className="hidden lg:flex lg:col-span-3 flex-col justify-between border-s border-[#E4DDD0] dark:border-[#1D2824] ps-6 space-y-2 text-xs">
-              <span className="font-bold text-[#0B1311] dark:text-[#D4AF5A]">
-                التوزيع التحريري والـ 45 مصدرًا
-              </span>
-              <p className="text-[#525E59] dark:text-[#98A6A0] leading-relaxed">
-                50 صحفيًا للشأن السوري (50%) · 40 صحفيًا للعالم العربي وتركيا (40%) · 10 محررين للأقسام التخصصية والدولية (10%).
-              </p>
-              <div className="pt-1 flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => navigateTo({ view: 'category', categorySlug: 'syria' }, '/syria')}
-                  className="inline-block px-3.5 py-1.5 text-xs font-bold bg-[#0B1F19] text-[#FAF8F4] dark:bg-[#D4AF5A] dark:text-[#080C0B] hover:opacity-90 transition-opacity"
-                >
-                  ملف سوريا العاجل
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigateTo({ view: 'category', categorySlug: 'analysis' }, '/analysis')}
-                  className="inline-block px-3 py-1.5 text-xs font-bold border border-[#E4DDD0] dark:border-[#1D2824] text-[#0B1311] dark:text-[#F4F0E8] hover:border-[#B88E35] transition-colors"
-                >
-                  التحليلات
-                </button>
-              </div>
-            </div>
+            <p className="text-xs sm:text-sm font-medium text-[#5A5D5B] dark:text-[#9CA39F] max-w-2xl mx-auto">
+              {siteConfig.siteTagline}
+            </p>
           </div>
         </div>
 
         {/* شريط الأقسام المعماري الرشيق */}
-        <div className="border-t border-[#E4DDD0] dark:border-[#1D2824] bg-[#F3EFE6]/80 dark:bg-[#0E1513]/90 backdrop-blur-sm sticky top-0 z-30">
+        <div className="border-t border-[#E2DDD3] dark:border-[#1F2724] bg-[#F2EFE9]/90 dark:bg-[#111614]/95 backdrop-blur-sm sticky top-0 z-30">
           <nav
             aria-label="التنقل الرئيسي والأقسام التحريرية"
             className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-4 overflow-x-auto py-3 text-xs sm:text-sm"
@@ -672,10 +612,10 @@ export function App() {
               <button
                 type="button"
                 onClick={() => navigateTo({ view: 'home' }, '/')}
-                className={`whitespace-nowrap shrink-0 pb-1 transition-colors ${
+                className={`whitespace-nowrap shrink-0 pb-0.5 transition-colors ${
                   route.view === 'home'
-                    ? 'font-extrabold text-[#0B1311] dark:text-[#D4AF5A] border-b-2 border-[#B88E35]'
-                    : 'font-bold text-[#4A5550] dark:text-slate-300 hover:text-[#B88E35]'
+                    ? 'font-extrabold text-[#0F2922] dark:text-[#D4AF5A] border-b-2 border-[#9A7125]'
+                    : 'font-bold text-[#3D423F] dark:text-slate-300 hover:text-[#9A7125]'
                 }`}
               >
                 الرئيسية
@@ -685,10 +625,10 @@ export function App() {
                   key={sec.id}
                   type="button"
                   onClick={() => navigateTo({ view: 'category', categorySlug: sec.slug }, `/${sec.slug}`)}
-                  className={`whitespace-nowrap shrink-0 pb-1 transition-colors ${
+                  className={`whitespace-nowrap shrink-0 pb-0.5 transition-colors ${
                     route.view === 'category' && route.categorySlug === sec.slug
-                      ? 'font-extrabold text-[#0B1311] dark:text-[#D4AF5A] border-b-2 border-[#B88E35]'
-                      : 'font-bold text-[#4A5550] dark:text-slate-300 hover:text-[#B88E35]'
+                      ? 'font-extrabold text-[#0F2922] dark:text-[#D4AF5A] border-b-2 border-[#9A7125]'
+                      : 'font-bold text-[#3D423F] dark:text-slate-300 hover:text-[#9A7125]'
                   }`}
                 >
                   {sec.name}
@@ -696,19 +636,19 @@ export function App() {
               ))}
             </div>
 
-            <div className="hidden xl:flex items-center gap-4 text-xs text-[#525E59] dark:text-slate-400 shrink-0">
+            <div className="hidden xl:flex items-center gap-4 text-xs text-[#5A5D5B] dark:text-[#9CA39F] shrink-0">
               <button
                 type="button"
                 onClick={() => navigateTo({ view: 'editorial_team' }, '/editorial-team')}
-                className="hover:text-[#B88E35] font-semibold"
+                className="hover:text-[#9A7125] font-semibold whitespace-nowrap shrink-0"
               >
-                الكادر الصحفي ووحدة التدقيق
+                هيئة التحرير
               </button>
               <span aria-hidden="true">·</span>
               <button
                 type="button"
                 onClick={() => navigateTo({ view: 'legal', slug: 'editorial-policy' }, '/legal/editorial-policy')}
-                className="hover:text-[#B88E35] font-semibold"
+                className="hover:text-[#9A7125] font-semibold whitespace-nowrap shrink-0"
               >
                 السياسة التحريرية
               </button>
@@ -718,7 +658,7 @@ export function App() {
       </header>
 
       {/* ====================================================================
-          Main Content Canvas (Modern Luxury Broadsheet & Magazine Theme)
+          Main Content Canvas (Prestigious Sovereign Broadsheet)
       ==================================================================== */}
       <main id="main-content" className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 space-y-12">
         {route.view === 'home' && (
@@ -846,16 +786,16 @@ export function App() {
       </main>
 
       {/* ====================================================================
-          التذييل التحريري العصري الفاخر (Luxury Sovereign Footer)
+          التذييل التحريري السيادي (Sovereign Broadsheet Footer)
       ==================================================================== */}
-      <footer className="mt-20 border-t border-[#B88E35]/40 bg-[#081511] text-[#E8E1D3] text-xs">
+      <footer className="mt-20 border-t-2 border-[#9A7125]/50 bg-[#0F2922] text-[#E5DFD3] text-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           <div className="space-y-3.5">
             <h2 className="text-3xl font-bold font-royal text-[#D4AF5A]">
               {siteConfig.siteName}
             </h2>
-            <p className="text-[#E8E1D3]/85 leading-relaxed">
-              {siteConfig.siteTagline}. جميع التقارير مبنية على استخلاص الوقائع من مصادرها الرسمية تحت إشراف رئيس التحرير ({siteConfig.editorInChiefName}) والتدقيق اللغوي الشامل (أ. علام الكيلاني).
+            <p className="text-[#E5DFD3]/85 leading-relaxed">
+              {siteConfig.siteTagline}. مؤسسة إعلامية عربية مستقلة تلتزم بالدقة التحريرية وتوثيق الأخبار من مصادرها الرسمية تحت إشراف رئيس التحرير ({siteConfig.editorInChiefName}).
             </p>
             <p className="text-xs font-medium text-white">
               التواصل الرسمي: <span className="font-mono text-[#D4AF5A]">{siteConfig.contactEmail}</span>
@@ -864,7 +804,7 @@ export function App() {
 
           <div className="space-y-3">
             <h3 className="font-bold font-display text-sm text-[#D4AF5A]">الأقسام التحريرية</h3>
-            <ul className="grid grid-cols-2 gap-2.5 text-[#E8E1D3]/85">
+            <ul className="grid grid-cols-2 gap-2.5 text-[#E5DFD3]/85">
               {EDITORIAL_SECTIONS.map((sec) => (
                 <li key={sec.id}>
                   <button
@@ -883,7 +823,7 @@ export function App() {
             <h3 className="font-bold font-display text-sm text-[#D4AF5A]">
               الشفافية والسياسات التحريرية
             </h3>
-            <ul className="space-y-2.5 text-[#E8E1D3]/85">
+            <ul className="space-y-2.5 text-[#E5DFD3]/85">
               <li>
                 <button type="button" onClick={() => navigateTo({ view: 'legal', slug: 'about' }, '/legal/about')} className="hover:text-[#D4AF5A]">
                   من نحن والملكية والتمويل
@@ -891,7 +831,7 @@ export function App() {
               </li>
               <li>
                 <button type="button" onClick={() => navigateTo({ view: 'editorial_team' }, '/editorial-team')} className="hover:text-[#D4AF5A]">
-                  هيئة التحرير ووحدة التدقيق اللغوي
+                  هيئة التحرير والمراسلون
                 </button>
               </li>
               <li>
@@ -921,7 +861,7 @@ export function App() {
             <h3 className="font-bold font-display text-sm text-[#D4AF5A]">
               الشؤون القانونية وحقوق النشر
             </h3>
-            <ul className="space-y-2.5 text-[#E8E1D3]/85">
+            <ul className="space-y-2.5 text-[#E5DFD3]/85">
               <li>
                 <button type="button" onClick={() => navigateTo({ view: 'legal', slug: 'privacy' }, '/legal/privacy')} className="hover:text-[#D4AF5A]">
                   سياسة الخصوصية وحماية البيانات
@@ -951,11 +891,11 @@ export function App() {
           </div>
         </div>
 
-        <div className="border-t border-[#B88E35]/20 py-4 px-4 sm:px-6 flex flex-wrap items-center justify-between gap-4 max-w-7xl mx-auto text-[#E8E1D3]/70">
+        <div className="border-t border-[#D4AF5A]/20 py-4 px-4 sm:px-6 flex flex-wrap items-center justify-between gap-4 max-w-7xl mx-auto text-[#E5DFD3]/75">
           <span>
-            جميع الحقوق محفوظة © {new Date().getFullYear()} {siteConfig.siteName} — رئيس التحرير المسؤول: {siteConfig.editorInChiefName} · المدقق اللغوي العام: أ. علام الكيلاني.
+            جميع الحقوق محفوظة © {new Date().getFullYear()} {siteConfig.siteName} — رئيس التحرير المسؤول: {siteConfig.editorInChiefName}.
           </span>
-          <span>جميع الصور الفوتوغرافية فريدة ومرخّصة قانونيًا دون أي تكرار</span>
+          <span>الطبعة الرقمية الرسمية</span>
         </div>
       </footer>
 

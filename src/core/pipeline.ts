@@ -1026,23 +1026,32 @@ export interface LegalPhotoEntry {
  * تضم الصور التحريرية الخاصة بالمنصة + صور التوثيق المقطعي لكل محافظة وقطاع ومجال
  */
 export const LEGAL_EDITORIAL_PHOTO_POOL: LegalPhotoEntry[] = [
-  // --- الصور التحريرية الحصرية عالية الدقة المولدة خصيصًا للمنصة ---
+  // --- 10 صور توثيقية حصرية عالية الدقة مولدة خصيصًا للمنصة (خالية تمامًا من الأشخاص ووجوه النساء) ---
   {
     key: 'local-syria-damascus-solar',
     keywords: ['طوارئ الكهربائية', 'محطات التحويل', 'قاسيون', 'دمشق', 'توليد', 'الشبكة العامة'],
     categories: ['syria', 'economy'],
     url: 'assets/editorial/syria-damascus-solar.jpg',
-    credit: 'عدسة «ميزان الخبر» التوثيقية — قطاع الطاقة والكهرباء في سوريا',
-    license: 'ترخيص تحريري حصري معتمد',
+    credit: 'عدسة «ميزان الخبر» — قطاع الطاقة والكهرباء في سوريا',
+    license: 'ترخيص تحريري حصري',
     captionPrefix: 'منظومات الطاقة الشمسية ومحطات التحويل الكهربائية في دمشق والمحافظات السورية',
+  },
+  {
+    key: 'local-syria-damascus-old-city',
+    keywords: ['دمشق القديمة', 'حرف', 'تراثية', 'بيوت دمشقية', 'ثقافة سورية', 'قاسيون', 'ترميم'],
+    categories: ['syria', 'culture-society'],
+    url: 'assets/editorial/damascus-old-city.jpg',
+    credit: 'عدسة «ميزان الخبر» — العمارة الدمشقية والتراث الحي',
+    license: 'ترخيص تحريري حصري',
+    captionPrefix: 'العمارة التراثية الدمشقية ومعالم الحواضر السورية التاريخية',
   },
   {
     key: 'local-syria-aleppo-industry',
     keywords: ['الشيخ نجار', 'عدرا', 'حسياء', 'المدن الصناعية', 'خطوط الإنتاج', 'معامل', 'صناعة'],
     categories: ['syria', 'economy'],
     url: 'assets/editorial/syria-aleppo-industry.jpg',
-    credit: 'عدسة «ميزان الخبر» التوثيقية — المدن الصناعية في حلب ودمشق وحمص',
-    license: 'ترخيص تحريري حصري معتمد',
+    credit: 'عدسة «ميزان الخبر» — المدن الصناعية في حلب ودمشق وحمص',
+    license: 'ترخيص تحريري حصري',
     captionPrefix: 'خطوط الإنتاج الصناعي والهندسي في المدن الصناعية السورية',
   },
   {
@@ -1050,8 +1059,8 @@ export const LEGAL_EDITORIAL_PHOTO_POOL: LegalPhotoEntry[] = [
     keywords: ['أنقرة', 'مرسين', 'إسكندرون', 'موانئ', 'ترانزيت', 'شحن بحري', 'تركيا', 'حاويات'],
     categories: ['arab-world', 'economy', 'syria'],
     url: 'assets/editorial/arab-turkey-port.jpg',
-    credit: 'عدسة «ميزان الخبر» التوثيقية — الموانئ والممرات اللوجستية الإقليمية',
-    license: 'ترخيص تحريري حصري معتمد',
+    credit: 'عدسة «ميزان الخبر» — الموانئ والممرات اللوجستية الإقليمية',
+    license: 'ترخيص تحريري حصري',
     captionPrefix: 'محطات الحاويات والربط السككي البحري في موانئ شرق المتوسط',
   },
   {
@@ -1059,8 +1068,8 @@ export const LEGAL_EDITORIAL_PHOTO_POOL: LegalPhotoEntry[] = [
     keywords: ['الجزيرة السورية', 'سهل الغاب', 'الفرات', 'قمح', 'بذار', 'قنوات الري', 'مزارعي'],
     categories: ['syria', 'economy', 'science-health'],
     url: 'assets/editorial/syria-wheat-irrigation.jpg',
-    credit: 'عدسة «ميزان الخبر» التوثيقية — الأمن الغذائي والري الزراعي في سوريا',
-    license: 'ترخيص تحريري حصري معتمد',
+    credit: 'عدسة «ميزان الخبر» — الأمن الغذائي والري الزراعي في سوريا',
+    license: 'ترخيص تحريري حصري',
     captionPrefix: 'مشاريع الري الحديث وحقول القمح الاستراتيجية في المحافظات السورية',
   },
   {
@@ -1068,37 +1077,65 @@ export const LEGAL_EDITORIAL_PHOTO_POOL: LegalPhotoEntry[] = [
     keywords: ['بنى', 'صندوق النقد العربي', 'مصرف', 'مركزي', 'مدفوعات', 'تسوية', 'عملات'],
     categories: ['economy', 'arab-world', 'analysis'],
     url: 'assets/editorial/arab-fintech-banking.jpg',
-    credit: 'عدسة «ميزان الخبر» التوثيقية — القطاع المصرفي والمالي العربي',
-    license: 'ترخيص تحريري حصري معتمد',
+    credit: 'عدسة «ميزان الخبر» — القطاع المصرفي والمالي العربي',
+    license: 'ترخيص تحريري حصري',
     captionPrefix: 'المراكز المصرفية والمالية الإقليمية ومنصات التسوية الفورية',
   },
-  // --- 41 صورة فوتوغرافية توثيقية مفردة ومميزة لكل ملف وموضوع (بدون أي تكرار) ---
   {
-    key: 'syria-historic-citadel-aleppo',
-    keywords: ['حلب', 'أسواق حلب', 'الشهباء', 'ترميم', 'تراث حلب'],
-    categories: ['syria', 'culture-society'],
-    url: 'https://images.unsplash.com/photo-1578895101408-1a36b834405b?auto=format&fit=crop&w=1200&q=80',
-    credit: 'الأرشيف الفوتوغرافي المشرقي — معالم العمارة التاريخية والحضرية',
-    license: 'ترخيص استخدام صحفي معتمد',
-    captionPrefix: 'معالم عمرانية وتاريخية في الحواضر السورية',
+    key: 'local-diplomacy-summit-hall',
+    keywords: ['الأمم المتحدة', 'جنيف', 'مجلس الأمن', 'دبلوماسية', 'قمة', 'معاهدة', 'مباحثات', 'وزير خارجية'],
+    categories: ['politics', 'arab-world'],
+    url: 'assets/editorial/diplomacy-hall.jpg',
+    credit: 'عدسة «ميزان الخبر» — قاعات المؤتمرات الدبلوماسية والدولية',
+    license: 'ترخيص تحريري حصري',
+    captionPrefix: 'قاعات الاجتماعات الدبلوماسية والمشاورات الدولية متعددة الأطراف',
   },
   {
-    key: 'syria-damascus-courtyard-arch',
-    keywords: ['دمشق القديمة', 'حرف', 'تراثية', 'بيوت دمشقية', 'ثقافة سورية'],
+    key: 'local-arabic-manuscript-library',
+    keywords: ['مخطوطات', 'اليونسكو', 'الألكسو', 'خزانة', 'مكتبة', 'كتاب', 'جامعات', 'طلاب', 'تعليم'],
+    categories: ['culture-society', 'syria'],
+    url: 'assets/editorial/manuscript-library.jpg',
+    credit: 'عدسة «ميزان الخبر» — الخزائن التاريخية والمكتبات الأكاديمية',
+    license: 'ترخيص تحريري حصري',
+    captionPrefix: 'توثيق المخطوطات العلمية والتراثية في المكتبات والمؤسسات الأكاديمية',
+  },
+  {
+    key: 'local-medical-research-lab',
+    keywords: ['مشافي', 'مستوصفات', 'طبي', 'صحي', 'دوائية', 'أدوية', 'مختبر', 'سريرية', 'فريق بحثي'],
+    categories: ['science-health', 'syria'],
+    url: 'assets/editorial/medical-research.jpg',
+    credit: 'عدسة «ميزان الخبر» — المختبرات الطبية والأبحاث الدوائية',
+    license: 'ترخيص تحريري حصري',
+    captionPrefix: 'المختبرات الطبية المتقدمة وتجهيزات الرعاية الصحية والتشخيص',
+  },
+  {
+    key: 'local-sports-stadium-arena',
+    keywords: ['ملعب', 'ملاعب', 'رياضة', 'كرة القدم', 'منتخب', 'بطولة', 'أولمبية', 'منافسات'],
+    categories: ['sports'],
+    url: 'assets/editorial/stadium-arena.jpg',
+    credit: 'عدسة «ميزان الخبر» — المنشآت والملاعب الرياضية الدولية',
+    license: 'ترخيص تحريري حصري',
+    captionPrefix: 'المنشآت والملاعب الرياضية المعتمدة وفق المعايير الدولية',
+  },
+
+  // --- صور معمارية ومناظر طبيعية وبنية تحتية منتقاة بعناية (خالية تمامًا من الوجوه والأشخاص) ---
+  {
+    key: 'syria-historic-citadel-aleppo',
+    keywords: ['حلب', 'أسواق حلب', 'الشهباء', 'متحف', 'أثرية', 'آثار'],
     categories: ['syria', 'culture-society'],
-    url: 'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1200&q=80',
-    credit: 'الأرشيف الفوتوغرافي المشرقي — العمارة الدمشقية والتراث الحي',
-    license: 'ترخيص استخدام صحفي معتمد',
-    captionPrefix: 'العمارة التراثية والأسواق التاريخية في دمشق',
+    url: 'https://images.unsplash.com/photo-1578895101408-1a36b834405b?auto=format&fit=crop&w=1200&q=80',
+    credit: 'الأرشيف الفوتوغرافي المشرقي — المعالم العمرانية والتاريخية',
+    license: 'ترخيص استخدام صحفي',
+    captionPrefix: 'معالم عمرانية وتاريخية في الحواضر المشرقية',
   },
   {
     key: 'syria-border-crossing-trucks',
     keywords: ['نصيب', 'باب الهوى', 'معبر', 'شاحنات', 'النافذة الجمركية', 'حدود'],
     categories: ['syria', 'economy', 'arab-world'],
     url: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80',
-    credit: 'أرشيف النقل واللوجستيات — حركة الشحن البري والمعابر التجارية',
-    license: 'ترخيص استخدام صحفي معتمد',
-    captionPrefix: 'انسياب الشاحنات التجارية وسلاسل الإمداد عبر المنافذ البرية',
+    credit: 'أرشيف النقل واللوجستيات — مستودعات الشحن والتموين',
+    license: 'ترخيص استخدام صحفي',
+    captionPrefix: 'البنية اللوجستية وسلاسل الإمداد والتخزين التجاري',
   },
   {
     key: 'syria-latakia-tartus-maritime',
@@ -1106,43 +1143,25 @@ export const LEGAL_EDITORIAL_PHOTO_POOL: LegalPhotoEntry[] = [
     categories: ['syria', 'economy'],
     url: 'https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?auto=format&fit=crop&w=1200&q=80',
     credit: 'أرشيف الملاحة البحرية — المرافئ التجارية في شرق المتوسط',
-    license: 'ترخيص استخدام صحفي معتمد',
+    license: 'ترخيص استخدام صحفي',
     captionPrefix: 'عمليات مناولة الحاويات والبضائع في المرافئ البحرية',
-  },
-  {
-    key: 'syria-hospitals-medical-care',
-    keywords: ['مشافي', 'مستوصفات', 'طبي', 'صحي', 'تشخيص', 'إسعاف', 'أدوية'],
-    categories: ['syria', 'science-health'],
-    url: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1200&q=80',
-    credit: 'الأرشيف الطبي والصحي — تجهيزات المشافي والمراكز التخصصية',
-    license: 'ترخيص استخدام صحفي معتمد',
-    captionPrefix: 'تحديث التجهيزات الطبية وأقسام الرعاية الصحية في المشافي',
-  },
-  {
-    key: 'syria-universities-education',
-    keywords: ['جامعات', 'طلاب', 'مدارس', 'تعليم', 'تدريب مهني', 'بحث علمي'],
-    categories: ['syria', 'culture-society', 'science-health'],
-    url: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=80',
-    credit: 'أرشيف التعليم العالي — الجامعات والمراكز الأكاديمية',
-    license: 'ترخيص استخدام صحفي معتمد',
-    captionPrefix: 'القاعات الجامعية والمراكز التعليمية والتقنية الحديثة',
   },
   {
     key: 'syria-water-pumping-stations',
     keywords: ['ضخ المياه', 'مياه الشرب', 'ينابيع', 'الفيجة', 'شبكات المياه'],
     categories: ['syria', 'science-health'],
     url: 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1200&q=80',
-    credit: 'أرشيف الموارد المائية — مشاريع إمدادات المياه والسدود',
-    license: 'ترخيص استخدام صحفي معتمد',
-    captionPrefix: 'مشاريع تأهيل شبكات المياه والموارد المائية المستدامة',
+    credit: 'أرشيف الطبيعة والموارد — المنظومات البيئية والمائية',
+    license: 'ترخيص استخدام صحفي',
+    captionPrefix: 'الموارد الطبيعية والبيئية المستدامة في المنطقة',
   },
   {
     key: 'syria-olive-groves-agriculture',
-    keywords: ['زيتون', 'حمضيات', 'خضار', 'درعا', 'السويداء', 'إدلب', 'محاصيل'],
+    keywords: ['زيتون', 'حمضيات', 'خضار', 'درعا', 'السويداء', 'إدلب', 'محاصيل', 'غذائية'],
     categories: ['syria', 'economy'],
     url: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80',
-    credit: 'الأرشيف الزراعي — بساتين الزيتون والمحاصيل المتوسطية',
-    license: 'ترخيص استخدام صحفي معتمد',
+    credit: 'الأرشيف الزراعي — الحقول والمحاصيل الزراعية',
+    license: 'ترخيص استخدام صحفي',
     captionPrefix: 'الأراضي الزراعية ومواسم الإنتاج الغذائي في المشرق',
   },
   {
@@ -1151,7 +1170,7 @@ export const LEGAL_EDITORIAL_PHOTO_POOL: LegalPhotoEntry[] = [
     categories: ['syria', 'technology'],
     url: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=1200&q=80',
     credit: 'أرشيف البنية الرقمية — شبكات الألياف الضوئية والاتصالات',
-    license: 'ترخيص استخدام صحفي معتمد',
+    license: 'ترخيص استخدام صحفي',
     captionPrefix: 'توسيع شبكات الألياف الضوئية والبنية التحتية للاتصالات',
   },
   {
@@ -1160,8 +1179,8 @@ export const LEGAL_EDITORIAL_PHOTO_POOL: LegalPhotoEntry[] = [
     categories: ['syria', 'economy'],
     url: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1200&q=80',
     credit: 'الأرشيف الهندسي والعمراني — مشاريع التأهيل والبنية التحتية',
-    license: 'ترخيص استخدام صحفي معتمد',
-    captionPrefix: 'أعمال التأهيل الهندسي وتطوير البنية التحتية والخدمية',
+    license: 'ترخيص استخدام صحفي',
+    captionPrefix: 'التخطيط الهندسي ومشاريع تطوير البنية التحتية',
   },
   {
     key: 'syria-railway-freight-transport',
@@ -1169,17 +1188,8 @@ export const LEGAL_EDITORIAL_PHOTO_POOL: LegalPhotoEntry[] = [
     categories: ['syria', 'economy'],
     url: 'https://images.unsplash.com/photo-1474487548417-781cb71495f3?auto=format&fit=crop&w=1200&q=80',
     credit: 'أرشيف النقل السككي — خطوط قطارات الشحن الإقليمية',
-    license: 'ترخيص استخدام صحفي معتمد',
+    license: 'ترخيص استخدام صحفي',
     captionPrefix: 'قطارات شحن البضائع والحبوب على خطوط السكك الحديدية',
-  },
-  {
-    key: 'syria-pharmaceutical-labs',
-    keywords: ['دوائية', 'أدوية', 'معامل الأدوية', 'مختبرات طبية'],
-    categories: ['syria', 'science-health'],
-    url: 'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=1200&q=80',
-    credit: 'أرشيف الصناعات الدوائية — خطوط الإنتاج المخبري والدوائي',
-    license: 'ترخيص استخدام صحفي معتمد',
-    captionPrefix: 'خطوط تصنيع الأدوية والرقابة النوعية في المختبرات الحديثة',
   },
   {
     key: 'arab-turkey-istanbul-bosphorus',
@@ -1187,8 +1197,8 @@ export const LEGAL_EDITORIAL_PHOTO_POOL: LegalPhotoEntry[] = [
     categories: ['arab-world', 'economy'],
     url: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?auto=format&fit=crop&w=1200&q=80',
     credit: 'الأرشيف الإقليمي — المراكز التجارية والملاحية في إسطنبول',
-    license: 'ترخيص استخدام صحفي معتمد',
-    captionPrefix: 'الممرات الملاحية والمراكز التجارية في مدينة إسطنبول',
+    license: 'ترخيص استخدام صحفي',
+    captionPrefix: 'الممرات الملاحية والأفق العمراني في مدينة إسطنبول',
   },
   {
     key: 'arab-riyadh-skyline-economy',
@@ -1196,7 +1206,7 @@ export const LEGAL_EDITORIAL_PHOTO_POOL: LegalPhotoEntry[] = [
     categories: ['arab-world', 'economy'],
     url: 'https://images.unsplash.com/photo-1586724237569-f3d0c1dee8c6?auto=format&fit=crop&w=1200&q=80',
     credit: 'أرشيف العواصم العربية — المراكز الاقتصادية في الرياض والخليج',
-    license: 'ترخيص استخدام صحفي معتمد',
+    license: 'ترخيص استخدام صحفي',
     captionPrefix: 'المراكز المالية والمشاريع الاقتصادية الكبرى في الخليج العربي',
   },
   {
@@ -1205,7 +1215,7 @@ export const LEGAL_EDITORIAL_PHOTO_POOL: LegalPhotoEntry[] = [
     categories: ['arab-world', 'politics', 'economy'],
     url: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1200&q=80',
     credit: 'أرشيف الخليج العربي — المراكز الحضرية والدبلوماسية الحديثة',
-    license: 'ترخيص استخدام صحفي معتمد',
+    license: 'ترخيص استخدام صحفي',
     captionPrefix: 'الأبراج الاقتصادية ومراكز المؤتمرات الدولية في الخليج',
   },
   {
@@ -1214,7 +1224,7 @@ export const LEGAL_EDITORIAL_PHOTO_POOL: LegalPhotoEntry[] = [
     categories: ['arab-world', 'politics', 'economy'],
     url: 'https://images.unsplash.com/photo-1572252009286-268acec5ca0a?auto=format&fit=crop&w=1200&q=80',
     credit: 'أرشيف الحواضر العربية — القاهرة وضفاف النيل',
-    license: 'ترخيص استخدام صحفي معتمد',
+    license: 'ترخيص استخدام صحفي',
     captionPrefix: 'المشهد الحضري والمؤسسي في العاصمة المصرية القاهرة',
   },
   {
@@ -1223,7 +1233,7 @@ export const LEGAL_EDITORIAL_PHOTO_POOL: LegalPhotoEntry[] = [
     categories: ['arab-world', 'economy', 'syria'],
     url: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=1200&q=80',
     credit: 'أرشيف شبكات الطاقة — خطوط الربط الكهربائي الإقليمي عالي الجهد',
-    license: 'ترخيص استخدام صحفي معتمد',
+    license: 'ترخيص استخدام صحفي',
     captionPrefix: 'أبراج وخطوط نقل الطاقة الكهربائية عالية الجهد عبر الحدود',
   },
   {
@@ -1232,7 +1242,7 @@ export const LEGAL_EDITORIAL_PHOTO_POOL: LegalPhotoEntry[] = [
     categories: ['economy', 'technology', 'science-health', 'arab-world'],
     url: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=1200&q=80',
     credit: 'أرشيف الطاقة المتجددة — مزارع الطاقة الشمسية الكهروضوئية',
-    license: 'ترخيص استخدام صحفي معتمد',
+    license: 'ترخيص استخدام صحفي',
     captionPrefix: 'حقول توليد الكهرباء بالطاقة الشمسية النظيفة في الشرق الأوسط',
   },
   {
@@ -1241,7 +1251,7 @@ export const LEGAL_EDITORIAL_PHOTO_POOL: LegalPhotoEntry[] = [
     categories: ['economy', 'science-health', 'arab-world'],
     url: 'https://images.unsplash.com/photo-1466611653911-95081537e5b7?auto=format&fit=crop&w=1200&q=80',
     credit: 'أرشيف الطاقة النظيفة — مشاريع طاقة الرياح والهيدروجين الأخضر',
-    license: 'ترخيص استخدام صحفي معتمد',
+    license: 'ترخيص استخدام صحفي',
     captionPrefix: 'توربينات الرياح ومشاريع الطاقة المستدامة في المنطقة',
   },
   {
@@ -1250,52 +1260,25 @@ export const LEGAL_EDITORIAL_PHOTO_POOL: LegalPhotoEntry[] = [
     categories: ['economy', 'analysis'],
     url: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80',
     credit: 'الأرشيف المالي والمصرفي — المؤسسات المالية والبنوك المركزية',
-    license: 'ترخيص استخدام صحفي معتمد',
+    license: 'ترخيص استخدام صحفي',
     captionPrefix: 'مقرات المؤسسات المصرفية والمالية في الأسواق الدولية',
   },
   {
     key: 'digital-payments-analytics',
-    keywords: ['تداول', 'مؤشرات', 'بورصة', 'رقمية', 'تكنولوجيا مالية'],
+    keywords: ['تداول', 'مؤشرات', 'بورصة', 'رقمية', 'تكنولوجيا مالية', 'أمن سيبراني'],
     categories: ['economy', 'technology', 'analysis'],
     url: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200&q=80',
     credit: 'أرشيف البنية الرقمية — منظومات الحماية والشبكات الإلكترونية',
-    license: 'ترخيص استخدام صحفي معتمد',
+    license: 'ترخيص استخدام صحفي',
     captionPrefix: 'منظومات الأمان الرقمي والبنية التحتية للشبكات الحيوية',
   },
   {
-    key: 'un-diplomacy-summit-hall',
-    keywords: ['الأمم المتحدة', 'جنيف', 'مجلس الأمن', 'دبلوماسية', 'قمة', 'معاهدة'],
-    categories: ['politics', 'arab-world'],
-    url: 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=1200&q=80',
-    credit: 'الأرشيف الدبلوماسي — قاعات المؤتمرات الدولية والمنظمات الأممية',
-    license: 'ترخيص استخدام صحفي معتمد',
-    captionPrefix: 'قاعات الاجتماعات الدبلوماسية والمشاورات الدولية متعددة الأطراف',
-  },
-  {
-    key: 'international-press-conference',
-    keywords: ['بيان رسمي', 'مباحثات', 'وزير خارجية', 'اتفاقية', 'مشاورات'],
-    categories: ['politics', 'arab-world'],
-    url: 'https://images.unsplash.com/photo-1577962917302-cd874c4e31d2?auto=format&fit=crop&w=1200&q=80',
-    credit: 'الأرشيف الدبلوماسي — اللجان الوزارية والمباحثات الرسمية',
-    license: 'ترخيص استخدام صحفي معتمد',
-    captionPrefix: 'اجتماعات اللجان الفنية والدبلوماسية المشتركة',
-  },
-  {
-    key: 'humanitarian-relief-convoy',
-    keywords: ['إغاثة', 'جسر إغاثي', 'الهلال الأحمر', 'فلسطين', 'غزة', 'إنسانية'],
-    categories: ['arab-world', 'politics', 'syria'],
-    url: 'https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?auto=format&fit=crop&w=1200&q=80',
-    credit: 'أرشيف العمل الإنساني — القوافل الطبية والإغاثية الدولية',
-    license: 'ترخيص استخدام صحفي معتمد',
-    captionPrefix: 'فرق الاستجابة الإنسانية والإمدادات الطبية والغذائية',
-  },
-  {
     key: 'telecom-datacenters-cloud',
-    keywords: ['مراكز البيانات', 'سحابية', 'خوارزميات', 'أمن سيبراني', 'حكومة رقمية'],
+    keywords: ['مراكز البيانات', 'سحابية', 'خوارزميات', 'حكومة رقمية'],
     categories: ['technology', 'economy'],
     url: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80',
     credit: 'أرشيف التكنولوجيا — مراكز البيانات الفائقة والحوسبة السحابية',
-    license: 'ترخيص استخدام صحفي معتمد',
+    license: 'ترخيص استخدام صحفي',
     captionPrefix: 'البنية التحتية لمراكز البيانات السحابية الخاضعة للمعايير الخضراء',
   },
   {
@@ -1304,7 +1287,7 @@ export const LEGAL_EDITORIAL_PHOTO_POOL: LegalPhotoEntry[] = [
     categories: ['technology', 'science-health'],
     url: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80',
     credit: 'أرشيف الاتصالات الفضائية — شبكات الأقمار الصناعية والربط العالمي',
-    license: 'ترخيص استخدام صحفي معتمد',
+    license: 'ترخيص استخدام صحفي',
     captionPrefix: 'منظومات الرصد الفضائي وشبكات الاتصالات المتقدمة',
   },
   {
@@ -1313,26 +1296,8 @@ export const LEGAL_EDITORIAL_PHOTO_POOL: LegalPhotoEntry[] = [
     categories: ['technology', 'science-health'],
     url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80',
     credit: 'الأرشيف التقني — هندسة الرقائق الإلكترونية والأنظمة الذكية',
-    license: 'ترخيص استخدام صحفي معتمد',
+    license: 'ترخيص استخدام صحفي',
     captionPrefix: 'الدوائر الإلكترونية الدقيقة وتقنيات المعالجة المتقدمة',
-  },
-  {
-    key: 'arabic-manuscripts-heritage-library',
-    keywords: ['مخطوطات', 'اليونسكو', 'الألكسو', 'خزانة', 'مكتبة', 'كتاب'],
-    categories: ['culture-society'],
-    url: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1200&q=80',
-    credit: 'الأرشيف الثقافي — الخزائن التاريخية والمكتبات الأكاديمية',
-    license: 'ترخيص استخدام صحفي معتمد',
-    captionPrefix: 'توثيق المخطوطات العلمية والتراثية في المكتبات العربية',
-  },
-  {
-    key: 'museum-archaeology-artifacts',
-    keywords: ['متحف', 'أثرية', 'آثار', 'تراث ثقافي', 'المسح ثلاثي الأبعاد', 'القيروان'],
-    categories: ['culture-society', 'arab-world', 'syria'],
-    url: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=1200&q=80',
-    credit: 'أرشيف المتاحف والتراث — صون المعالم الأثرية والتاريخية',
-    license: 'ترخيص استخدام صحفي معتمد',
-    captionPrefix: 'قاعات العرض المتحفي ومشاريع الرقمنة التراثية',
   },
   {
     key: 'weather-climate-meteorology',
@@ -1340,17 +1305,8 @@ export const LEGAL_EDITORIAL_PHOTO_POOL: LegalPhotoEntry[] = [
     categories: ['science-health', 'arab-world'],
     url: 'https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?auto=format&fit=crop&w=1200&q=80',
     credit: 'أرشيف الرصد الجوي — المنظومات المناخية والبيئية',
-    license: 'ترخيص استخدام صحفي معتمد',
+    license: 'ترخيص استخدام صحفي',
     captionPrefix: 'متابعة المنظومات الجوية وشبكات الرصد المناخي الإقليمي',
-  },
-  {
-    key: 'science-laboratory-diagnostics',
-    keywords: ['فريق بحثي', 'أغشية', 'مختبر', 'نانوية', 'تحليل طيفي', 'سريرية'],
-    categories: ['science-health'],
-    url: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1200&q=80',
-    credit: 'أرشيف البحث العلمي — المختبرات الطبية والتطبيقية',
-    license: 'ترخيص استخدام صحفي معتمد',
-    captionPrefix: 'الأبحاث العلمية المخبرية وتطوير تقنيات التشخيص المبكر',
   },
   {
     key: 'desalination-coastal-water',
@@ -1358,26 +1314,8 @@ export const LEGAL_EDITORIAL_PHOTO_POOL: LegalPhotoEntry[] = [
     categories: ['science-health', 'economy', 'arab-world'],
     url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
     credit: 'أرشيف البيئة البحرية — مشاريع تحلية المياه الساحلية',
-    license: 'ترخيص استخدام صحفي معتمد',
+    license: 'ترخيص استخدام صحفي',
     captionPrefix: 'محطات تحلية المياه البحرية بتقنيات الطاقة النظيفة',
-  },
-  {
-    key: 'sports-stadiums-football',
-    keywords: ['ملعب', 'ملاعب', 'رياضة', 'كرة القدم', 'منتخب', 'بطولة'],
-    categories: ['sports'],
-    url: 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1200&q=80',
-    credit: 'الأرشيف الرياضي — الملاعب والمنشآت الرياضية الدولية',
-    license: 'ترخيص استخدام صحفي معتمد',
-    captionPrefix: 'المنشآت والملاعب الرياضية المعتمدة وفق المعايير الدولية',
-  },
-  {
-    key: 'sports-athletics-olympic',
-    keywords: ['أولمبية', 'جمباز', 'أكاديميات', 'تأهيل رياضي', 'منافسات'],
-    categories: ['sports', 'culture-society'],
-    url: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1200&q=80',
-    credit: 'الأرشيف الرياضي — الميادين الأولمبية وأكاديميات التدريب',
-    license: 'ترخيص استخدام صحفي معتمد',
-    captionPrefix: 'مضامير التدريب الرياضي وتأهيل المواهب الأولمبية',
   },
   {
     key: 'aviation-cargo-airports',
@@ -1385,17 +1323,8 @@ export const LEGAL_EDITORIAL_PHOTO_POOL: LegalPhotoEntry[] = [
     categories: ['economy', 'arab-world'],
     url: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1200&q=80',
     credit: 'أرشيف النقل الجوي — المطارات المحورية وحركة الشحن الجوي',
-    license: 'ترخيص استخدام صحفي معتمد',
+    license: 'ترخيص استخدام صحفي',
     captionPrefix: 'حركة الطيران التجاري والشحن الجوي عبر المطارات الإقليمية',
-  },
-  {
-    key: 'maghreb-tunisia-morocco-trade',
-    keywords: ['تونس', 'المغرب', 'الجزائر', 'زيت الزيتون', 'المغرب العربي', 'طنجة'],
-    categories: ['arab-world', 'economy'],
-    url: 'https://images.unsplash.com/photo-1539020140153-e479b8c22e70?auto=format&fit=crop&w=1200&q=80',
-    credit: 'الأرشيف المغاربي — الحواضر والموانئ في المغرب العربي',
-    license: 'ترخيص استخدام صحفي معتمد',
-    captionPrefix: 'الأسواق والمراكز التجارية والتراثية في المغرب العربي',
   },
   {
     key: 'oil-gas-energy-pipelines',
@@ -1403,35 +1332,8 @@ export const LEGAL_EDITORIAL_PHOTO_POOL: LegalPhotoEntry[] = [
     categories: ['economy', 'arab-world', 'syria'],
     url: 'https://images.unsplash.com/photo-1513828583688-c52646db42da?auto=format&fit=crop&w=1200&q=80',
     credit: 'أرشيف الطاقة والصناعة — منشآت الغاز والتكرير',
-    license: 'ترخيص استخدام صحفي معتمد',
+    license: 'ترخيص استخدام صحفي',
     captionPrefix: 'منشآت معالجة الغاز الطبيعي وإمدادات الطاقة الصناعية',
-  },
-  {
-    key: 'strategic-analysis-boardroom',
-    keywords: ['تحليل', 'ماذا حدث', 'قراءة', 'استراتيجية', 'مؤشرات', 'حوكمة'],
-    categories: ['analysis', 'economy', 'politics'],
-    url: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80',
-    credit: 'أرشيف الدراسات الاستراتيجية — مراكز الأبحاث وتحليل السياسات',
-    license: 'ترخيص استخدام صحفي معتمد',
-    captionPrefix: 'قراءات تحليلية ودراسات معمّقة في المؤشرات الإقليمية',
-  },
-  {
-    key: 'food-processing-packaging',
-    keywords: ['صناعات غذائية', 'تعليب', 'تموين', 'أسواق الجملة', 'تصدير غذائي'],
-    categories: ['syria', 'economy', 'arab-world'],
-    url: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1200&q=80',
-    credit: 'أرشيف الأمن الغذائي — سلاسل توريد الأغذية والمنتجات الزراعية',
-    license: 'ترخيص استخدام صحفي معتمد',
-    captionPrefix: 'تجهيز وتوريد المنتجات الغذائية والزراعية للأسواق',
-  },
-  {
-    key: 'arab-amman-levant-corridor',
-    keywords: ['الأردن', 'عمان', 'العقبة', 'بغداد', 'العراق', 'المشرق'],
-    categories: ['arab-world', 'syria', 'economy'],
-    url: 'https://images.unsplash.com/photo-1578895101408-1a36b834405b?auto=format&fit=crop&w=1200&q=80',
-    credit: 'أرشيف المشرق العربي — حواضر بلاد الشام والرافدين',
-    license: 'ترخيص استخدام صحفي معتمد',
-    captionPrefix: 'مسارات التبادل التجاري والتنسيق الإقليمي في المشرق العربي',
   },
   {
     key: 'maritime-red-sea-corridor',
@@ -1439,14 +1341,15 @@ export const LEGAL_EDITORIAL_PHOTO_POOL: LegalPhotoEntry[] = [
     categories: ['arab-world', 'economy'],
     url: 'https://images.unsplash.com/photo-1505144808419-1957a94ca61e?auto=format&fit=crop&w=1200&q=80',
     credit: 'أرشيف الممرات البحرية — خطوط الملاحة في البحر الأحمر والمتوسط',
-    license: 'ترخيص استخدام صحفي معتمد',
+    license: 'ترخيص استخدام صحفي',
     captionPrefix: 'خطوط الملاحة الدولية عبر الممرات البحرية العربية',
   },
 ];
 
 /**
  * محرك الصور القانونية الموثقة غير المتكررة:
- * يختار أفضل صورة مطابقة للموضوع لم يتم استخدامها بعد، وإن استُهلكت الصور الفوتوغرافية يولد لوحة فنية فريدة للمقال.
+ * يعتمد حصريًا على المكتبة المعمارية والوثائقية المنقّاة الخالية تمامًا من صور النساء أو الوجوه،
+ * وإن استُهلكت الصور الفوتوغرافية يولّد لوحة فنية توثيقية فريدة للمقال.
  */
 export function resolveLegalEditorialImage(params: {
   headline: string;
@@ -1464,28 +1367,7 @@ export function resolveLegalEditorialImage(params: {
       ? params.excludeUrls
       : new Set<string>(Array.isArray(params.excludeUrls) ? params.excludeUrls : []);
 
-  // 1. إذا توفرت صورة مباشرة من خلاصة رسمية مفتوحة الترخيص ولم تُستخدم من قبل
-  if (
-    params.officialRssImageUrl &&
-    params.officialRssImageUrl.startsWith('https://') &&
-    !params.officialRssImageUrl.includes('localhost') &&
-    !excludedSet.has(params.officialRssImageUrl)
-  ) {
-    return {
-      id: `img-official-${computeContentHash(params.headline, params.officialRssImageUrl).slice(0, 8)}`,
-      url: params.officialRssImageUrl,
-      alt: `صورة توثيقية: ${params.headline}`,
-      caption: `${params.headline} — الصورة من المصدر الرسمي (${params.sourceName || 'المصدر المعتمد'}).`,
-      credit: `${params.sourceName || 'المصدر الرسمي المعتمد'}`,
-      license: 'ترخيص إعلامي مفتوح مع النسب للمصدر',
-      strategy: 'stock',
-      isAiGenerated: false,
-      width: 1200,
-      height: 675,
-    };
-  }
-
-  // 2. ترتيب مكتبة الصور حسب التطابق الدلالي + القسم، مع استبعاد أي صورة مستخدمة مسبقًا
+  // ترتيب مكتبة الصور المنقّاة حسب التطابق الدلالي + القسم، مع استبعاد أي صورة مستخدمة مسبقًا
   const hashVal = parseInt(computeContentHash(params.headline, params.uniqueSeed || params.categorySlug).slice(-6), 16) || 0;
   const scoredPool = LEGAL_EDITORIAL_PHOTO_POOL.map((entry, idx) => {
     let score = 0;
@@ -1497,7 +1379,10 @@ export function resolveLegalEditorialImage(params: {
     } else if (entry.categories.includes(params.categorySlug)) {
       score += 2;
     }
-    // كسر التعادل بطريقة حتمية متنوعة لكل عنوان لمنع تكتل المقالات حول صورة واحدة
+    // أولوية إضافية للصور المحلية الحصرية عالية الدقة في صدارة التغطيات
+    if (entry.url.startsWith('assets/editorial/')) {
+      score += 1.5;
+    }
     const tieBreaker = ((hashVal + idx * 7) % 19) * 0.05;
     return { entry, score: score + tieBreaker };
   }).sort((a, b) => b.score - a.score);
@@ -1519,7 +1404,7 @@ export function resolveLegalEditorialImage(params: {
     };
   }
 
-  // 3. في حال استنفاد جميع الصور الفوتوغرافية الـ 46، نولّد لوحة بصرية فريدة خاصة بهذا المقال وحده
+  // في حال استنفاد جميع الصور الفوتوغرافية، نولّد لوحة بصرية فريدة خاصة بهذا المقال وحده
   const uniqueSvgUrl = generateTypographicSvgDataUri({
     kicker: params.categoryName,
     headline: params.headline,
@@ -1531,9 +1416,9 @@ export function resolveLegalEditorialImage(params: {
     id: `img-unique-svg-${computeContentHash(params.headline, uniqueSvgUrl).slice(0, 8)}`,
     url: uniqueSvgUrl,
     alt: `لوحة توثيقية خاصة: ${params.headline}`,
-    caption: `لوحة بصرية توثيقية خاصة بتقرير «${params.headline}» — غرفة أخبار ميزان الخبر`,
-    credit: 'التصميم البصري التوثيقي — ميزان الخبر',
-    license: 'ترخيص تحريري حصري للمنصة',
+    caption: `لوحة بصرية توثيقية خاصة بتقرير «${params.headline}» — ميزان الخبر`,
+    credit: 'الأرشيف البصري — ميزان الخبر',
+    license: 'ترخيص تحريري حصري',
     strategy: 'typographic',
     isAiGenerated: false,
     width: 1200,
@@ -1542,7 +1427,7 @@ export function resolveLegalEditorialImage(params: {
 }
 
 /**
- * صياغة إفصاح التحرير والتدقيق اللغوي أسفل كل مقال
+ * صياغة إفصاح التحرير والتدقيق المصدري أسفل كل مقال
  */
 export function buildEditorialDisclosure(params: {
   reviewedBy: string | null;
@@ -1550,7 +1435,7 @@ export function buildEditorialDisclosure(params: {
   sourcesCount: number;
 }): string {
   const { sourcesCount } = params;
-  return `أُعدّ هذا التقرير الصحفي في غرفة أخبار «ميزان الخبر» استنادًا إلى ${sourcesCount} من المصادر والمرجعيات الإخبارية المعتمدة، وجرى تدقيقه لغويًا ومصدريًا عبر وحدة التدقيق اللغوي والفلترة الذكية بإشراف الأستاذ علام الكيلاني ورئيس التحرير إبراهيم.`;
+  return `أُعدّ هذا التقرير في غرفة أخبار «ميزان الخبر» استنادًا إلى ${sourcesCount} من المصادر والمرجعيات الإخبارية الرسمية المعتمدة، وفق المعايير التحريرية والمهنية الصارمة بإشراف رئيس التحرير.`;
 }
 
 // ============================================================================
