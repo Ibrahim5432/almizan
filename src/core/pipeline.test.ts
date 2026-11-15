@@ -152,5 +152,34 @@ test('proofreadAndDeduplicateArticles purges foreign articles and deduplicates r
     cleaned[1].image.url,
     'Duplicate image URLs must be replaced with unique images'
   );
+
+  const womenTopicCheck = isAuthenticArabicEditorialText(
+    'اليونسكو: أعداد طلاب التعليم العالي تضاعف مع تفوق مشاركة النساء على الرجال',
+    'تقرير حول مشاركة النساء في التعليم العالي'
+  );
+  assert.equal(womenTopicCheck.valid, false, 'Articles mentioning women topics must be filtered out');
+
+  const oldSyriaBreaking = {
+    ...INITIAL_ARTICLES[0],
+    id: 'test-old-syria',
+    type: 'breaking' as const,
+    categorySlug: 'syria' as const,
+    headline: 'عاجل | إطلاق خطة الطوارئ الكهربائية في دمشق وحلب',
+    publishedAt: '2026-11-10T10:00:00.000Z',
+  };
+  const todaySyriaNews = {
+    ...INITIAL_ARTICLES[1],
+    id: 'test-today-syria',
+    type: 'news' as const,
+    categorySlug: 'syria' as const,
+    headline: 'حلب تستعيد دورها الجوي مع انطلاق مشروع توسعة مطار حلب الدولي',
+    publishedAt: '2026-11-15T15:30:00.000Z',
+  };
+  const orderedWithToday = curateMagazineArticlesOrder([oldSyriaBreaking, todaySyriaNews]);
+  assert.equal(
+    orderedWithToday[0].id,
+    'test-today-syria',
+    'Newly auto-published today articles must appear ahead of older seed articles'
+  );
 });
 

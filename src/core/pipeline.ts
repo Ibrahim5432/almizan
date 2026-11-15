@@ -173,7 +173,7 @@ export function isAuthenticArabicEditorialText(
     return { valid: false, arabicRatio, reason: 'CONTAINS_RAW_ENTITIES_OR_CORRUPTION' };
   }
   if (
-    /(النبيذ|نبيذ|خمور|علاقة\s+غرامية|العلاقة\s+العاطفية|إطلاق\s+نار|أصيبت\s+أربعة\s+أشخاص|كايليا\s+نمور|بطلة\s+الجمباز|العفن\s+الأسود|ضبابية\s+الدماغ|نجيب\s+عبد\s+الرزاق|عطر\s+غزة\s+المسكوب|الأطفال\s+المهاجرون|انفجار\s+لغم\s+أرضي|الحرس\s+الثوري|زيلينسكي|دونباس|آيزنكوت|الحريديم|نتنياهو|الأحزاب\s+العربية\s+في\s+إسرائيل|وقف\s+الرحلات\s+الجوية\s+في\s+الولايات|بعد\s+استبعاد\s+باسم\s+علي|تامر\s+مصطفى|ملكة\s+جمال|عارضة\s+أزياء|فنانة|ممثلة|مغنية|راقصة|التفاصيل\s+بعد\s+قليل|يتبع\.\.|جاري\s+التحديث|شهيدان|شهداء|مصابون\s+في\s+غارة|مسيرة\s+إسرائيلية|غارة\s+إسرائيلية)/i.test(
+    /(النبيذ|نبيذ|خمور|علاقة\s+غرامية|العلاقة\s+العاطفية|إطلاق\s+نار|أصيبت\s+أربعة\s+أشخاص|كايليا\s+نمور|بطلة\s+الجمباز|العفن\s+الأسود|ضبابية\s+الدماغ|نجيب\s+عبد\s+الرزاق|عطر\s+غزة\s+المسكوب|الأطفال\s+المهاجرون|انفجار\s+لغم\s+أرضي|الحرس\s+الثوري|زيلينسكي|دونباس|آيزنكوت|الحريديم|نتنياهو|الأحزاب\s+العربية\s+في\s+إسرائيل|وقف\s+الرحلات\s+الجوية\s+في\s+الولايات|بعد\s+استبعاد\s+باسم\s+علي|تامر\s+مصطفى|ملكة\s+جمال|عارضة\s+أزياء|فنانة|ممثلة|مغنية|راقصة|النساء|المرأة|للنساء|للمرأة|فتيات|سيدات|نسائية|نسائي|تفوق\s+مشاركة|المغنيسيوم\s+أم\s+الزنك|أيهما\s+يساعدك\s+في\s+النوم|مدير\s+الموساد|جنوب\s+السودان|بلدة\s+أبيمنوم|جرف\s+الصخر|وحدة\s+آسيان|فوق\s+لاهور|ترامب\s+يحمّل\s+إدارة\s+بايدن|التفاصيل\s+بعد\s+قليل|يتبع\.\.|جاري\s+التحديث|شهيدان|شهداء|مصابون\s+في\s+غارة|مسيرة\s+إسرائيلية|غارة\s+إسرائيلية|السجل\s+الوطني\s+للضحايا|العدالة\s+الانتقالية)/i.test(
       `${cleanTitle} ${snippet}`
     )
   ) {
@@ -409,7 +409,7 @@ export function inferCategoryFromText(text: string): CategorySlug {
 
   // 2. فحص مباشر لأخبار سوريا لخصوصيتها في هوية المنصة (50% من التغطية)
   if (
-    /(سوريا|سوري|السورية|دمشق|حلب|حماة|حمص|اللاذقية|طرطوس|درعا|دير الزور|إدلب|السويداء|الحسكة|الرقة|القنيطرة|سانا|قاسيون|الشيخ نجار|عدرا|حسياء|معبر نصيب|باب الهوى|سهل الغاب|الجزيرة السورية|نهر الفرات|بردى|حوران|تدمر)/.test(
+    /(سوريا|سوري|السورية|دمشق|حلب|حماة|حمص|اللاذقية|طرطوس|درعا|دير الزور|إدلب|السويداء|الحسكة|الرقة|القنيطرة|سانا|قاسيون|الشيخ نجار|عدرا|حسياء|معبر نصيب|باب الهوى|سهل الغاب|الجزيرة السورية|نهر الفرات|بردى|حوران|تدمر|مطار حلب|هيئة الاستثمار السورية|الليرة السورية|منتخب سوريا|حلب اليوم|عنب بلدي|تلفزيون سوريا|مفاضلتي ملء الشواغر|وزير المالية محمد يسر|الملفات الضريبية)/.test(
       text
     )
   ) {
@@ -1349,12 +1349,12 @@ export const LEGAL_EDITORIAL_PHOTO_POOL: LegalPhotoEntry[] = [
   },
   {
     key: 'weather-climate-meteorology',
-    keywords: ['أرصاد', 'مناخ', 'أمطار', 'منخفضات', 'الإنذار المبكر', 'طقس'],
-    categories: ['science-health', 'arab-world'],
+    keywords: ['أرصاد', 'مناخ', 'أمطار', 'منخفضات', 'الإنذار المبكر', 'طقس', 'فيضانات', 'الفيضانات', 'عزلة شتوية', 'الشتوية'],
+    categories: ['science-health', 'arab-world', 'syria'],
     url: 'https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?auto=format&fit=crop&w=1200&q=80',
     credit: 'أرشيف الرصد الجوي — المنظومات المناخية والبيئية',
     license: 'ترخيص استخدام صحفي',
-    captionPrefix: 'متابعة المنظومات الجوية وشبكات الرصد المناخي الإقليمي',
+    captionPrefix: 'متابعة المنظومات الجوية وتداعيات الأمطار والمنخفضات المناخية',
   },
   {
     key: 'desalination-coastal-water',
@@ -1376,12 +1376,12 @@ export const LEGAL_EDITORIAL_PHOTO_POOL: LegalPhotoEntry[] = [
   },
   {
     key: 'oil-gas-energy-pipelines',
-    keywords: ['نفط', 'غاز', 'مصافي', 'مشتقات', 'أوبك', 'إمدادات الطاقة'],
+    keywords: ['نفط', 'غاز', 'مصافي', 'مشتقات', 'أوبك', 'إمدادات الطاقة', 'مازوت', 'التدفئة', 'وقود', 'محروقات', 'لتر'],
     categories: ['economy', 'arab-world', 'syria'],
     url: 'https://images.unsplash.com/photo-1513828583688-c52646db42da?auto=format&fit=crop&w=1200&q=80',
-    credit: 'أرشيف الطاقة والصناعة — منشآت الغاز والتكرير',
+    credit: 'أرشيف الطاقة والصناعة — منشآت الغاز والتكرير والمحروقات',
     license: 'ترخيص استخدام صحفي',
-    captionPrefix: 'منشآت معالجة الغاز الطبيعي وإمدادات الطاقة الصناعية',
+    captionPrefix: 'منشآت معالجة الغاز الطبيعي وإمدادات الطاقة والمحروقات',
   },
   {
     key: 'maritime-red-sea-corridor',
@@ -1394,12 +1394,12 @@ export const LEGAL_EDITORIAL_PHOTO_POOL: LegalPhotoEntry[] = [
   },
   {
     key: 'syria-euphrates-dam-water',
-    keywords: ['نهر الفرات', 'سد', 'الجزيرة', 'الحسكة', 'الرقة', 'دير الزور', 'الري', 'مائية'],
+    keywords: ['نهر الفرات', 'سد', 'الجزيرة', 'الحسكة', 'الرقة', 'دير الزور', 'الري', 'مائية', 'الاستزراع السمكي', 'سمكي', 'ثروة سمكية', 'أراض زراعية'],
     categories: ['syria', 'economy', 'science-health'],
     url: 'https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=1200&q=80',
-    credit: 'أرشيف الموارد المائية — الأحواض النهرية والسدود في المشرق',
+    credit: 'أرشيف الموارد المائية — الأحواض النهرية والسدود والاستزراع المائي في سوريا',
     license: 'ترخيص استخدام صحفي',
-    captionPrefix: 'المسطحات المائية وقنوات الري الاستراتيجية في المحافظات السورية',
+    captionPrefix: 'المسطحات المائية وقنوات الري والاستزراع السمكي في المحافظات السورية',
   },
   {
     key: 'syria-damascus-courtyard-heritage',
@@ -1509,6 +1509,114 @@ export const LEGAL_EDITORIAL_PHOTO_POOL: LegalPhotoEntry[] = [
     license: 'ترخيص استخدام صحفي',
     captionPrefix: 'دراسات التخطيط الاستراتيجي والنماذج الاقتصادية الإقليمية',
   },
+  {
+    key: 'syria-aleppo-airport-aviation',
+    keywords: ['مطار حلب', 'دورها الجوي', 'توسعة المطار', 'طيران مدني', 'ملاحة جوية'],
+    categories: ['syria', 'economy'],
+    url: 'https://images.unsplash.com/photo-1530521954074-e64f6810b32d?auto=format&fit=crop&w=1200&q=80',
+    credit: 'أرشيف الطيران المدني — تطوير المطارات والملاحة الجوية',
+    license: 'ترخيص استخدام صحفي',
+    captionPrefix: 'توسعة وتحديث مرافق المطارات والشحن الجوي في سوريا',
+  },
+  {
+    key: 'syria-optics-medical-equipment',
+    keywords: ['البصريات', 'قطاع البصريات', 'أجهزة طبية', 'عدسات', 'تجهيزات صحية'],
+    categories: ['syria', 'science-health'],
+    url: 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=1200&q=80',
+    credit: 'الأرشيف الطبي — المختبرات والتجهيزات البصرية والطبية',
+    license: 'ترخيص استخدام صحفي',
+    captionPrefix: 'التجهيزات المخبرية والبصرية الحديثة في المراكز التخصصية',
+  },
+  {
+    key: 'syria-daraa-power-cables-grid',
+    keywords: ['كابلات كهربائية', 'درعا', 'تحسين واقع الشبكة', 'محولات', 'تمديدات'],
+    categories: ['syria', 'economy'],
+    url: 'https://images.unsplash.com/photo-1544724569-5f546fd6f2b5?auto=format&fit=crop&w=1200&q=80',
+    credit: 'أرشيف الشبكات الكهربائية — تأهيل خطوط التوتر والكابلات',
+    license: 'ترخيص استخدام صحفي',
+    captionPrefix: 'أعمال تمديد الكابلات وتحديث الشبكات الكهربائية في المحافظات السورية',
+  },
+  {
+    key: 'syria-finance-tax-digital-reform',
+    keywords: ['الملفات الضريبية', 'التهرب الضريبي', 'وزارة المالية السورية', 'هيئة الاستثمار السورية', 'البنك الإسلامي'],
+    categories: ['syria', 'economy'],
+    url: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80',
+    credit: 'أرشيف الإدارة المالية الرقمية — أنظمة الحوكمة والاستثمار',
+    license: 'ترخيص استخدام صحفي',
+    captionPrefix: 'أتمتة الأنظمة المالية والضريبية وتطوير بيئة الاستثمار في سوريا',
+  },
+  {
+    key: 'syria-homs-book-fair-culture',
+    keywords: ['معرض كتاب', 'ثقافة حمص', 'القراءة', 'مفاضلتي ملء الشواغر', 'التعليم العالي'],
+    categories: ['syria', 'culture-society'],
+    url: 'https://images.unsplash.com/photo-1507842229356-51c61504d3ab?auto=format&fit=crop&w=1200&q=80',
+    credit: 'الأرشيف الثقافي والجامعي — معارض الكتاب والمكتبات العامة',
+    license: 'ترخيص استخدام صحفي',
+    captionPrefix: 'أجنحة الكتب والمكتبات الأكاديمية في المراكز الثقافية والجامعات السورية',
+  },
+  {
+    key: 'arab-gulf-industrial-complex',
+    keywords: ['صناعات', 'توطين', 'مصانع', 'بتروكيماويات', 'منطقة صناعية'],
+    categories: ['arab-world', 'economy'],
+    url: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80',
+    credit: 'الأرشيف الصناعي — المنشآت الهندسية والتقنية الحديثة',
+    license: 'ترخيص استخدام صحفي',
+    captionPrefix: 'المنشآت الصناعية المؤتمتة وخطوط الإنتاج المتطورة في المنطقة',
+  },
+  {
+    key: 'arab-ankara-doha-diplomacy-arch',
+    keywords: ['اتفاقية', 'دفاع مشترك', 'تعاون استراتيجي', 'مباحثات ثنائية', 'قمة ثلاثية'],
+    categories: ['arab-world', 'politics'],
+    url: 'https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=1200&q=80',
+    credit: 'الأرشيف الدبلوماسي — العمارة المؤسسية والمقرات الرسمية',
+    license: 'ترخيص استخدام صحفي',
+    captionPrefix: 'المقرات الرسمية ومراكز المباحثات الاستراتيجية الإقليمية',
+  },
+  {
+    key: 'arab-kuwait-oman-maritime-trade',
+    keywords: ['الكويت', 'عُمان', 'البحرين', 'موانئ الخليج', 'إمدادات'],
+    categories: ['arab-world', 'economy'],
+    url: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&w=1200&q=80',
+    credit: 'أرشيف الموانئ والتجارة — المراكز اللوجستية الخليجية',
+    license: 'ترخيص استخدام صحفي',
+    captionPrefix: 'المراكز اللوجستية والموانئ التجارية الحديثة في الخليج العربي',
+  },
+  {
+    key: 'international-un-assembly-Geneva',
+    keywords: ['الأمم المتحدة', 'مجلس الأمن', 'الأمين العام', 'الأونروا', 'اليونيسف', 'مبادرة أممية', 'كوب 31'],
+    categories: ['politics', 'science-health', 'arab-world'],
+    url: 'https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=1200&q=80',
+    credit: 'أرشيف العلاقات الدولية — المؤتمرات والهيئات الأممية',
+    license: 'ترخيص استخدام صحفي',
+    captionPrefix: 'أعمال المؤتمرات الدولية واللجان الأممية المختصة',
+  },
+  {
+    key: 'cyber-security-network-matrix',
+    keywords: ['سيبراني', 'هجمات إلكترونية', 'كيو آر', 'فخاخ إلكترونية', 'تشفير', 'حماية البيانات'],
+    categories: ['technology', 'analysis'],
+    url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80',
+    credit: 'أرشيف الأمن السيبراني — منظومات حماية الشبكات والبيانات',
+    license: 'ترخيص استخدام صحفي',
+    captionPrefix: 'أنظمة التشفير والأمن السيبراني وحماية البنية التحتية الرقمية',
+  },
+  {
+    key: 'clean-tech-server-infrastructure',
+    keywords: ['مراكز البيانات الخضراء', 'الاتحاد الدولي للاتصالات', 'خوادم', 'حوسبة سحابية'],
+    categories: ['technology', 'economy'],
+    url: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=1200&q=80',
+    credit: 'أرشيف البنية التقنية — الخوادم والشبكات الرقمية الفائقة',
+    license: 'ترخيص استخدام صحفي',
+    captionPrefix: 'وحدات المعالجة والخوادم السحابية عالية الكفاءة',
+  },
+  {
+    key: 'global-economy-gold-bonds-markets',
+    keywords: ['الذهب', 'السندات', 'الأسهم', 'أسواق المال', 'فائضاً نفطياً', 'وكالة الطاقة'],
+    categories: ['economy', 'analysis'],
+    url: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1200&q=80',
+    credit: 'أرشيف الأسواق المالية — مؤشرات التداول والسندات والطاقة',
+    license: 'ترخيص استخدام صحفي',
+    captionPrefix: 'شاشات ومؤشرات الأسواق المالية وأسعار الطاقة والسلع الاستراتيجية',
+  },
 ];
 
 /**
@@ -1550,7 +1658,7 @@ export function resolveLegalEditorialImage(params: {
     } else if (isCategoryMatch) {
       score += 3;
     }
-    if (entry.url.startsWith('assets/editorial/') && (isCategoryMatch || keywordHits > 0)) {
+    if (entry.url.startsWith('assets/editorial/') && keywordHits > 0) {
       score += 2;
     }
     const tieBreaker = ((hashVal + idx * 7) % 19) * 0.04;
@@ -2166,14 +2274,35 @@ export function inspectArticleHeadlineContentAlignment<
   const fixesApplied: string[] = [];
   const cleanHead = truncateAtWordBoundary(decodeAndCleanRssText(article.headline), 120, false);
 
-  // 1. فحص مطابقة القسم للعنوان نفسه
-  const inferredCategory = inferCategoryFromText(cleanHead);
+  // 1. فحص مطابقة القسم للعنوان والمقتطف والمصدر مع الحفاظ على حصة الشأن السوري (50%) والعربي والتركي (40%)
+  const combinedContext = `${cleanHead} ${article.dek || ''} ${article.sources?.[0]?.publisher || ''}`;
+  const inferredFromHead = inferCategoryFromText(cleanHead);
+  const inferredFromContext = inferCategoryFromText(combinedContext);
   let alignedCategorySlug: CategorySlug = article.categorySlug;
 
   if (article.type === 'explainer' || cleanHead.startsWith('ماذا حدث ولماذا يهم')) {
     alignedCategorySlug = 'analysis';
-  } else if (inferredCategory !== article.categorySlug) {
-    alignedCategorySlug = inferredCategory;
+  } else if (inferredFromHead === 'sports' || inferredFromHead === 'culture-society') {
+    alignedCategorySlug = inferredFromHead;
+    if (alignedCategorySlug !== article.categorySlug) {
+      fixesApplied.push(`ALIGNED_CATEGORY_${article.categorySlug}_TO_${alignedCategorySlug}`);
+    }
+  } else if (
+    article.categorySlug === 'syria' &&
+    /(سوريا|سوري|السورية|دمشق|حلب|حمص|حماة|إدلب|درعا|اللاذقية|طرطوس|سانا|حلب اليوم|تلفزيون سوريا|عنب بلدي)/.test(
+      combinedContext
+    )
+  ) {
+    alignedCategorySlug = 'syria';
+  } else if (
+    article.categorySlug === 'arab-world' &&
+    /(العرب|العربي|العربية|تركيا|أنقرة|إسطنبول|الخليج|السعودية|الرياض|قطر|الدوحة|مصر|القاهرة|الأردن|عمان|عمّان|العراق|بغداد|فلسطين|غزة|لبنان|بيروت|اليمن|تونس|الجزائر|المغرب|ليبيا|السودان|الكويت|الإمارات|أبوظبي|دبي)/.test(
+      combinedContext
+    )
+  ) {
+    alignedCategorySlug = 'arab-world';
+  } else if (inferredFromContext !== article.categorySlug) {
+    alignedCategorySlug = inferredFromContext;
     fixesApplied.push(`ALIGNED_CATEGORY_${article.categorySlug}_TO_${alignedCategorySlug}`);
   }
 
@@ -2240,7 +2369,7 @@ export function inspectArticleHeadlineContentAlignment<
 /**
  * موظف الترتيب والتنسيق والإخراج الفني للمجلة (أ. مازن الدمشقي — مدير الإخراج الفني والترتيب التحريري للمجلة):
  * يرتب المقالات وفق روح المجلات الإخبارية المرموقة (زمان الوصل / تلفزيون سوريا / حلب اليوم)
- * مع ضمان صدارة الشأن السوري والأخبار العاجلة والتوازن البصري والموضوعي.
+ * مع إبراز أخبار اليوم المنشورة تلقائيًا في صدارة الواجهة، وضمان أولوية الشأن السوري (50%) والعربي والتركي (40%).
  */
 export function curateMagazineArticlesOrder<
   T extends {
@@ -2252,19 +2381,37 @@ export function curateMagazineArticlesOrder<
     image: ArticleImage;
   }
 >(articles: T[]): T[] {
+  const timestamps = articles
+    .map((a) => (a.publishedAt ? new Date(a.publishedAt).getTime() : 0))
+    .filter((t) => Number.isFinite(t) && t > 0);
+  const maxTime = timestamps.length > 0 ? Math.max(...timestamps) : 0;
+  const minTime = timestamps.length > 0 ? Math.min(...timestamps) : 0;
+  const hasMultipleDays = maxTime - minTime > 18 * 3600 * 1000;
+
   return [...articles].sort((a, b) => {
     const getEditorialPriority = (item: T): number => {
       let score = 0;
-      // أولوية قصوى للشأن السوري في صدارة المجلة (50%)
+      // 1. أولوية قصوى للشأن السوري في صدارة المجلة (50%) يليه الشأن العربي والتركي (40%)
       if (item.categorySlug === 'syria') score += 35;
       else if (item.categorySlug === 'arab-world') score += 24;
       else if (item.categorySlug === 'economy' || item.categorySlug === 'politics') score += 18;
       else if (item.categorySlug === 'analysis') score += 16;
       else score += 12;
 
-      // أولوية للأخبار العاجلة والتقارير المزودة بصور فوتوغرافية حصرية عالية الدقة
-      if (item.type === 'breaking' || item.headline.includes('عاجل')) score += 12;
-      if (item.image?.url?.startsWith('assets/editorial/')) score += 8;
+      // 2. دفعة صدارة لأخبار اليوم المنشورة حديثًا (آخر 24 ساعة) لتظهر فورًا للزائر في أعلى المجلة
+      if (hasMultipleDays && item.publishedAt) {
+        const itemTime = new Date(item.publishedAt).getTime();
+        const ageHours = Math.max(0, (maxTime - itemTime) / (3600 * 1000));
+        if (ageHours <= 24) {
+          score += 32 + Math.round((24 - ageHours) * 0.4);
+        } else if (ageHours <= 48) {
+          score += 14;
+        }
+      }
+
+      // 3. أولوية للأخبار العاجلة والتقارير المزودة بصور فوتوغرافية حصرية عالية الدقة
+      if (item.type === 'breaking' || item.headline.includes('عاجل')) score += 10;
+      if (item.image?.url?.startsWith('assets/editorial/')) score += 6;
 
       return score;
     };
@@ -2312,6 +2459,7 @@ export function proofreadAndDeduplicateArticles<
   const usedImageUrls = new Set<string>();
   const seenHeadlines = new Set<string>();
   let seenMicrosoftOutage = false;
+  let seenTrumpXiSummit = false;
   const validCandidates: T[] = [];
 
   for (const art of articles) {
@@ -2334,12 +2482,18 @@ export function proofreadAndDeduplicateArticles<
       continue;
     }
 
-    // منع تكرار أخبار الحدث التقني الواحد من عدة خلاصات RSS (مثل عطل مايكروسوفت)
+    // منع تكرار أخبار الحدث الواحد من عدة خلاصات RSS
     if (/مايكروسوفت/.test(normHead) && /(عطل|انقطاع|استعادة)/.test(normHead)) {
       if (seenMicrosoftOutage) {
         continue;
       }
       seenMicrosoftOutage = true;
+    }
+    if (/ترامب/.test(normHead) && /بوتين/.test(normHead)) {
+      if (seenTrumpXiSummit) {
+        continue;
+      }
+      seenTrumpXiSummit = true;
     }
 
     seenHeadlines.add(normHead);
@@ -2350,7 +2504,7 @@ export function proofreadAndDeduplicateArticles<
     });
   }
 
-  // ترتيب أولي بإشراف أ. مازن الدمشقي حتى تحصل ملفات الصدارة السورية والعربية على الصور الحصرية الأنسب أولًا
+  // ترتيب أولي بإشراف أ. مازن الدمشقي حتى تحصل ملفات الصدارة السورية والعربية وأخبار اليوم على الصور الأنسب أولًا
   const preOrdered = curateMagazineArticlesOrder(validCandidates);
   const alignedList: T[] = [];
 

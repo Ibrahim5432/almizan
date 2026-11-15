@@ -314,7 +314,7 @@ export const HomeView: React.FC<{
     return picked;
   };
 
-  // 1. ملف الغلاف الرئيسي (صدارة الشأن السوري)
+  // 1. ملف الغلاف الرئيسي (صدارة الشأن السوري المنشور اليوم)
   const leadStory = takeArticles(1, (a) => a.categorySlug === 'syria')[0] || takeArticles(1)[0];
 
   // 2. تقارير العدد المصورة في العمود الأوسط لواجهة المجلة (مقالان مصوران بارزان)
@@ -323,14 +323,23 @@ export const HomeView: React.FC<{
     (a) => a.categorySlug === 'syria' || a.categorySlug === 'arab-world' || a.categorySlug === 'economy'
   );
 
-  // 3. مرصد المحافظات والمدن السورية (4 تقارير ميدانية وخدمية سورية)
+  // 3. الخط الزمني لآخر الأخبار في أعلى الواجهة («نبض الساعة» مرتب زمنيًا بأحدث تقارير اليوم أولًا)
+  const unusedByTime = [...published]
+    .filter((a) => !usedIds.has(a.id))
+    .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+  const latestTimelineStories = unusedByTime.slice(0, 5);
+  for (const item of latestTimelineStories) {
+    usedIds.add(item.id);
+  }
+
+  // 4. مرصد المحافظات والمدن السورية (4 تقارير ميدانية وخدمية سورية)
   const syriaPrimary = takeArticles(4, (a) => a.categorySlug === 'syria');
   const syriaMonitorStories =
     syriaPrimary.length >= 4
       ? syriaPrimary
       : [...syriaPrimary, ...takeArticles(4 - syriaPrimary.length, (a) => a.categorySlug === 'economy' || a.categorySlug === 'arab-world')];
 
-  // 4. ملفات خاصة وتحقيقات معمّقة (على خطى زمان الوصل — 3 ملفات استقصائية وتحليلية مصورة)
+  // 5. ملفات خاصة وتحقيقات معمّقة (على خطى زمان الوصل — 3 ملفات استقصائية وتحليلية مصورة)
   const dossierPrimary = takeArticles(
     3,
     (a) => a.categorySlug === 'analysis' || a.type === 'explainer' || a.categorySlug === 'politics' || a.categorySlug === 'economy'
@@ -340,14 +349,11 @@ export const HomeView: React.FC<{
       ? dossierPrimary
       : [...dossierPrimary, ...takeArticles(3 - dossierPrimary.length)];
 
-  // 5. المشهد العربي والإقليمي وتركيا (شبكة مجلية مصورة من 4 تقارير)
+  // 6. المشهد العربي والإقليمي وتركيا (شبكة مجلية مصورة من 4 تقارير)
   const arabTurkeyMagazineGrid = takeArticles(
     4,
     (a) => a.categorySlug === 'arab-world' || a.categorySlug === 'economy' || a.categorySlug === 'politics' || a.categorySlug === 'syria'
   );
-
-  // 6. الخط الزمني لآخر الأخبار («نبض الساعة» على طراز تلفزيون سوريا وحلب اليوم — 5 عناوين سريعة)
-  const latestTimelineStories = takeArticles(5);
 
   // 7. بقية التقارير لبوابة الأقسام التخصصية
   const remainingExplorerStories = published.filter((a) => !usedIds.has(a.id));

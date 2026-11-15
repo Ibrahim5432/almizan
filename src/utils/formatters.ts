@@ -31,7 +31,7 @@ export function getTodayHijriAndGregorian(numeralSystem: 'western' | 'eastern' =
   hijri: string;
   gregorian: string;
 } {
-  const now = new Date('2026-11-08T09:00:00Z');
+  const now = new Date();
   try {
     const hijri = new Intl.DateTimeFormat('ar-SA-u-ca-islamic', {
       weekday: 'long',
@@ -54,8 +54,8 @@ export function getTodayHijriAndGregorian(numeralSystem: 'western' | 'eastern' =
     };
   } catch {
     return {
-      hijri: 'الأحد 28 جمادى الأولى 1448 هـ',
-      gregorian: '8 نوفمبر 2026 م',
+      hijri: 'الأحد 5 جمادى الآخرة 1448 هـ',
+      gregorian: '15 نوفمبر 2026 م',
     };
   }
 }
